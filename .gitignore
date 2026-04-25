@@ -32,3 +32,7 @@ Thumbs.db
 # editors
 .vscode/
 .idea/
+
+# temporary pdf tooling
+tmp/pydeps/
+tmp/pdfs/renders/

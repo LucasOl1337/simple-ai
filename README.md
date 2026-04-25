@@ -2,6 +2,11 @@
 
 SIMPLE-AI e um projeto de descoberta conversacional para pessoas totalmente leigas em tecnologia. A interface e a arquitetura do produto precisam preservar simplicidade extrema em todas as entregas.
 
+## Material para avaliadores
+
+- [PDF da apresentacao](AVALIADORES%20READ%20ME/SIMPLE-AI-Apresentacao-Avaliadores.pdf)
+- [Pasta de avaliadores](AVALIADORES%20READ%20ME/README.md)
+
 ## Regra global de produto
 
 Estas regras sao obrigatorias para qualquer agente ou colaborador que atuar nesta repo:

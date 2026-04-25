@@ -12,6 +12,7 @@
 > **Leitura rapida para avaliadores.** Este documento resume o que e o projeto, como funciona, o que ja esta implementado e o que vem pela frente.
 
 **Navegacao rapida:**
+- [PDF da apresentacao](SIMPLE-AI-Apresentacao-Avaliadores.pdf) - versao unica para leitura rapida
 - [Slides Visuais](SLIDES.md) — apresentacao completa em imagens
 - [O Problema](#o-problema)
 - [A Solucao](#a-solucao)
