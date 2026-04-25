@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1100" width="1600" height="1100" font-family="'Comic Sans MS', 'Marker Felt', 'Segoe Print', cursive">
+  <defs>
+    <filter id="rough" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" scale="2.4"/>
+    </filter>
+    <filter id="rough2" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="7"/>
+      <feDisplacementMap in="SourceGraphic" scale="1.6"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e1e1e"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2b8a3e"/>
+    </marker>
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#868e96"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect width="1600" height="1100" fill="#fdfcf7"/>
+
+  <!-- title -->
+  <text x="800" y="55" text-anchor="middle" font-size="34" font-weight="bold" fill="#1e1e1e">SIMPLE AI · da voz ao app deployado</text>
+  <text x="800" y="85" text-anchor="middle" font-size="16" fill="#495057">Cognition Hack SP · Agora ConvoAI + RTC · Agentes 01 &amp; 02 · Oracle Cloud</text>
+
+  <!-- divider scribble -->
+  <path d="M 250 105 Q 800 100 1350 108" stroke="#1e1e1e" stroke-width="1.5" fill="none" stroke-linecap="round" filter="url(#rough2)"/>
+
+  <!-- ===== ROW 1: 5 main components ===== -->
+  <!-- Box 1: USER -->
+  <g transform="translate(60,170) rotate(-0.6)">
+    <rect width="240" height="150" rx="10" fill="#ffe8cc" stroke="#1e1e1e" stroke-width="2.5" filter="url(#rough)"/>
+    <text x="120" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e1e1e">👤  USER</text>
+    <text x="120" y="68" text-anchor="middle" font-size="13" fill="#1e1e1e">dono de padaria</text>
+    <text x="120" y="98" text-anchor="middle" font-size="14" fill="#c92a2a" font-style="italic">"quero gerenciar</text>
+    <text x="120" y="118" text-anchor="middle" font-size="14" fill="#c92a2a" font-style="italic">pedidos online"</text>
+  </g>
+
+  <!-- Box 2: AGORA -->
+  <g transform="translate(360,170) rotate(0.4)">
+    <rect width="240" height="150" rx="10" fill="#d0bfff" stroke="#1e1e1e" stroke-width="2.5" filter="url(#rough)"/>
+    <text x="120" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e1e1e">🎙️  AGORA</text>
+    <text x="120" y="62" text-anchor="middle" font-size="13" fill="#1e1e1e">RTC + ConvoAI</text>
+    <text x="120" y="92" text-anchor="middle" font-size="12" fill="#495057">stream PT-BR audio</text>
+    <text x="120" y="110" text-anchor="middle" font-size="12" fill="#495057">orquestra agente</text>
+    <text x="120" y="128" text-anchor="middle" font-size="12" fill="#495057">chama tools</text>
+  </g>
+
+  <!-- Box 3: CLAUDE -->
+  <g transform="translate(660,170) rotate(-0.3)">
+    <rect width="240" height="150" rx="10" fill="#b2f2bb" stroke="#1e1e1e" stroke-width="2.5" filter="url(#rough)"/>
+    <text x="120" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e1e1e">🧠  AGENTE 01</text>
+    <text x="120" y="62" text-anchor="middle" font-size="13" fill="#1e1e1e">rápido + reasoning</text>
+    <text x="120" y="92" text-anchor="middle" font-size="12" fill="#495057">extrai requirements</text>
+    <text x="120" y="110" text-anchor="middle" font-size="12" fill="#495057">planeja stack</text>
+    <text x="120" y="128" text-anchor="middle" font-size="12" fill="#495057">JSON estruturado</text>
+  </g>
+
+  <!-- Box 4: DEVIN -->
+  <g transform="translate(960,170) rotate(0.5)">
+    <rect width="240" height="150" rx="10" fill="#ffc9c9" stroke="#1e1e1e" stroke-width="2.5" filter="url(#rough)"/>
+    <text x="120" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e1e1e">🤖  AGENTE 02</text>
+    <text x="120" y="62" text-anchor="middle" font-size="13" fill="#1e1e1e">code agent</text>
+    <text x="120" y="92" text-anchor="middle" font-size="12" fill="#495057">scaffold + código</text>
+    <text x="120" y="110" text-anchor="middle" font-size="12" fill="#495057">testa em sandbox</text>
+    <text x="120" y="128" text-anchor="middle" font-size="12" fill="#495057">deploy autônomo</text>
+  </g>
+
+  <!-- Box 5: OCI -->
+  <g transform="translate(1260,170) rotate(-0.4)">
+    <rect width="240" height="150" rx="10" fill="#a5d8ff" stroke="#1e1e1e" stroke-width="2.5" filter="url(#rough)"/>
+    <text x="120" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e1e1e">☁️  OCI</text>
+    <text x="120" y="62" text-anchor="middle" font-size="13" fill="#1e1e1e">Oracle Cloud</text>
+    <text x="120" y="92" text-anchor="middle" font-size="12" fill="#495057">Autonomous DB</text>
+    <text x="120" y="110" text-anchor="middle" font-size="12" fill="#495057">Object Storage</text>
+    <text x="120" y="128" text-anchor="middle" font-size="12" fill="#495057">Compute Container</text>
+  </g>
+
+  <!-- ===== Arrows row 1 ===== -->
+  <g stroke="#1e1e1e" stroke-width="2.5" fill="none" filter="url(#rough2)">
+    <path d="M 305 250 Q 332 240 355 250" marker-end="url(#arrow)"/>
+    <path d="M 605 250 Q 632 258 655 250" marker-end="url(#arrow)"/>
+    <path d="M 905 250 Q 932 240 955 250" marker-end="url(#arrow)"/>
+    <path d="M 1205 250 Q 1232 258 1255 250" marker-end="url(#arrow)"/>
+  </g>
+  <!-- Arrow labels -->
+  <text x="330" y="232" text-anchor="middle" font-size="12" fill="#495057" font-style="italic">voz</text>
+  <text x="630" y="276" text-anchor="middle" font-size="12" fill="#495057" font-style="italic">tool call</text>
+  <text x="930" y="232" text-anchor="middle" font-size="12" fill="#495057" font-style="italic">spec JSON</text>
+  <text x="1230" y="276" text-anchor="middle" font-size="12" fill="#495057" font-style="italic">deploy</text>
+
+  <!-- ===== ROW 2: WHAT HAPPENS - timeline cards ===== -->
+  <text x="60" y="420" font-size="20" font-weight="bold" fill="#1e1e1e">↓  o que acontece em ~5 minutos</text>
+
+  <!-- Card 1 -->
+  <g transform="translate(60,440)">
+    <rect width="240" height="180" rx="10" fill="#ffffff" stroke="#1e1e1e" stroke-width="2" filter="url(#rough)"/>
+    <text x="20" y="32" font-size="14" font-weight="bold" fill="#e8590c">0:00–0:30s</text>
+    <text x="20" y="60" font-size="13" fill="#1e1e1e">User clica "começar"</text>
+    <text x="20" y="80" font-size="13" fill="#1e1e1e">Browser abre canal RTC</text>
+    <text x="20" y="100" font-size="13" fill="#1e1e1e">ConvoAI agent entra</text>
+    <text x="20" y="125" font-size="12" fill="#495057" font-style="italic">"Olá! Conta sobre</text>
+    <text x="20" y="143" font-size="12" fill="#495057" font-style="italic">seu negócio"</text>
+    <text x="20" y="170" font-size="11" fill="#868e96">⚡ ~150ms latency</text>
+  </g>
+
+  <!-- Card 2 -->
+  <g transform="translate(360,440)">
+    <rect width="240" height="180" rx="10" fill="#ffffff" stroke="#1e1e1e" stroke-width="2" filter="url(#rough)"/>
+    <text x="20" y="32" font-size="14" font-weight="bold" fill="#5f3dc4">0:30–2:00</text>
+    <text x="20" y="60" font-size="13" fill="#1e1e1e">2-4 turnos de</text>
+    <text x="20" y="78" font-size="13" fill="#1e1e1e">conversa em PT-BR</text>
+    <text x="20" y="103" font-size="12" fill="#495057">Agente 01 (rápido) extrai:</text>
+    <text x="20" y="121" font-size="12" fill="#1e1e1e">• negócio (padaria)</text>
+    <text x="20" y="138" font-size="12" fill="#1e1e1e">• domain (orders)</text>
+    <text x="20" y="155" font-size="12" fill="#1e1e1e">• features (checkout)</text>
+    <text x="20" y="172" font-size="11" fill="#868e96">📝 spec JSON estável</text>
+  </g>
+
+  <!-- Card 3 -->
+  <g transform="translate(660,440)">
+    <rect width="240" height="180" rx="10" fill="#ffffff" stroke="#1e1e1e" stroke-width="2" filter="url(#rough)"/>
+    <text x="20" y="32" font-size="14" font-weight="bold" fill="#2b8a3e">2:00–2:15</text>
+    <text x="20" y="60" font-size="13" fill="#1e1e1e">Agente 01 (reasoning)</text>
+    <text x="20" y="78" font-size="13" fill="#1e1e1e">planeja a stack ideal</text>
+    <text x="20" y="105" font-size="12" fill="#495057">Resultado:</text>
+    <text x="20" y="123" font-size="12" fill="#1e1e1e">• React + TS frontend</text>
+    <text x="20" y="140" font-size="12" fill="#1e1e1e">• FastAPI backend</text>
+    <text x="20" y="157" font-size="12" fill="#1e1e1e">• Autonomous DB</text>
+    <text x="20" y="174" font-size="11" fill="#868e96">🎯 1 plan call</text>
+  </g>
+
+  <!-- Card 4 -->
+  <g transform="translate(960,440)">
+    <rect width="240" height="180" rx="10" fill="#ffffff" stroke="#1e1e1e" stroke-width="2" filter="url(#rough)"/>
+    <text x="20" y="32" font-size="14" font-weight="bold" fill="#c92a2a">2:15–4:30</text>
+    <text x="20" y="60" font-size="13" fill="#1e1e1e">Agente 02 sessão abre</text>
+    <text x="20" y="80" font-size="13" fill="#1e1e1e">e constrói o app</text>
+    <text x="20" y="105" font-size="12" fill="#495057">Visível ao vivo:</text>
+    <text x="20" y="122" font-size="12" fill="#1e1e1e">• planner</text>
+    <text x="20" y="138" font-size="12" fill="#1e1e1e">• file tree growing</text>
+    <text x="20" y="154" font-size="12" fill="#1e1e1e">• tests passing ✓</text>
+    <text x="20" y="172" font-size="11" fill="#868e96">🚀 voz narra progresso</text>
+  </g>
+
+  <!-- Card 5 -->
+  <g transform="translate(1260,440)">
+    <rect width="240" height="180" rx="10" fill="#ffffff" stroke="#1e1e1e" stroke-width="2" filter="url(#rough)"/>
+    <text x="20" y="32" font-size="14" font-weight="bold" fill="#1864ab">4:30–5:00</text>
+    <text x="20" y="60" font-size="13" fill="#1e1e1e">OCI deploy completa</text>
+    <text x="20" y="85" font-size="12" fill="#495057">User recebe:</text>
+    <text x="20" y="105" font-size="12" fill="#1e1e1e">🌐 URL do app</text>
+    <text x="20" y="123" font-size="12" fill="#1e1e1e">🔑 admin login</text>
+    <text x="20" y="141" font-size="12" fill="#1e1e1e">💾 DB pronta</text>
+    <text x="20" y="172" font-size="11" fill="#868e96">✅ funcional, sem código</text>
+  </g>
+
+  <!-- timeline thread -->
+  <g stroke="#868e96" stroke-width="1.5" stroke-dasharray="6 5" fill="none" filter="url(#rough2)">
+    <line x1="300" y1="530" x2="360" y2="530"/>
+    <line x1="600" y1="530" x2="660" y2="530"/>
+    <line x1="900" y1="530" x2="960" y2="530"/>
+    <line x1="1200" y1="530" x2="1260" y2="530"/>
+  </g>
+
+  <!-- ===== DATA STORAGE swimlane ===== -->
+  <text x="60" y="690" font-size="20" font-weight="bold" fill="#1e1e1e">↓  onde os dados vivem</text>
+
+  <g transform="translate(60,710)">
+    <rect width="450" height="170" rx="10" fill="#fff5d6" stroke="#1e1e1e" stroke-width="2" filter="url(#rough)"/>
+    <text x="20" y="35" font-size="18" font-weight="bold" fill="#e8590c">🔥 HOT — sessão</text>
+    <text x="20" y="62" font-size="13" fill="#495057">FastAPI dict in-memory</text>
+    <text x="20" y="90" font-size="13" fill="#1e1e1e">• session state</text>
+    <text x="20" y="110" font-size="13" fill="#1e1e1e">• voice frames (Agora)</text>
+    <text x="20" y="130" font-size="13" fill="#1e1e1e">• partial transcript</text>
+    <text x="20" y="155" font-size="11" fill="#868e96" font-style="italic">TTL: ~5min, dropado no end</text>
+  </g>
+
+  <g transform="translate(540,710)">
+    <rect width="450" height="170" rx="10" fill="#d3f9d8" stroke="#1e1e1e" stroke-width="2" filter="url(#rough)"/>
+    <text x="20" y="35" font-size="18" font-weight="bold" fill="#2b8a3e">♨️ WARM — Autonomous DB</text>
+    <text x="20" y="62" font-size="13" fill="#495057">Oracle 23ai · OLTP + vector</text>
+    <text x="20" y="90" font-size="13" fill="#1e1e1e">• users (id, business)</text>
+    <text x="20" y="110" font-size="13" fill="#1e1e1e">• conversations (transcript)</text>
+    <text x="20" y="130" font-size="13" fill="#1e1e1e">• specs (req JSON)</text>
+    <text x="20" y="150" font-size="13" fill="#1e1e1e">• deployments (URL, OCI res)</text>
+  </g>
+
+  <g transform="translate(1020,710)">
+    <rect width="480" height="170" rx="10" fill="#d0ebff" stroke="#1e1e1e" stroke-width="2" filter="url(#rough)"/>
+    <text x="20" y="35" font-size="18" font-weight="bold" fill="#1864ab">🧊 COLD — Object Storage</text>
+    <text x="20" y="62" font-size="13" fill="#495057">OCI · arquivos versionados</text>
+    <text x="20" y="90" font-size="13" fill="#1e1e1e">• generated_code/{user}/{spec}.zip</text>
+    <text x="20" y="110" font-size="13" fill="#1e1e1e">• transcripts/{session}.json + .wav</text>
+    <text x="20" y="130" font-size="13" fill="#1e1e1e">• app_assets/{deploy}/logo.png …</text>
+    <text x="20" y="155" font-size="11" fill="#868e96" font-style="italic">retenção: indefinida (audit)</text>
+  </g>
+
+  <!-- arrows between data tiers -->
+  <g stroke="#495057" stroke-width="2" fill="none" filter="url(#rough2)">
+    <path d="M 510 795 Q 525 795 540 795" marker-end="url(#arrowGray)"/>
+    <path d="M 990 795 Q 1005 795 1020 795" marker-end="url(#arrowGray)"/>
+  </g>
+  <text x="525" y="785" text-anchor="middle" font-size="11" fill="#495057" font-style="italic">commit</text>
+  <text x="1005" y="785" text-anchor="middle" font-size="11" fill="#495057" font-style="italic">archive</text>
+
+  <!-- ===== bottom outcome banner ===== -->
+  <g transform="translate(180,930)">
+    <rect width="1240" height="100" rx="10" fill="#b2f2bb" stroke="#2b8a3e" stroke-width="3" filter="url(#rough)"/>
+    <text x="620" y="42" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e1e1e">✅ resultado: app real, deployado, funcional</text>
+    <text x="620" y="74" text-anchor="middle" font-size="16" fill="#1e1e1e">0 código escrito · 0 forms preenchidos · 0 cliques de config — só conversa</text>
+  </g>
+
+  <!-- footer -->
+  <text x="800" y="1075" text-anchor="middle" font-size="13" fill="#868e96" font-style="italic">github.com/LucasOl1337/simple-ai · cognition-prep/docs/architecture.md</text>
+</svg>
