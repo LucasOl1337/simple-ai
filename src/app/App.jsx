@@ -106,7 +106,37 @@ function WhiteboardNote({ title, items, tone = "plain" }) {
   );
 }
 
-function BuildingCard({ buildState }) {
+function BuildingCard({ buildState, onReset }) {
+  if (buildState.status === "done" && buildState.site_url) {
+    return (
+      <article className="build-card build-card-done" aria-live="polite">
+        <span className="build-card-eyebrow">Agente 02</span>
+        <h3>Pronto!</h3>
+        <p>Seu site está no ar.</p>
+        <a className="build-cta" href={buildState.site_url} target="_blank" rel="noreferrer">
+          Abrir meu site
+        </a>
+        <small>job {buildState.job_id}</small>
+        <button className="build-reset" onClick={onReset} type="button">
+          começar de novo
+        </button>
+      </article>
+    );
+  }
+
+  if (buildState.status === "error") {
+    return (
+      <article className="build-card build-card-error" aria-live="polite">
+        <span className="build-card-eyebrow">Agente 02</span>
+        <h3>Algo deu errado</h3>
+        <p>{buildState.error || "Falha ao construir o site."}</p>
+        <button className="build-cta" onClick={onReset} type="button">
+          tentar de novo
+        </button>
+      </article>
+    );
+  }
+
   return (
     <article className="build-card build-card-running" aria-live="polite">
       <span className="build-card-eyebrow">Agente 02</span>
@@ -135,11 +165,14 @@ function ReadyToBuildCard({ onConfirm, isStarting }) {
   );
 }
 
-function WhiteboardCanvas({ session, buildState, onStartBuild, isStartingBuild }) {
-  if (buildState && (buildState.status === "building" || buildState.status === "starting")) {
+function WhiteboardCanvas({ session, buildState, onStartBuild, isStartingBuild, onResetBuild }) {
+  if (
+    buildState &&
+    ["starting", "building", "done", "error"].includes(buildState.status)
+  ) {
     return (
       <section className="whiteboard-notes" aria-label="Construção em andamento">
-        <BuildingCard buildState={buildState} />
+        <BuildingCard buildState={buildState} onReset={onResetBuild} />
       </section>
     );
   }
@@ -230,6 +263,55 @@ export default function App() {
       window.localStorage.removeItem(BUILD_STORAGE_KEY);
     }
   }, [buildState]);
+
+  useEffect(() => {
+    if (!buildState?.job_id) return;
+    if (buildState.status !== "building" && buildState.status !== "starting") return;
+
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/v2/build/${buildState.job_id}`);
+        const result = await response.json().catch(() => ({}));
+        if (cancelled) return;
+
+        if (response.status === 404) {
+          setBuildState((prev) => ({
+            ...prev,
+            status: "error",
+            error: "O servidor reiniciou e perdeu este job. Tente construir de novo.",
+          }));
+          return;
+        }
+        if (!response.ok || result.code !== 0) return;
+
+        const data = result.data || {};
+        if (data.status === "done") {
+          setBuildState((prev) => ({
+            ...prev,
+            status: "done",
+            site_url: data.site_url,
+            usage: data.usage,
+          }));
+        } else if (data.status === "error") {
+          setBuildState((prev) => ({
+            ...prev,
+            status: "error",
+            error: data.error || "Falha ao construir.",
+          }));
+        } else if (data.status && data.status !== buildState.status) {
+          setBuildState((prev) => ({ ...prev, status: data.status }));
+        }
+      } catch {
+        /* keep polling */
+      }
+    }, 1500);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [buildState?.job_id, buildState?.status]);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -363,6 +445,11 @@ export default function App() {
     }
   }, [buildState]);
 
+  const handleResetBuild = useCallback(() => {
+    setBuildState(null);
+    processedAgoraTurnsRef.current = new Set();
+  }, []);
+
   const handleAgoraTranscript = useCallback((turns) => {
     if (!Array.isArray(turns)) return;
 
@@ -468,6 +555,7 @@ export default function App() {
           buildState={buildState}
           onStartBuild={handleStartBuild}
           isStartingBuild={buildState?.status === "starting"}
+          onResetBuild={handleResetBuild}
         />
       </main>
 

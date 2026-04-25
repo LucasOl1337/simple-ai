@@ -3,15 +3,19 @@ import json
 import os
 import random
 import time
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from agora_agent.agentkit.token import generate_convo_ai_token
 from agent import Agent
+from agents.oci_agent import Agente03
+from builder import BuilderAgent
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,6 +36,21 @@ try:
 except ValueError as error:
     print(f"Warning: failed to initialize Agora backend: {error}")
     agent = None
+
+
+SITES_DIR = Path(BASE_DIR) / "sites"
+try:
+    builder = BuilderAgent(sites_dir=SITES_DIR)
+except RuntimeError as error:
+    print(f"Warning: failed to initialize Agente 02 builder: {error}")
+    builder = None
+
+
+try:
+    oci_agent: Optional[Agente03] = Agente03()
+except Exception as error:  # noqa: BLE001 — surface any init failure as warning
+    print(f"Warning: failed to initialize Agente 03 (OCI): {error}")
+    oci_agent = None
 
 
 app = FastAPI(
@@ -60,6 +79,12 @@ class StartAgentRequest(BaseModel):
 
 class StopAgentRequest(BaseModel):
     agentId: str
+
+
+class OciAgentChatRequest(BaseModel):
+    message: str
+    history: Optional[List[Dict[str, Any]]] = None
+    max_turns: int = 8
 
 
 class BuildRequest(BaseModel):
@@ -158,22 +183,79 @@ def stop_agent(request: StopAgentRequest):
 
 @router.post("/v2/build")
 def build(request: BuildRequest):
+    if builder is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Agente 02 não configurado. Defina ANTHROPIC_API_KEY em server-python/.env.local.",
+        )
+
     job_id = f"job_{int(time.time())}_{random.randint(1000, 9999)}"
     spec_dump = request.dict()
     print(f"[BUILD] queued job_id={job_id}")
     print(f"[BUILD] spec={json.dumps(spec_dump, ensure_ascii=False, default=str)}")
+
+    builder.enqueue(job_id, spec_dump)
+
     return {
         "code": 0,
         "msg": "success",
         "data": {
             "status": "queued",
             "job_id": job_id,
-            "message": "Agente 02 vai construir seu site em alguns minutos.",
+            "message": "Agente 02 está construindo seu site.",
+        },
+    }
+
+
+@router.get("/v2/build/{job_id}")
+def build_status(job_id: str):
+    if builder is None:
+        raise HTTPException(status_code=500, detail="Agente 02 não configurado.")
+
+    job = builder.get_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} não encontrado.")
+
+    return {"code": 0, "msg": "success", "data": job.snapshot()}
+
+
+@router.post("/v3/oci-agent/chat")
+def oci_agent_chat(request: OciAgentChatRequest):
+    if oci_agent is None:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Agente 03 indisponível. Verifique ~/.oci/config "
+                "(profile DEFAULT) e ANTHROPIC_API_KEY em server-python/.env.local."
+            ),
+        )
+
+    try:
+        result = oci_agent.chat(
+            user_message=request.message,
+            history=request.history,
+            max_turns=request.max_turns,
+        )
+        return {"code": 0, "msg": "success", "data": result}
+    except Exception as error:
+        raise to_http_error(error)
+
+
+@router.get("/v3/oci-agent/status")
+def oci_agent_status():
+    return {
+        "code": 0,
+        "msg": "success",
+        "data": {
+            "available": oci_agent is not None,
+            "model": getattr(oci_agent, "model", None),
+            "tools_count": 5,
         },
     }
 
 
 app.include_router(router)
+app.mount("/sites", StaticFiles(directory=str(SITES_DIR), html=True), name="sites")
 
 
 if __name__ == "__main__":

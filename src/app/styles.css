@@ -398,6 +398,36 @@ textarea {
   background: rgba(238, 248, 244, 0.97);
 }
 
+.build-card-done {
+  background: rgba(232, 246, 232, 0.97);
+  border-color: rgba(15, 76, 67, 0.18);
+}
+
+.build-card-error {
+  background: rgba(252, 232, 224, 0.97);
+  border-color: rgba(150, 60, 35, 0.25);
+}
+
+.build-card a.build-cta {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+}
+
+.build-reset {
+  display: block;
+  margin-top: 12px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .build-card-running::after {
   content: "";
   display: block;
