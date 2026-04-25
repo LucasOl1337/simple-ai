@@ -96,9 +96,11 @@ export function useAgoraSession({
     user.audioTrack?.play();
   });
 
-  useClientEvent(client, "connection-state-change", (state, _previous, reason) => {
+  useClientEvent(client, "connection-state-change", (state, previous, reason) => {
+    console.log("[Agora] RTC state change", { state, previous, reason });
     if (state === "CONNECTED") addLog("RTC conectado.", "success");
     if (state === "DISCONNECTED") addLog(`RTC desconectado: ${reason || "sem detalhe"}.`, "warning");
+    if (state === "FAILED") addLog(`RTC falhou: ${reason || "sem detalhe"}.`, "error");
   });
 
   const cleanup = useEffectEvent(async () => {
@@ -119,11 +121,18 @@ export function useAgoraSession({
   });
 
   useEffect(() => {
+    console.log("[Agora] startRealtimeStack gate check", {
+      isRtcConnected,
+      hasConfig: !!config,
+      hasClient: !!client,
+      alreadyHasAgent: !!currentAgentIdRef.current,
+    });
     if (!isRtcConnected || !config || !client || currentAgentIdRef.current) return;
 
     let active = true;
 
     async function startRealtimeStack() {
+      console.log("[Agora] starting realtime stack");
       try {
         addLog("Inicializando RTM.", "info");
         const rtmClient = new AgoraRTM.RTM(config.appId, String(config.uid));
@@ -220,9 +229,10 @@ export function useAgoraSession({
         appId: configData.app_id,
         channel: configData.channel_name,
         token: configData.token,
-        uid: Number(configData.uid),
-        agentUid: Number(configData.agent_uid),
+        uid: String(configData.uid),
+        agentUid: String(configData.agent_uid),
       };
+      console.log("[Agora] config received", { channel: nextConfig.channel, uid: nextConfig.uid, agentUid: nextConfig.agentUid });
 
       setConfig(nextConfig);
       setChannelName(nextConfig.channel);

@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 
 from agora_agent import Agora, Area
 from agora_agent.agentkit import Agent as AgoraAgent
-from agora_agent.agentkit.vendors import DeepgramSTT, MiniMaxTTS, OpenAI
+from agora_agent.agentkit.vendors import Anthropic, DeepgramSTT, MiniMaxTTS
 
 
 AREA_MAP = {
@@ -101,8 +101,13 @@ class Agent:
             language=language,
         )
 
-        llm = OpenAI(
-            model="gpt-4o-mini",
+        anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+        if not anthropic_key:
+            raise ValueError("ANTHROPIC_API_KEY is required for Agente 01 (intake).")
+
+        llm = Anthropic(
+            api_key=anthropic_key,
+            model=os.getenv("AGENT_LLM_MODEL", "claude-haiku-4-5-20251001"),
             greeting_message=greeting,
             failure_message="Desculpe, tive um problema para processar essa parte. Pode repetir de forma curta?",
             max_history=15,

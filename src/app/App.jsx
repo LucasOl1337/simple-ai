@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { TurnStatus } from "agora-agent-client-toolkit";
 import logoUrl from "../../assets/logo.svg";
 import {
   buildSummary,
@@ -7,6 +8,7 @@ import {
   getNotepadState,
   submitAnswer,
 } from "../features/discovery/planner";
+import AgoraSessionPanel from "../integrations/agora/AgoraSessionPanel";
 
 const STORAGE_KEY = "simple-ai-whiteboard-v5";
 const OPENING_MESSAGE = "Oi. Me conta o que voce quer criar.";
@@ -143,6 +145,7 @@ export default function App() {
   const speechBufferRef = useRef("");
   const sessionRef = useRef(session);
   const fileInputRef = useRef(null);
+  const processedAgoraTurnsRef = useRef(new Set());
 
   const isMicSupported = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -198,6 +201,24 @@ export default function App() {
     return items;
   }, [session]);
 
+  const briefingContext = useMemo(() => {
+    if (!session) return "Briefing vazio. Comece descobrindo o nome do negocio.";
+
+    const summary = buildSummary(session);
+    const lines = Object.entries(summary)
+      .filter(([, value]) => isFilled(value, ["Nao identificado", "Nao definido", "Entrar em contato"]))
+      .map(([key, value]) => `${key}: ${value}`);
+
+    return lines.length > 0 ? lines.join("\n") : "Briefing vazio.";
+  }, [session]);
+
+  const priorityQuestion = useMemo(() => {
+    if (!session) return "Pergunte qual e o nome do negocio e o que ele faz.";
+
+    const current = getCurrentQuestion(session);
+    return current?.question || "Briefing pronto. Confirme se podemos avancar.";
+  }, [session]);
+
   function clearAttachment() {
     setAttachment(null);
     if (fileInputRef.current) {
@@ -225,6 +246,20 @@ export default function App() {
     setComposer("");
     clearAttachment();
   }
+
+  const handleAgoraTranscript = useCallback((turns) => {
+    if (!Array.isArray(turns)) return;
+
+    for (const turn of turns) {
+      if (turn.type !== "user") continue;
+      if (turn.status === TurnStatus.IN_PROGRESS) continue;
+      if (!turn.text || !turn.text.trim()) continue;
+      if (processedAgoraTurnsRef.current.has(turn.id)) continue;
+
+      processedAgoraTurnsRef.current.add(turn.id);
+      handleConversationSubmit(turn.text);
+    }
+  }, []);
 
   function buildOutgoingMessage() {
     const parts = [];
@@ -316,6 +351,12 @@ export default function App() {
       </main>
 
       <aside className="chat-dock">
+        <AgoraSessionPanel
+          briefingContext={briefingContext}
+          priorityQuestion={priorityQuestion}
+          onTranscriptChange={handleAgoraTranscript}
+        />
+
         <div className="chat-dock-head">
           <div className="agent-pill">
             <span

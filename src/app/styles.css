@@ -354,3 +354,72 @@ textarea {
     margin-bottom: 10px;
   }
 }
+
+/* Agora voice button — minimal */
+.agora-voice-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px 0;
+  padding: 10px 16px;
+  border: 1px solid var(--border-soft, rgba(0, 0, 0, 0.08));
+  border-radius: 999px;
+  background: #fff;
+  color: #1f1d1b;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+  width: fit-content;
+}
+
+.agora-voice-button:hover {
+  border-color: rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+
+.agora-voice-button:active {
+  transform: translateY(0);
+}
+
+.agora-voice-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c8c2b8;
+  flex: 0 0 auto;
+}
+
+.agora-voice-button.is-connecting {
+  border-color: #d6a85a;
+  color: #6b4f17;
+}
+
+.agora-voice-button.is-connecting .agora-voice-pulse {
+  background: #d6a85a;
+  animation: agora-voice-pulse 1.2s ease-in-out infinite;
+}
+
+.agora-voice-button.is-live {
+  background: #1f1d1b;
+  color: #fff;
+  border-color: #1f1d1b;
+}
+
+.agora-voice-button.is-live .agora-voice-pulse {
+  background: #ff4d4d;
+  animation: agora-voice-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes agora-voice-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.6;
+  }
+}
