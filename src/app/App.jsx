@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TurnStatus } from "agora-agent-client-toolkit";
-import logoUrl from "../../assets/logo.svg";
+import logoUrl from "../../assets/logo.png";
 import {
   buildSummary,
   createSession,
