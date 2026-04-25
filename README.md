@@ -23,3 +23,7 @@ The system should guide a user through a conversational flow to:
 ## Notes
 
 This repository is the starting point for the project.
+
+## Initial Concept Board
+
+![Initial project plan](assets/plan.png)
