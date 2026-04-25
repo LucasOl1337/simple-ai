@@ -12,6 +12,10 @@ coverage/
 .env
 .env.*
 !.env.example
+server-python/.venv/
+server-python/venv/
+__pycache__/
+*.pyc
 
 # logs
 *.log

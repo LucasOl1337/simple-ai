@@ -1,0 +1,36 @@
+{
+  "name": "simple-ai",
+  "version": "1.0.0",
+  "description": "SIMPLE-AI is a conversation-first full stack web app concept focused on helping non-technical users create digital solutions through natural language.",
+  "scripts": {
+    "dev": "vite",
+    "dev:backend": "python server-python/src/server.py",
+    "dev:full": "concurrently \"npm run dev:backend\" \"npm run dev\"",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LucasOl1337/simple-ai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/LucasOl1337/simple-ai/issues"
+  },
+  "homepage": "https://github.com/LucasOl1337/simple-ai#readme",
+  "dependencies": {
+    "agora-agent-client-toolkit": "0.1.1",
+    "agora-rtc-react": "2.2.0",
+    "agora-rtc-sdk-ng": "4.23.0",
+    "agora-rtm": "2.2.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "vite": "^8.0.10"
+  }
+}
