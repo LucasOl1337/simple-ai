@@ -11,6 +11,7 @@ import {
 import AgoraSessionPanel from "../integrations/agora/AgoraSessionPanel";
 
 const STORAGE_KEY = "simple-ai-whiteboard-v5";
+const BUILD_STORAGE_KEY = "simple-ai-build-v1";
 const OPENING_MESSAGE = "Oi. Me conta o que você quer criar.";
 
 function readStoredSession() {
@@ -18,6 +19,17 @@ function readStoredSession() {
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function readStoredBuild() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(BUILD_STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -94,7 +106,44 @@ function WhiteboardNote({ title, items, tone = "plain" }) {
   );
 }
 
-function WhiteboardCanvas({ session }) {
+function BuildingCard({ buildState }) {
+  return (
+    <article className="build-card build-card-running" aria-live="polite">
+      <span className="build-card-eyebrow">Agente 02</span>
+      <h3>Construindo seu site...</h3>
+      <p>{buildState.message || "Vou te avisar quando estiver pronto."}</p>
+      <small>job {buildState.job_id}</small>
+    </article>
+  );
+}
+
+function ReadyToBuildCard({ onConfirm, isStarting }) {
+  return (
+    <article className="build-card build-card-ready">
+      <span className="build-card-eyebrow">Tudo pronto</span>
+      <h3>Posso começar a construir?</h3>
+      <p>Já tenho o suficiente sobre seu negócio. Quando você confirmar, o Agente 02 começa.</p>
+      <button
+        className="build-cta"
+        disabled={isStarting}
+        onClick={onConfirm}
+        type="button"
+      >
+        {isStarting ? "Iniciando..." : "Pode construir"}
+      </button>
+    </article>
+  );
+}
+
+function WhiteboardCanvas({ session, buildState, onStartBuild, isStartingBuild }) {
+  if (buildState && (buildState.status === "building" || buildState.status === "starting")) {
+    return (
+      <section className="whiteboard-notes" aria-label="Construção em andamento">
+        <BuildingCard buildState={buildState} />
+      </section>
+    );
+  }
+
   if (!session || session.transcript.length === 0) {
     return (
       <section className="whiteboard-empty" aria-label="Lousa vazia">
@@ -119,6 +168,10 @@ function WhiteboardCanvas({ session }) {
       {missingItems.length > 0 ? (
         <WhiteboardNote items={missingItems} title="falta" tone="soft" />
       ) : null}
+
+      {notepadState.readyToBuild ? (
+        <ReadyToBuildCard onConfirm={onStartBuild} isStarting={isStartingBuild} />
+      ) : null}
     </section>
   );
 }
@@ -133,7 +186,9 @@ function TranscriptMessage({ message }) {
 
 export default function App() {
   const storedSession = useMemo(() => readStoredSession(), []);
+  const storedBuild = useMemo(() => readStoredBuild(), []);
   const [session, setSession] = useState(storedSession);
+  const [buildState, setBuildState] = useState(storedBuild);
   const [composer, setComposer] = useState("");
   const [attachment, setAttachment] = useState(null);
   const [isListening, setIsListening] = useState(false);
@@ -165,6 +220,16 @@ export default function App() {
       window.localStorage.removeItem(STORAGE_KEY);
     }
   }, [session]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (buildState) {
+      window.localStorage.setItem(BUILD_STORAGE_KEY, JSON.stringify(buildState));
+    } else {
+      window.localStorage.removeItem(BUILD_STORAGE_KEY);
+    }
+  }, [buildState]);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -246,6 +311,57 @@ export default function App() {
     setComposer("");
     clearAttachment();
   }
+
+  const handleStartBuild = useCallback(async () => {
+    const currentSession = sessionRef.current;
+    if (!currentSession) return;
+    if (buildState && buildState.status !== "error") return;
+
+    setBuildState({ status: "starting", started_at: Date.now() });
+
+    try {
+      const summary = buildSummary(currentSession);
+      const userQuotes = (currentSession.transcript || [])
+        .filter((m) => m.role === "user")
+        .slice(-5)
+        .map((m) => m.content);
+
+      const payload = {
+        business_name: summary.brand_name,
+        segment: summary.business_type,
+        current_workflow: null,
+        primary_pain: null,
+        user_facing_actions: Array.isArray(summary.modules) ? summary.modules : [],
+        data_entities: [],
+        raw_quotes: userQuotes,
+        summary,
+      };
+
+      const response = await fetch("/api/v2/build", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || result.code !== 0) {
+        throw new Error(result.detail || result.msg || `HTTP ${response.status}`);
+      }
+
+      setBuildState({
+        status: "building",
+        job_id: result.data?.job_id,
+        message: result.data?.message,
+        started_at: Date.now(),
+      });
+    } catch (error) {
+      setBuildState({
+        status: "error",
+        error: error.message || "Falha ao iniciar a construção.",
+        started_at: Date.now(),
+      });
+    }
+  }, [buildState]);
 
   const handleAgoraTranscript = useCallback((turns) => {
     if (!Array.isArray(turns)) return;
@@ -347,7 +463,12 @@ export default function App() {
       </header>
 
       <main className="whiteboard-stage">
-        <WhiteboardCanvas session={session} />
+        <WhiteboardCanvas
+          session={session}
+          buildState={buildState}
+          onStartBuild={handleStartBuild}
+          isStartingBuild={buildState?.status === "starting"}
+        />
       </main>
 
       <aside className="chat-dock">

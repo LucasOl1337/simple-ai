@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+import json
 import os
 import random
 import time
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, HTTPException
@@ -59,6 +60,23 @@ class StartAgentRequest(BaseModel):
 
 class StopAgentRequest(BaseModel):
     agentId: str
+
+
+class BuildRequest(BaseModel):
+    business_name: Optional[str] = None
+    segment: Optional[str] = None
+    current_workflow: Optional[str] = None
+    primary_pain: Optional[str] = None
+    user_facing_actions: Optional[List[str]] = None
+    data_entities: Optional[List[Dict[str, Any]]] = None
+    needs_admin_panel: Optional[bool] = None
+    needs_notifications: Optional[bool] = None
+    needs_login_for_customers: Optional[bool] = None
+    raw_quotes: Optional[List[str]] = None
+    summary: Optional[Dict[str, Any]] = None
+
+    class Config:
+        extra = "allow"
 
 
 @router.get("/get_config")
@@ -136,6 +154,23 @@ def stop_agent(request: StopAgentRequest):
         if isinstance(error, ValueError):
             raise HTTPException(status_code=404, detail=str(error))
         raise to_http_error(error)
+
+
+@router.post("/v2/build")
+def build(request: BuildRequest):
+    job_id = f"job_{int(time.time())}_{random.randint(1000, 9999)}"
+    spec_dump = request.dict()
+    print(f"[BUILD] queued job_id={job_id}")
+    print(f"[BUILD] spec={json.dumps(spec_dump, ensure_ascii=False, default=str)}")
+    return {
+        "code": 0,
+        "msg": "success",
+        "data": {
+            "status": "queued",
+            "job_id": job_id,
+            "message": "Agente 02 vai construir seu site em alguns minutos.",
+        },
+    }
 
 
 app.include_router(router)

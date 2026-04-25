@@ -343,6 +343,98 @@ textarea {
   font-weight: 700;
 }
 
+.build-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(440px, calc(100vw - 80px));
+  padding: 28px 30px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow);
+  transform: translate(-50%, -50%) rotate(-0.6deg);
+  animation: note-fade-in 380ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  z-index: 5;
+}
+
+.build-card-eyebrow {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.build-card h3 {
+  margin: 0 0 6px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.build-card p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.build-card small {
+  display: block;
+  margin-top: 14px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.build-card-ready {
+  background: rgba(255, 244, 225, 0.97);
+}
+
+.build-card-running {
+  background: rgba(238, 248, 244, 0.97);
+}
+
+.build-card-running::after {
+  content: "";
+  display: block;
+  margin-top: 16px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  background-size: 200% 100%;
+  animation: build-shimmer 1.6s linear infinite;
+}
+
+@keyframes build-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.build-cta {
+  margin-top: 16px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), #22685d);
+  color: #f8f4ec;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.build-cta:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.build-cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 1180px) {
   .whiteboard-stage {
     padding-right: 0;
