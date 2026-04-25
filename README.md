@@ -16,31 +16,59 @@ Estas regras sao obrigatorias para qualquer agente ou colaborador que atuar nest
 - A lousa da esquerda so deve mostrar o minimo necessario: informacoes-chave ja preenchidas, o que falta responder e o fluxo atual do briefing.
 - Sempre preferir menos elementos, menos decisoes e menos texto por tela.
 
+## Ordem de leitura para agentes
+
+Se voce entrou agora na branch, siga esta ordem:
+
+1. **[.simpleai/README.md](.simpleai/README.md)** — COMECE AQUI (spec core obrigatorio)
+2. [.simpleai/first-interaction.md](.simpleai/first-interaction.md) — como o agente abre e conduz a primeira conversa
+3. [.simpleai/agent-flow.md](.simpleai/agent-flow.md) — fases, perguntas e decisoes silenciosas
+4. [.simpleai/flow-order.md](.simpleai/flow-order.md) — Discovery → Producao → Iteracao + ready_to_build
+5. [src/features/discovery/planner.js](src/features/discovery/planner.js) — engine que implementa o spec
+6. [src/app/App.jsx](src/app/App.jsx) — UI principal
+7. [.simpleai/voice-convo-requirements.md](.simpleai/voice-convo-requirements.md) — requisitos de integracao de voz
+
 ## Estado atual
 
-SIMPLE-AI agora incorpora um core de conversa em tempo real com **Agora Conversational AI + RTC** dentro da propria repo.
-
-## O que entrou
-
-- frontend React/Vite com modulo de sessao de voz em tempo real
-- backend FastAPI em `server-python/` para gerar token e iniciar/parar agentes
-- fluxo atual de discovery aproveitando transcript final da voz para alimentar o planner
-- contexto do briefing enviado ao agente para ele priorizar a proxima lacuna critica
+SIMPLE-AI incorpora um core de conversa em tempo real com Agora Conversational AI + RTC, mas a interface principal continua focada no fluxo mais simples possivel.
 
 ## Estrutura
 
 ```text
 .
+├── .simpleai/                          ← CORE: spec de comportamento do agente
+│   ├── README.md                       ← Indice obrigatorio (primeira leitura)
+│   ├── first-interaction.md            ← Abertura + notepad + threshold
+│   ├── agent-flow.md                   ← Fases + decisoes silenciosas
+│   ├── flow-order.md                   ← Discovery → Producao → Iteracao
+│   └── voice-convo-requirements.md     ← Requisitos Convo/Voice
 ├── src/
-│   ├── agora/              # cliente Agora no frontend
-│   ├── App.jsx             # simulador + ingestao de voz
-│   └── planner.js          # engine do fluxo de discovery
+│   ├── app/
+│   │   ├── App.jsx
+│   │   └── styles.css
+│   ├── features/
+│   │   └── discovery/
+│   │       └── planner.js              ← Implementa o spec de .simpleai/
+│   ├── integrations/
+│   │   └── agora/
+│   └── main.jsx
 ├── server-python/
-│   ├── src/agent.py        # prompt e sessao do agente
-│   ├── src/server.py       # API local FastAPI
+│   ├── src/agent.py                    ← Agente Convo que segue .simpleai/ specs
+│   ├── src/server.py
 │   └── .env.example
-└── vite.config.js          # proxy /api -> backend local
+├── docs/                               ← Docs auxiliares (nao core)
+│   └── README.md
+└── vite.config.js
 ```
+
+## Responsabilidade por pasta
+
+- `.simpleai/`: **CORE** — especificacao de comportamento, fluxo, notepad e threshold. Fonte de verdade.
+- `src/app/`: interface principal e composicao da experiencia
+- `src/features/discovery/`: engine que implementa o spec de `.simpleai/`
+- `src/integrations/agora/`: camada de integracao com voz em tempo real
+- `server-python/`: backend local para token, agente Convo e configuracao
+- `docs/`: documentacao auxiliar e anotacoes (nao core)
 
 ## Setup
 

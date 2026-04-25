@@ -1,4 +1,6 @@
 # SIMPLE-AI — Ordem de Fluxos
+> **SPEC CORE** — Este arquivo define a ordem de fases e threshold de producao.
+> Leia `.simpleai/README.md` para contexto completo.
 
 ## Visão Geral
 
@@ -159,7 +161,7 @@ Transformar o notepad em decisões técnicas e gerar a primeira versão.
 
 ```
 2.1 Decisão de Stack
- │  └─ Usa a Stack Decision Matrix (ver AGENT_FLOW.md)
+ │  └─ Usa a Stack Decision Matrix (ver agent-flow.md)
  │
 2.2 Decisão de Layout
  │  └─ Usa a Layout Decision Matrix

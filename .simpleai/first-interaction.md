@@ -1,4 +1,6 @@
 # SIMPLE-AI — Primeira Interação
+> **SPEC CORE** — Este arquivo define o comportamento obrigatorio da primeira interacao.
+> Leia `.simpleai/README.md` para contexto completo.
 
 ## O que acontece quando o usuário chega
 
@@ -257,5 +259,5 @@ Ou prefere me contar mais alguma coisa antes?"
      └── ready_to_build = true + usuário apressado ──▶ [Propõe gerar site]
      │
      ▼
-[Transição para ORDEM_DE_FLUXOS.md]
+[Transicao para flow-order.md]
 ```

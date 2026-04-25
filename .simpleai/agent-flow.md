@@ -1,4 +1,6 @@
 # SIMPLE-AI — Fluxo do Agente Conversacional
+> **SPEC CORE** — Este arquivo define o comportamento obrigatorio do agente.
+> Leia `.simpleai/README.md` para contexto completo.
 
 ## Princípio Central
 O usuário **não sabe nada de tecnologia**. Toda pergunta deve usar linguagem de negócio, nunca termos técnicos. O agente decide a stack, layout e arquitetura **silenciosamente** com base nas respostas.

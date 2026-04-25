@@ -2,6 +2,10 @@
 // SIMPLE-AI Agent Flow Engine
 // Fluxo conversacional em fases para coletar contexto de
 // usuários sem conhecimento técnico e derivar decisões técnicas.
+//
+// SPEC CORE: Este codigo implementa a especificacao em .simpleai/
+// Veja: .simpleai/agent-flow.md, .simpleai/first-interaction.md,
+//       .simpleai/flow-order.md
 // ─────────────────────────────────────────────────────────────
 
 // ═══════════════════════════════════════════════════════════════

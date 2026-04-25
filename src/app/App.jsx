@@ -1,17 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import logoUrl from "../../assets/logo.svg";
 import {
-  PHASES,
   buildSummary,
   createSession,
-  getAgentGreeting,
   getCurrentQuestion,
   getNotepadState,
-  getPhaseTransitionMessage,
-  getProgressPercent,
   submitAnswer,
-} from "./planner";
+} from "../features/discovery/planner";
 
-const STORAGE_KEY = "simple-ai-whiteboard-v4";
+const STORAGE_KEY = "simple-ai-whiteboard-v5";
+const OPENING_MESSAGE = "Oi. Me conta o que voce quer criar.";
 
 function readStoredSession() {
   if (typeof window === "undefined") return null;
@@ -32,117 +30,64 @@ function isFilled(value, invalid = []) {
   return !invalid.map((item) => item.toLowerCase()).includes(normalized);
 }
 
-function buildKnownNotes(summary, session) {
+function buildKnownNotes(summary) {
   const items = [];
 
   if (isFilled(summary.business_type, ["Nao identificado"])) {
-    items.push({
-      label: "Tipo de negocio",
-      value: summary.business_type,
-    });
+    items.push(summary.business_type);
   }
 
   if (isFilled(summary.brand_name, ["Nao definido"])) {
-    items.push({
-      label: "Nome",
-      value: summary.brand_name,
-    });
+    items.push(summary.brand_name);
   }
 
   if (isFilled(summary.primary_cta, ["Entrar em contato"])) {
-    items.push({
-      label: "Acao principal",
-      value: summary.primary_cta,
-    });
+    items.push(summary.primary_cta);
   }
 
   if (isFilled(summary.target_audience, ["Nao definido"])) {
-    items.push({
-      label: "Publico",
-      value: summary.target_audience,
-    });
+    items.push(summary.target_audience);
   }
 
-  if (isFilled(summary.brand_tone, ["Nao definido"])) {
-    items.push({
-      label: "Tom visual",
-      value: summary.brand_tone,
-    });
-  }
-
-  if (getProgressPercent(session) >= 58 && summary.stack?.profile) {
-    items.push({
-      label: "Stack inicial",
-      value: summary.stack.profile,
-    });
-  }
-
-  return items.slice(0, 6);
+  return items.slice(0, 4);
 }
 
-function buildMissingNotes(summary, currentQuestion, notepadState) {
+function buildMissingNotes(currentQuestion, notepadState) {
+  const labels = {
+    brand_name: "nome do negocio",
+    business_type: "tipo de negocio",
+    primary_cta: "acao principal",
+    target_audience: "publico",
+    scope: "cidade ou regiao",
+  };
+
   const items = [];
 
   if (currentQuestion) {
-    items.push(`Responder agora: ${currentQuestion.question}`);
+    items.push(currentQuestion.question);
   }
-
-  const fieldLabels = {
-    brand_name: "nome do negocio",
-    business_type: "tipo de negocio",
-    primary_cta: "acao principal que o visitante deve fazer",
-    target_audience: "quem deve usar o site",
-    scope: "cidade ou regiao atendida",
-    brand_tone: "estilo visual que agrada ao dono do negocio",
-  };
 
   [...notepadState.missingCritical, ...notepadState.missingImportant]
     .filter((field, index, array) => array.indexOf(field) === index)
+    .slice(0, 2)
     .forEach((field) => {
-      const label = fieldLabels[field];
-      if (label) {
-        items.push(`Falta confirmar: ${label}`);
+      if (labels[field]) {
+        items.push(`Falta: ${labels[field]}`);
       }
     });
 
-  if (
-    !isFilled(summary.primary_cta, ["Entrar em contato"]) &&
-    !items.some((item) => item.includes("acao principal"))
-  ) {
-    items.push("Falta confirmar: o que a pessoa deve fazer no site");
-  }
-
-  return items.slice(0, 5);
+  return items.slice(0, 3);
 }
 
-function getFlowGuide(session) {
-  const currentIndex = PHASES.findIndex((phase) => phase.id === session.phase);
-  const currentPhase = PHASES[currentIndex] ?? PHASES[0];
-  const upcoming = PHASES.slice(currentIndex + 1, currentIndex + 3).map(
-    (phase) => phase.label,
-  );
-
-  return {
-    currentPhase,
-    upcoming,
-  };
-}
-
-function WhiteboardCard({ eyebrow, title, children, variant = "default" }) {
+function WhiteboardNote({ title, items, tone = "plain" }) {
   return (
-    <article className={`whiteboard-card whiteboard-card-${variant}`}>
-      <p className="card-eyebrow">{eyebrow}</p>
-      <h3>{title}</h3>
-      {children}
-    </article>
-  );
-}
-
-function TranscriptMessage({ message }) {
-  return (
-    <article className={`transcript-message transcript-${message.role}`}>
-      <span>{message.role === "assistant" ? "Simple AI" : "Voce"}</span>
-      <p>{message.content}</p>
+    <article className={`whiteboard-note whiteboard-note-${tone}`}>
+      <span>{title}</span>
+      <ul>
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
     </article>
   );
 }
@@ -159,90 +104,28 @@ function WhiteboardCanvas({ session }) {
 
   const summary = buildSummary(session);
   const currentQuestion = getCurrentQuestion(session);
-  const progress = getProgressPercent(session);
   const notepadState = getNotepadState(session);
-  const knownNotes = buildKnownNotes(summary, session);
-  const missingNotes = buildMissingNotes(summary, currentQuestion, notepadState);
-  const flowGuide = getFlowGuide(session);
-  const phaseMessage = getPhaseTransitionMessage(session);
+  const knownItems = buildKnownNotes(summary);
+  const missingItems = buildMissingNotes(currentQuestion, notepadState);
 
   return (
-    <section className="whiteboard-grid" aria-label="Lousa de planejamento">
-      <WhiteboardCard
-        eyebrow="Ja entendemos"
-        title={summary.business_type ?? "Primeiro mapa do projeto"}
-        variant="anchor"
-      >
-        {knownNotes.length > 0 ? (
-          <ul className="board-note-list">
-            {knownNotes.map((item) => (
-              <li key={`${item.label}-${item.value}`}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="board-copy">
-            Assim que a primeira resposta chegar, a lousa vai anotar os pontos
-            principais aqui.
-          </p>
-        )}
-      </WhiteboardCard>
+    <section className="whiteboard-notes" aria-label="Lousa de notas">
+      {knownItems.length > 0 ? (
+        <WhiteboardNote items={knownItems} title="anotado" tone="warm" />
+      ) : null}
 
-      <WhiteboardCard
-        eyebrow="Fluxo"
-        title={`Agora: ${flowGuide.currentPhase.label}`}
-        variant="guide"
-      >
-        <p className="board-copy">
-          {phaseMessage || flowGuide.currentPhase.description}
-        </p>
-        <div className="phase-strip">
-          <div>
-            <span>Progresso</span>
-            <strong>{progress}%</strong>
-          </div>
-          <div>
-            <span>Pronto para montar</span>
-            <strong>{notepadState.readyToBuild ? "Quase la" : "Ainda nao"}</strong>
-          </div>
-        </div>
-        {flowGuide.upcoming.length > 0 ? (
-          <div className="next-phase-list">
-            <span>Depois disso</span>
-            <ul>
-              {flowGuide.upcoming.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-      </WhiteboardCard>
-
-      <WhiteboardCard
-        eyebrow="Falta responder"
-        title={currentQuestion?.question ?? "Briefing inicial fechado"}
-        variant="question"
-      >
-        <p className="board-copy">
-          A lousa so mostra o minimo necessario para nao confundir quem esta
-          usando.
-        </p>
-        {missingNotes.length > 0 ? (
-          <ul className="board-task-list">
-            {missingNotes.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="board-copy">
-            O contexto minimo ja foi reunido. O proximo passo e transformar
-            isso em estrutura do site.
-          </p>
-        )}
-      </WhiteboardCard>
+      {missingItems.length > 0 ? (
+        <WhiteboardNote items={missingItems} title="falta" tone="soft" />
+      ) : null}
     </section>
+  );
+}
+
+function TranscriptMessage({ message }) {
+  return (
+    <article className={`transcript-message transcript-${message.role}`}>
+      <p>{message.content}</p>
+    </article>
   );
 }
 
@@ -252,6 +135,9 @@ export default function App() {
   const [composer, setComposer] = useState("");
   const [attachment, setAttachment] = useState(null);
   const [isListening, setIsListening] = useState(false);
+  const [isAgentAvailable, setIsAgentAvailable] = useState(
+    typeof window === "undefined" ? true : window.navigator.onLine,
+  );
 
   const recognitionRef = useRef(null);
   const speechBufferRef = useRef("");
@@ -277,30 +163,36 @@ export default function App() {
     }
   }, [session]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    function handleOnline() {
+      setIsAgentAvailable(true);
+    }
+
+    function handleOffline() {
+      setIsAgentAvailable(false);
+    }
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   const transcript = useMemo(() => {
-    const items = [{ role: "assistant", content: getAgentGreeting() }];
+    const items = [{ role: "assistant", content: OPENING_MESSAGE }];
 
     if (!session) return items;
 
     items.push(...session.transcript);
 
-    if (session.isComplete) {
-      items.push({
-        role: "assistant",
-        content:
-          "Ja tenho um primeiro briefing confiavel. Agora a lousa pode continuar guiando a construcao do site.",
-      });
-    } else {
-      const phaseMessage = getPhaseTransitionMessage(session);
-      const currentQuestion = getCurrentQuestion(session);
-
-      if (phaseMessage) {
-        items.push({ role: "assistant", content: phaseMessage });
-      }
-
-      if (currentQuestion) {
-        items.push({ role: "assistant", content: currentQuestion.question });
-      }
+    const currentQuestion = getCurrentQuestion(session);
+    if (currentQuestion) {
+      items.push({ role: "assistant", content: currentQuestion.question });
     }
 
     return items;
@@ -342,9 +234,7 @@ export default function App() {
     }
 
     if (attachment) {
-      parts.push(
-        `Enviei uma imagem chamada ${attachment.name} como referencia visual do que eu quero.`,
-      );
+      parts.push(`Enviei uma imagem chamada ${attachment.name}.`);
     }
 
     return parts.join(" ");
@@ -418,13 +308,7 @@ export default function App() {
   return (
     <div className="whiteboard-shell">
       <header className="whiteboard-topbar">
-        <div className="brand-lockup">
-          <span className="brand-dot" />
-          <strong>SIMPLE-AI</strong>
-        </div>
-        <span className="topbar-status">
-          {isListening ? "Ouvindo..." : "Whiteboard mode"}
-        </span>
+        <img alt="Simple AI" className="brand-logo" src={logoUrl} />
       </header>
 
       <main className="whiteboard-stage">
@@ -433,12 +317,15 @@ export default function App() {
 
       <aside className="chat-dock">
         <div className="chat-dock-head">
-          <div>
-            <p className="card-eyebrow">Chat</p>
-            <h2>Conversa guiada</h2>
+          <div className="agent-pill">
+            <span
+              className={`agent-dot ${isAgentAvailable ? "is-on" : "is-off"}`}
+            />
+            <span>{isAgentAvailable ? "agente disponivel" : "agente offline"}</span>
           </div>
+
           <button
-            aria-label={isListening ? "Parar microfone" : "Ativar microfone"}
+            aria-label={isListening ? "Mutar microfone" : "Ativar microfone"}
             className={`mic-button ${isListening ? "is-live" : ""}`}
             onClick={toggleMicrophone}
             type="button"
@@ -469,24 +356,16 @@ export default function App() {
             aria-label="Mensagem"
             className="chat-input"
             onChange={(event) => setComposer(event.target.value)}
-            placeholder={
-              getCurrentQuestion(session ?? createSession())?.placeholder ||
-              "Me conte o que voce quer criar"
-            }
+            placeholder="Digite aqui"
             value={composer}
           />
 
           {attachment ? (
             <div className="attachment-pill" aria-live="polite">
-              <span>Imagem pronta para enviar</span>
+              <span>imagem</span>
               <strong>{attachment.name}</strong>
             </div>
           ) : null}
-
-          <p className="composer-copy">
-            Digite sua mensagem. Se nao escrever nada, o botao abre a galeria
-            para enviar uma imagem.
-          </p>
 
           <button className="send-button" type="submit">
             Enviar
