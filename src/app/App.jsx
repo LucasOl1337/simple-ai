@@ -11,7 +11,7 @@ import {
 import AgoraSessionPanel from "../integrations/agora/AgoraSessionPanel";
 
 const STORAGE_KEY = "simple-ai-whiteboard-v5";
-const OPENING_MESSAGE = "Oi. Me conta o que voce quer criar.";
+const OPENING_MESSAGE = "Oi. Me conta o que você quer criar.";
 
 function readStoredSession() {
   if (typeof window === "undefined") return null;
@@ -35,11 +35,11 @@ function isFilled(value, invalid = []) {
 function buildKnownNotes(summary) {
   const items = [];
 
-  if (isFilled(summary.business_type, ["Nao identificado"])) {
+  if (isFilled(summary.business_type, ["Não identificado"])) {
     items.push(summary.business_type);
   }
 
-  if (isFilled(summary.brand_name, ["Nao definido"])) {
+  if (isFilled(summary.brand_name, ["Não definido"])) {
     items.push(summary.brand_name);
   }
 
@@ -47,7 +47,7 @@ function buildKnownNotes(summary) {
     items.push(summary.primary_cta);
   }
 
-  if (isFilled(summary.target_audience, ["Nao definido"])) {
+  if (isFilled(summary.target_audience, ["Não definido"])) {
     items.push(summary.target_audience);
   }
 
@@ -56,11 +56,11 @@ function buildKnownNotes(summary) {
 
 function buildMissingNotes(currentQuestion, notepadState) {
   const labels = {
-    brand_name: "nome do negocio",
-    business_type: "tipo de negocio",
-    primary_cta: "acao principal",
-    target_audience: "publico",
-    scope: "cidade ou regiao",
+    brand_name: "nome do negócio",
+    business_type: "tipo de negócio",
+    primary_cta: "ação principal",
+    target_audience: "público",
+    scope: "cidade ou região",
   };
 
   const items = [];
@@ -202,21 +202,21 @@ export default function App() {
   }, [session]);
 
   const briefingContext = useMemo(() => {
-    if (!session) return "Briefing vazio. Comece descobrindo o nome do negocio.";
+    if (!session) return "Briefing vazio. Comece descobrindo o nome do negócio.";
 
     const summary = buildSummary(session);
     const lines = Object.entries(summary)
-      .filter(([, value]) => isFilled(value, ["Nao identificado", "Nao definido", "Entrar em contato"]))
+      .filter(([, value]) => isFilled(value, ["Não identificado", "Não definido", "Entrar em contato"]))
       .map(([key, value]) => `${key}: ${value}`);
 
     return lines.length > 0 ? lines.join("\n") : "Briefing vazio.";
   }, [session]);
 
   const priorityQuestion = useMemo(() => {
-    if (!session) return "Pergunte qual e o nome do negocio e o que ele faz.";
+    if (!session) return "Pergunte qual é o nome do negócio e o que ele faz.";
 
     const current = getCurrentQuestion(session);
-    return current?.question || "Briefing pronto. Confirme se podemos avancar.";
+    return current?.question || "Briefing pronto. Confirme se podemos avançar.";
   }, [session]);
 
   function clearAttachment() {
@@ -362,7 +362,7 @@ export default function App() {
             <span
               className={`agent-dot ${isAgentAvailable ? "is-on" : "is-off"}`}
             />
-            <span>{isAgentAvailable ? "agente disponivel" : "agente offline"}</span>
+            <span>{isAgentAvailable ? "agente disponível" : "agente offline"}</span>
           </div>
 
           <button

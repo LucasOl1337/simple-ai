@@ -17,7 +17,7 @@ export async function getConfig() {
   const result = await parseJson(response);
 
   if (result.code !== 0 || !result.data) {
-    throw new Error(result.msg || "Nao foi possivel obter a configuracao da Agora.");
+    throw new Error(result.msg || "Não foi possível obter a configuração da Agora.");
   }
 
   return result.data;

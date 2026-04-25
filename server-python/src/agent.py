@@ -93,7 +93,7 @@ class Agent:
         agent_name = f"simple_ai_core_{channel_name}_{agent_uid}_{int(time.time())}"
         greeting = os.getenv(
             "AGENT_GREETING",
-            "Ola. Eu sou o core de descoberta da SIMPLE-AI. Pode me contar sobre o negocio e eu vou coletar os dados mais importantes.",
+            "Olá. Eu sou a Simple. Me conta sobre o seu negócio que eu vou anotando aqui pra te ajudar a montar o site.",
         )
         instructions = build_agent_instructions(
             briefing_context=briefing_context,
@@ -107,7 +107,7 @@ class Agent:
 
         llm = Anthropic(
             api_key=anthropic_key,
-            model=os.getenv("AGENT_LLM_MODEL", "claude-haiku-4-5-20251001"),
+            model=os.getenv("AGENT_LLM_MODEL", "claude-opus-4-7"),
             greeting_message=greeting,
             failure_message="Desculpe, tive um problema para processar essa parte. Pode repetir de forma curta?",
             max_history=15,

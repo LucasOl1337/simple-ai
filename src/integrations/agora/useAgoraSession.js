@@ -98,9 +98,9 @@ export function useAgoraSession({
 
   useClientEvent(client, "connection-state-change", (state, previous, reason) => {
     console.log("[Agora] RTC state change", { state, previous, reason });
-    if (state === "CONNECTED") addLog("RTC conectado.", "success");
-    if (state === "DISCONNECTED") addLog(`RTC desconectado: ${reason || "sem detalhe"}.`, "warning");
-    if (state === "FAILED") addLog(`RTC falhou: ${reason || "sem detalhe"}.`, "error");
+    if (state === "CONNECTED") addLog("Sessão conectada.", "success");
+    if (state === "DISCONNECTED") addLog(`Sessão desconectada: ${reason || "sem detalhe"}.`, "warning");
+    if (state === "FAILED") addLog(`Sessão falhou: ${reason || "sem detalhe"}.`, "error");
   });
 
   const cleanup = useEffectEvent(async () => {
@@ -189,7 +189,7 @@ export function useAgoraSession({
         addLog(`Agente iniciado (${nextAgentId}).`, "success");
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Falha desconhecida ao iniciar a sessao.";
+          error instanceof Error ? error.message : "Falha desconhecida ao iniciar a sessão.";
         addLog(message, "error");
         setIsConnecting(false);
         setShouldJoin(false);
@@ -223,7 +223,7 @@ export function useAgoraSession({
     currentAgentIdRef.current = null;
 
     try {
-      addLog("Solicitando configuracao da Agora.", "info");
+      addLog("Solicitando configuração da Agora.", "info");
       const configData = await getConfig();
       const nextConfig = {
         appId: configData.app_id,
@@ -237,10 +237,10 @@ export function useAgoraSession({
       setConfig(nextConfig);
       setChannelName(nextConfig.channel);
       setShouldJoin(true);
-      addLog("Configuracao pronta. Entrando no canal.", "success");
+      addLog("Configuração pronta. Entrando no canal.", "success");
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Falha desconhecida ao obter configuracao.";
+        error instanceof Error ? error.message : "Falha desconhecida ao obter configuração.";
       addLog(message, "error");
       setIsConnecting(false);
     }

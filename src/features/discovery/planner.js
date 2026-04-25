@@ -3,7 +3,7 @@
 // Fluxo conversacional em fases para coletar contexto de
 // usuários sem conhecimento técnico e derivar decisões técnicas.
 //
-// SPEC CORE: Este codigo implementa a especificacao em .simpleai/
+// SPEC CORE: Este código implementa a eespecíficação em .simpleai/
 // Veja: .simpleai/agent-flow.md, .simpleai/first-interaction.md,
 //       .simpleai/flow-order.md
 // ─────────────────────────────────────────────────────────────
@@ -16,37 +16,37 @@ export const PHASES = [
   {
     id: "opening",
     label: "Abertura",
-    description: "Primeiro contato — o usuario descreve livremente o que precisa",
+    description: "Primeiro contato — o usuário descreve livremente o que precisa",
   },
   {
     id: "business",
-    label: "Entendimento do Negocio",
-    description: "Coletar nome, tipo, publico e regiao",
+    label: "Entendimento do Negócio",
+    description: "Coletar nome, tipo, público e região",
   },
   {
     id: "goals",
-    label: "Objetivo e Acao",
+    label: "Objetivo e Ação",
     description: "Definir o que o visitante deve fazer no site e canais atuais",
   },
   {
     id: "content",
-    label: "Conteudo e Volume",
-    description: "Quantidade de servicos, fotos, precos, perguntas frequentes",
+    label: "Conteúdo e Volume",
+    description: "Quantidade de serviços, fotos, preços, perguntas frequentes",
   },
   {
     id: "features",
     label: "Funcionalidades",
-    description: "Detectar e confirmar necessidades implicitas",
+    description: "Detectar e confirmar necessidades implícitas",
   },
   {
     id: "visual",
-    label: "Preferencia Visual",
-    description: "Tom, cores, referencias visuais",
+    label: "Preferência Visual",
+    description: "Tom, cores, referências visuais",
   },
   {
     id: "summary",
-    label: "Consolidacao",
-    description: "Resumo completo e confirmacao do usuario",
+    label: "Consolidação",
+    description: "Resumo completo e confirmação do usuário",
   },
 ];
 
@@ -58,8 +58,8 @@ const PHASE_QUESTIONS = {
   opening: [
     {
       id: "initial_description",
-      question: "Me conta o que voce faz e o que voce precisa. Fala do jeito que voce explicaria pra um amigo.",
-      placeholder: "Ex.: tenho uma oficina mecanica e quero um site pra mostrar meus servicos e receber orcamentos pelo WhatsApp",
+      question: "Me conta o que você faz e o que você precisa. Fala do jeito que você explicaria pra um amigo.",
+      placeholder: "Ex.: tenho uma oficina mecânica e quero um site pra mostrar meus serviços e receber orçamentos pelo WhatsApp",
       extracts: ["business_type", "offerings", "primary_cta"],
       required: true,
     },
@@ -68,30 +68,30 @@ const PHASE_QUESTIONS = {
   business: [
     {
       id: "brand_name",
-      question: "Qual o nome do seu negocio?",
+      question: "Qual o nome do seu negócio?",
       placeholder: "Ex.: Auto Center Silva, Clinica Aura, Padaria Bom Dia",
       extracts: ["brand_name"],
       required: true,
     },
     {
       id: "what_you_do",
-      question: "Me explica o que voce vende ou faz, como se eu fosse um cliente novo.",
-      placeholder: "Ex.: a gente faz limpeza residencial, pos-obra e tambem passadoria",
+      question: "Me explica o que você vende ou faz, como se eu fosse um cliente novo.",
+      placeholder: "Ex.: a gente faz limpeza residencial, pós-obra e também passadoria",
       extracts: ["business_type", "offerings", "value_proposition"],
       required: true,
       skip_if: "initial_description_detailed",
     },
     {
       id: "target_audience",
-      question: "Quem e o seu cliente tipico? Idade, perfil, como ele te encontra?",
-      placeholder: "Ex.: mulheres de 30-50 anos, classe media, me acham pelo Instagram",
+      question: "Quem é o seu cliente típico? Idade, perfil, como ele te encontra?",
+      placeholder: "Ex.: mulheres de 30-50 anos, classe média, me acham pelo Instagram",
       extracts: ["target_audience", "discovery_channel"],
       required: false,
     },
     {
       id: "scope",
-      question: "Voce atende numa regiao especifica ou atende online/todo Brasil?",
-      placeholder: "Ex.: so na zona sul de Sao Paulo / atendo todo o estado / online",
+      question: "Você atende numa região específica ou atende online/todo Brasil?",
+      placeholder: "Ex.: só na zona sul de São Paulo / atendo todo o estado / online",
       extracts: ["scope", "region"],
       required: true,
     },
@@ -100,22 +100,22 @@ const PHASE_QUESTIONS = {
   goals: [
     {
       id: "primary_action",
-      question: "Quando alguem entra no seu site, o que voce mais quer que essa pessoa faca?",
-      placeholder: "Ex.: chamar no WhatsApp / agendar horario / pedir orcamento / comprar",
+      question: "Quando alguém entra no seu site, o que você mais quer que essa pessoa faca?",
+      placeholder: "Ex.: chamar no WhatsApp / agendar horário / pedir orçamento / comprar",
       extracts: ["primary_cta"],
       required: true,
     },
     {
       id: "current_channels",
-      question: "Hoje como as pessoas entram em contato com voce?",
+      question: "Hoje como as pessoas entram em contato com você?",
       placeholder: "Ex.: WhatsApp, telefone, vem direto na loja, Instagram",
       extracts: ["current_channels"],
       required: true,
     },
     {
       id: "existing_presence",
-      question: "Voce ja tem algo online? Instagram, Google Meu Negocio, outro site?",
-      placeholder: "Ex.: tenho Instagram com 2000 seguidores / nao tenho nada ainda",
+      question: "Você já tem algo online? Instagram, Google Meu Negócio, outro site?",
+      placeholder: "Ex.: tenho Instagram com 2000 seguidores / não tenho nada ainda",
       extracts: ["existing_presence", "has_content"],
       required: false,
     },
@@ -124,29 +124,29 @@ const PHASE_QUESTIONS = {
   content: [
     {
       id: "content_volume",
-      question: "Quantos servicos ou produtos voce quer mostrar de cara?",
-      placeholder: "Ex.: uns 5 servicos principais / tenho mais de 30 produtos / so 3 coisas",
+      question: "Quantos serviços ou produtos você quer mostrar de cara?",
+      placeholder: "Ex.: uns 5 serviços principais / tenho mais de 30 produtos / so 3 coisas",
       extracts: ["content_volume"],
       required: true,
     },
     {
       id: "has_media",
-      question: "Voce tem fotos boas do seu trabalho ou produto?",
-      placeholder: "Ex.: tenho no Instagram / tenho poucas / nao tenho nenhuma",
+      question: "Você tem fotos boas do seu trabalho ou produto?",
+      placeholder: "Ex.: tenho no Instagram / tenho poucas / não tenho nenhuma",
       extracts: ["has_media"],
       required: true,
     },
     {
       id: "faq_content",
-      question: "Tem alguma informacao que seus clientes sempre perguntam?",
-      placeholder: "Ex.: preco, tempo de entrega, se atende no feriado, formas de pagamento",
+      question: "Tem alguma informação que seus clientes sempre perguntam?",
+      placeholder: "Ex.: preço, tempo de entrega, se atende no feriado, formas de pagamento",
       extracts: ["faq_content", "pain_points"],
       required: false,
     },
     {
       id: "pricing_strategy",
-      question: "Voce quer mostrar precos no site ou prefere que a pessoa peca orcamento?",
-      placeholder: "Ex.: quero mostrar os precos / prefiro que peça orcamento / depende do servico",
+      question: "Você quer mostrar preços no site ou prefere que a pessoa peça orçamento?",
+      placeholder: "Ex.: quero mostrar os preços / prefiro que peça orçamento / depende do serviço",
       extracts: ["pricing_strategy"],
       required: true,
     },
@@ -155,32 +155,32 @@ const PHASE_QUESTIONS = {
   features: [
     {
       id: "feature_booking",
-      question: "Seus clientes precisam marcar horario com voce? Como funciona isso hoje?",
-      placeholder: "Ex.: sim, marcam pelo WhatsApp / nao, e ordem de chegada / uso agenda do Google",
+      question: "Seus clientes precisam marcar horário com você? Como funciona isso hoje?",
+      placeholder: "Ex.: sim, marcam pelo WhatsApp / não, e ordem de chegada / uso agenda do Google",
       extracts: ["needs_booking", "booking_mode"],
-      condition: (ctx) => hasSignal(ctx, ["agendar", "horario", "marcar", "reserva", "agenda", "atendimento"]),
+      condition: (ctx) => hasSignal(ctx, ["agendar", "horário", "marcar", "reserva", "agenda", "atendimento"]),
       required: true,
     },
     {
       id: "feature_selling",
-      question: "Voce precisa vender e receber pagamento direto pelo site?",
-      placeholder: "Ex.: sim, quero vender online / nao, so quero mostrar e a pessoa me chama",
+      question: "Você precisa vender e receber pagamento direto pelo site?",
+      placeholder: "Ex.: sim, quero vender online / não, só quero mostrar e a pessoa me chama",
       extracts: ["needs_ecommerce", "payment_mode"],
-      condition: (ctx) => hasSignal(ctx, ["vender", "comprar", "produto", "loja", "preco", "carrinho"]),
+      condition: (ctx) => hasSignal(ctx, ["vender", "comprar", "produto", "loja", "preço", "carrinho"]),
       required: true,
     },
     {
       id: "feature_area_cliente",
-      question: "Seus clientes precisam de um login ou area propria no site?",
-      placeholder: "Ex.: nao precisa / seria bom pra acompanhar pedidos / quero area de aluno",
+      question: "Seus clientes precisam de um login ou área propria no site?",
+      placeholder: "Ex.: não precisa / seria bom pra acompanhar pedidos / quero área de aluno",
       extracts: ["needs_auth"],
-      condition: (ctx) => hasSignal(ctx, ["login", "cadastro", "area do cliente", "painel", "acompanhar"]),
+      condition: (ctx) => hasSignal(ctx, ["login", "cadastro", "área do cliente", "painel", "acompanhar"]),
       required: true,
     },
     {
       id: "feature_simplify",
-      question: "Pelo que voce me contou, da pra comecar simples. No comeco pode ser so apresentar o negocio e ter um botao de contato, ou voce precisa de algo a mais desde o primeiro dia?",
-      placeholder: "Ex.: pode comecar simples / preciso de formulario desde o inicio / quero ja com agendamento",
+      question: "Pelo que você me contou, dá pra começar simples. No começo pode ser só apresentar o negócio e ter um botão de contato, ou você precisa de algo a mais desde o primeiro dia?",
+      placeholder: "Ex.: pode começar simples / preciso de formulário desde o início / quero já com agendamento",
       extracts: ["mvp_scope"],
       condition: (ctx) => !hasAnyComplexFeature(ctx),
       required: false,
@@ -190,22 +190,22 @@ const PHASE_QUESTIONS = {
   visual: [
     {
       id: "visual_reference",
-      question: "Me manda um site ou Instagram que voce acha bonito. Nao precisa ser do mesmo ramo.",
-      placeholder: "Ex.: gosto do estilo do site da Apple / gosto do Instagram @exemplo / nao tenho referencia",
+      question: "Me manda um site ou Instagram que você acha bonito. Não precisa ser do mesmo ramo.",
+      placeholder: "Ex.: gosto do estilo do site da Apple / gosto do Instagram @exemplo / não tenho referência",
       extracts: ["visual_reference"],
       required: false,
     },
     {
       id: "brand_tone",
-      question: "Seu negocio e mais serio e profissional, descontraido e jovem, ou acolhedor e familiar?",
-      placeholder: "Ex.: profissional mas acessivel / jovem e moderno / familiar e acolhedor",
+      question: "Seu negócio é mais sério e profissional, descontraído e jovem, ou acolhedor e familiar?",
+      placeholder: "Ex.: profissional mas acessível / jovem e moderno / familiar e acolhedor",
       extracts: ["brand_tone"],
       required: true,
     },
     {
       id: "brand_assets",
-      question: "Voce ja tem cores definidas? Tem logo?",
-      placeholder: "Ex.: tenho logo azul e branco / nao tenho nada / tenho mas quero mudar",
+      question: "Você já tem cores definidas? Tem logo?",
+      placeholder: "Ex.: tenho logo azul e branco / não tenho nada / tenho mas quero mudar",
       extracts: ["brand_colors", "has_logo"],
       required: false,
     },
@@ -219,27 +219,27 @@ const PHASE_QUESTIONS = {
 // ═══════════════════════════════════════════════════════════════
 
 const BUSINESS_PATTERNS = [
-  { id: "clinic", label: "Clinica ou consultorio", keywords: ["clinica", "consultorio", "medico", "dentista", "psicologo", "fisioterapia", "estetica", "saude"] },
+  { id: "clinic", label: "Clínica ou consultório", keywords: ["clinica", "consultorio", "medico", "dentista", "psicologo", "fisioterapia", "estetica", "saude"] },
   { id: "bakery", label: "Padaria ou confeitaria", keywords: ["padaria", "confeitaria", "bolo", "doces", "salgados", "cafeteria"] },
-  { id: "mechanic", label: "Oficina ou servico automotivo", keywords: ["oficina", "mecanica", "mecanico", "carro", "veiculo", "auto center", "funilaria"] },
-  { id: "cleaning", label: "Servico de limpeza", keywords: ["limpeza", "faxina", "diarista", "higienizacao", "limpar"] },
-  { id: "restaurant", label: "Restaurante ou alimentacao", keywords: ["restaurante", "hamburgueria", "pizzaria", "lanchonete", "delivery", "menu", "cardapio"] },
+  { id: "mechanic", label: "Oficina ou serviço automotivo", keywords: ["oficina", "mecânica", "mecanico", "carro", "veiculo", "auto center", "funilaria"] },
+  { id: "cleaning", label: "Servico de limpeza", keywords: ["limpeza", "faxina", "diarista", "higienização", "limpar"] },
+  { id: "restaurant", label: "Restaurante ou alimentação", keywords: ["restaurante", "hamburgueria", "pizzaria", "lanchonete", "delivery", "menu", "cardapio"] },
   { id: "beauty", label: "Salao ou barbearia", keywords: ["salao", "barbearia", "cabelo", "manicure", "nail", "beleza", "corte"] },
   { id: "fitness", label: "Academia ou personal", keywords: ["academia", "personal", "treino", "crossfit", "pilates", "yoga"] },
-  { id: "education", label: "Escola ou curso", keywords: ["escola", "curso", "aula", "professor", "ensino", "mentoria", "coaching"] },
+  { id: "education", label: "Escolá ou curso", keywords: ["escolá", "curso", "aula", "professor", "ensino", "mentoria", "coaching"] },
   { id: "legal", label: "Advocacia ou contabilidade", keywords: ["advogado", "advocacia", "contador", "contabilidade", "juridico"] },
-  { id: "retail", label: "Loja ou comercio", keywords: ["loja", "comercio", "vender", "produto", "estoque", "catalogo"] },
+  { id: "retail", label: "Lojá ou comercio", keywords: ["loja", "comercio", "vender", "produto", "estoque", "catalogo"] },
   { id: "construction", label: "Construcao ou reforma", keywords: ["construcao", "reforma", "pedreiro", "arquiteto", "engenheiro", "obra"] },
   { id: "tech", label: "Servico de tecnologia", keywords: ["informatica", "computador", "celular", "assistencia", "software", "app"] },
 ];
 
 const FEATURE_SIGNALS = {
-  booking: ["agendar", "agendamento", "reserva", "appointment", "agenda", "calendario", "horario", "marcar"],
-  ecommerce: ["vender", "comprar", "carrinho", "pagamento", "checkout", "loja online", "e-commerce"],
-  auth: ["login", "cadastro", "usuario", "painel", "area do cliente", "acompanhar"],
-  forms: ["formulario", "orcamento", "contato", "mensagem", "solicitar"],
+  booking: ["agendar", "agendamento", "reserva", "appointment", "agenda", "calendario", "horário", "marcar"],
+  ecommerce: ["vender", "comprar", "carrinho", "pagamento", "checkout", "lojá online", "e-commerce"],
+  auth: ["login", "cadastro", "usuário", "painel", "área do cliente", "acompanhar"],
+  forms: ["formulário", "orçamento", "contato", "mensagem", "solicitar"],
   gallery: ["fotos", "portfolio", "galeria", "antes e depois", "trabalhos"],
-  map: ["mapa", "localizacao", "endereco", "como chegar"],
+  map: ["mapa", "localização", "endereco", "como chegar"],
   whatsapp: ["whatsapp", "zap", "whats"],
 };
 
@@ -252,13 +252,13 @@ const STACK_MATRIX = {
     profile: "Site institucional simples",
     frontend: "HTML/CSS estatico ou React SPA",
     styling: "Tailwind CSS",
-    backend: "Nenhum — conteudo estatico",
+    backend: "Nenhum — conteúdo estatico",
     data: "JSON local",
     deploy: "Netlify ou Vercel",
     reason: "Entrega rapida, zero complexidade de manutencao.",
   },
   MEDIUM: {
-    profile: "Site com formularios e listagem dinamica",
+    profile: "Site com formulários e listagem dinamica",
     frontend: "React + Tailwind + shadcn/ui",
     styling: "Tailwind CSS com design tokens",
     backend: "API Routes / Serverless functions",
@@ -281,20 +281,20 @@ const LAYOUT_MATRIX = [
   { content_volume: "few", pricing: "any", layout: "single_page", pages: 1, label: "Landing page unica com scroll" },
   { content_volume: "medium", pricing: "visible", layout: "multi_simple", pages: 4, label: "Site multi-pagina com listagem" },
   { content_volume: "medium", pricing: "hidden", layout: "multi_simple", pages: 3, label: "Site multi-pagina institucional" },
-  { content_volume: "many", pricing: "visible", layout: "catalog", pages: 6, label: "Catalogo com filtros e listagem" },
-  { content_volume: "many", pricing: "hidden", layout: "catalog_cta", pages: 5, label: "Catalogo com CTA de orcamento" },
+  { content_volume: "many", pricing: "visible", layout: "catalog", pages: 6, label: "Catálogo com filtros e listagem" },
+  { content_volume: "many", pricing: "hidden", layout: "catalog_cta", pages: 5, label: "Catálogo com CTA de orçamento" },
 ];
 
 const MODULE_RULES = [
   { id: "hero", label: "Hero section", condition: () => true },
   { id: "services", label: "Servicos ou produtos", condition: (ctx) => !!ctx.answers.content_volume },
-  { id: "about", label: "Sobre o negocio", condition: (ctx) => ctx.detected.scope === "local" },
+  { id: "about", label: "Sobre o negócio", condition: (ctx) => ctx.detected.scope === "local" },
   { id: "gallery", label: "Galeria de fotos", condition: (ctx) => ctx.answers.has_media === "yes" },
-  { id: "pricing", label: "Tabela de precos", condition: (ctx) => ctx.answers.pricing_strategy === "visible" },
+  { id: "pricing", label: "Tabela de preços", condition: (ctx) => ctx.answers.pricing_strategy === "visible" },
   { id: "faq", label: "Perguntas frequentes", condition: (ctx) => !!ctx.answers.faq_content },
   { id: "contact", label: "Contato", condition: () => true },
   { id: "testimonials", label: "Depoimentos", condition: (ctx) => !!ctx.detected.existing_reviews },
-  { id: "map", label: "Mapa de localizacao", condition: (ctx) => ctx.detected.scope === "local" },
+  { id: "map", label: "Mapa de localização", condition: (ctx) => ctx.detected.scope === "local" },
   { id: "whatsapp_float", label: "Botao flutuante WhatsApp", condition: (ctx) => hasSignal(ctx, ["whatsapp", "zap", "whats"]) },
   { id: "booking_cta", label: "CTA de agendamento", condition: (ctx) => ctx.detected.needs_booking },
   { id: "instagram_feed", label: "Feed do Instagram", condition: (ctx) => hasSignal(ctx, ["instagram"]) },
@@ -336,7 +336,7 @@ function detectBusinessType(text) {
     }
   }
 
-  return best && bestScore > 0 ? best : { id: "general", label: "Negocio de servico geral", keywords: [] };
+  return best && bestScore > 0 ? best : { id: "general", label: "Negócio de serviço geral", keywords: [] };
 }
 
 function detectFeatures(ctx) {
@@ -368,15 +368,15 @@ function resolveContentVolume(answer) {
 function resolvePricingStrategy(answer) {
   if (!answer) return "hidden";
   const n = normalize(answer);
-  if (n.includes("mostrar") || n.includes("preco") || n.includes("tabela")) return "visible";
-  if (n.includes("orcamento") || n.includes("depende")) return "hidden";
+  if (n.includes("mostrar") || n.includes("preço") || n.includes("tabela")) return "visible";
+  if (n.includes("orçamento") || n.includes("depende")) return "hidden";
   return "hidden";
 }
 
 function resolveHasMedia(answer) {
   if (!answer) return "unknown";
   const n = normalize(answer);
-  if (n.includes("tenho") && !n.includes("nao tenho")) return "yes";
+  if (n.includes("tenho") && !n.includes("não tenho")) return "yes";
   if (n.includes("instagram")) return "yes";
   if (n.includes("nao") || n.includes("nenhum")) return "no";
   return "few";
@@ -386,7 +386,7 @@ function resolveScope(answer) {
   if (!answer) return "local";
   const n = normalize(answer);
   if (n.includes("online") || n.includes("todo brasil") || n.includes("nacional")) return "national";
-  if (n.includes("estado") || n.includes("regiao")) return "regional";
+  if (n.includes("estado") || n.includes("região")) return "regional";
   return "local";
 }
 
@@ -415,9 +415,9 @@ function resolveModules(ctx) {
 // ═══════════════════════════════════════════════════════════════
 
 const NOTEPAD_FIELDS = {
-  business_type:    { priority: "critical",  default_value: null,      default_confidence: 0 },
-  brand_name:       { priority: "critical",  default_value: null,      default_confidence: 0 },
-  primary_cta:      { priority: "critical",  default_value: null,      default_confidence: 0 },
+  business_type:    { priority: "crítical",  default_value: null,      default_confidence: 0 },
+  brand_name:       { priority: "crítical",  default_value: null,      default_confidence: 0 },
+  primary_cta:      { priority: "crítical",  default_value: null,      default_confidence: 0 },
   offerings:        { priority: "important", default_value: [],        default_confidence: 0 },
   scope:            { priority: "important", default_value: "local",   default_confidence: 0.3 },
   current_channels: { priority: "important", default_value: [],        default_confidence: 0 },
@@ -464,7 +464,7 @@ function getNotepadConfidence(notepad) {
 
 function getMissingCritical(notepad) {
   return Object.entries(notepad)
-    .filter(([, entry]) => entry.priority === "critical" && entry.confidence < 0.5)
+    .filter(([, entry]) => entry.priority === "crítical" && entry.confidence < 0.5)
     .map(([key]) => key);
 }
 
@@ -475,11 +475,11 @@ function getMissingImportant(notepad) {
 }
 
 function checkReadyToBuild(notepad, messagesCount) {
-  const criticalMissing = getMissingCritical(notepad);
+  const críticalMissing = getMissingCritical(notepad);
   const confidence = getNotepadConfidence(notepad);
   return {
-    ready: criticalMissing.length === 0 && confidence >= 55 && messagesCount >= 3,
-    criticalMissing,
+    ready: críticalMissing.length === 0 && confidence >= 55 && messagesCount >= 3,
+    críticalMissing,
     confidence,
     messagesCount,
   };
@@ -675,11 +675,11 @@ function runNotepadExtraction(session, questionId, answer) {
   // Primary CTA — from primary_action or initial signals
   if (questionId === "primary_action" && answer.trim()) {
     np = updateNotepadField(np, "primary_cta", answer.trim(), 0.9, "direct:" + questionId);
-  } else if (corpus.includes("whatsapp") || corpus.includes("orcamento")) {
-    const cta = corpus.includes("whatsapp") ? "Contato via WhatsApp" : "Pedir orcamento";
+  } else if (corpus.includes("whatsapp") || corpus.includes("orçamento")) {
+    const cta = corpus.includes("whatsapp") ? "Contato via WhatsApp" : "Pedir orçamento";
     np = updateNotepadField(np, "primary_cta", cta, 0.5, "inferred:" + questionId);
   } else if (corpus.includes("agendar") || corpus.includes("marcar")) {
-    np = updateNotepadField(np, "primary_cta", "Agendar horario", 0.55, "inferred:" + questionId);
+    np = updateNotepadField(np, "primary_cta", "Agendar horário", 0.55, "inferred:" + questionId);
   } else if (corpus.includes("vender") || corpus.includes("comprar")) {
     np = updateNotepadField(np, "primary_cta", "Comprar online", 0.55, "inferred:" + questionId);
   }
@@ -693,7 +693,7 @@ function runNotepadExtraction(session, questionId, answer) {
   }
 
   // Scope
-  if (questionId === "scope" || n.includes("regiao") || n.includes("local") || n.includes("online")) {
+  if (questionId === "scope" || n.includes("região") || n.includes("local") || n.includes("online")) {
     const scope = resolveScope(answer);
     np = updateNotepadField(np, "scope", scope, questionId === "scope" ? 0.9 : 0.5, "resolved:" + questionId);
   }
@@ -776,7 +776,7 @@ function runFinalAnalysis(session) {
 // ═══════════════════════════════════════════════════════════════
 
 export function getAgentGreeting() {
-  return "Oi! Eu sou o SIMPLE-AI. Vou te ajudar a criar um site pro seu negocio. Nao precisa saber nada de tecnologia — e so me contar o que voce faz e o que voce precisa. Fala do jeito que vier na cabeca, sem frescura.";
+  return "Oi! Eu sou o SIMPLE-AI. Vou te ajudar a criar um site pro seu negócio. Não precisa saber nada de tecnologia — e so me contar o que você faz e o que você precisa. Fala do jeito que vier na cabeca, sem frescura.";
 }
 
 export function getPhaseTransitionMessage(session) {
@@ -786,16 +786,16 @@ export function getPhaseTransitionMessage(session) {
   // If ready to build and not yet proposed, offer to start building
   if (session.readyToBuild && !session.buildProposed) {
     const confidence = getNotepadConfidence(session.notepad);
-    return `Ja tenho uma boa ideia do que voce precisa (${confidence}% de confianca). Posso montar uma primeira versao agora e voce me diz o que quer mudar. Ou prefere me contar mais alguma coisa antes?`;
+    return `Ja tenho uma boa ideia do que você precisa (${confidence}% de confianca). Posso montar uma primeira versao agora e você me diz o que quer mudar. Ou prefere me contar mais alguma coisa antes?`;
   }
 
   const messages = {
-    business: "Beleza! Agora preciso entender melhor o seu negocio.",
+    business: "Beleza! Agora preciso entender melhor o seu negócio.",
     goals: "Legal. Agora vamos falar sobre o que o site precisa fazer.",
     content: "Agora vou entender o que vai ter dentro do site.",
-    features: "Quase la. Vou confirmar algumas coisas sobre o que voce precisa.",
+    features: "Quase la. Vou confirmar algumas coisas sobre o que você precisa.",
     visual: "Ultima parte — vamos definir a cara do site.",
-    summary: "Pronto! Ja tenho tudo que preciso. Olha o que eu entendi:",
+    summary: "Pronto! Ja tenho tudo que preciso. Olha o que éu entendi:",
   };
 
   return messages[session.phase] ?? "";
@@ -811,15 +811,15 @@ export function buildSummary(session) {
   const np = session.notepad;
 
   return {
-    brand_name: np.brand_name.value ?? a.brand_name ?? "Nao definido",
-    business_type: d.business_type?.label ?? "Nao identificado",
+    brand_name: np.brand_name.value ?? a.brand_name ?? "Não definido",
+    business_type: d.business_type?.label ?? "Não identificado",
     primary_cta: np.primary_cta.value ?? a.primary_action ?? "Entrar em contato",
-    target_audience: np.target_audience.value ?? a.target_audience ?? "Nao definido",
+    target_audience: np.target_audience.value ?? a.target_audience ?? "Não definido",
     scope: np.scope.value ?? "Local",
     content_volume: d.content_volume,
     pricing_strategy: d.pricing_strategy,
-    brand_tone: np.brand_tone.value ?? a.brand_tone ?? "Nao definido",
-    brand_colors: np.brand_colors.value ?? a.brand_assets ?? "Nao definido",
+    brand_tone: np.brand_tone.value ?? a.brand_tone ?? "Não definido",
+    brand_colors: np.brand_colors.value ?? a.brand_assets ?? "Não definido",
 
     complexity: d.complexity,
     stack: d.stack,
@@ -858,9 +858,9 @@ export function getNotepadState(session) {
 // ═══════════════════════════════════════════════════════════════
 
 export const SAMPLE_PROMPTS = [
-  "tenho uma oficina mecanica e quero um site pra mostrar servicos e receber orcamentos pelo WhatsApp",
+  "tenho uma oficina mecânica e quero um site pra mostrar serviços e receber orçamentos pelo WhatsApp",
   "sou dentista e preciso de um site profissional onde pacientes possam agendar consulta",
-  "tenho uma loja de roupas e quero vender online",
+  "tenho uma lojá de roupas e quero vender online",
   "sou personal trainer e quero um site pra atrair alunos",
   "tenho uma padaria e queria um site pra mostrar produtos e receber encomendas",
 ];
