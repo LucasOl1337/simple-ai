@@ -25,13 +25,13 @@ Estas regras sao obrigatorias para qualquer agente ou colaborador que atuar nest
 
 Se voce entrou agora na branch, siga esta ordem:
 
-1. **[.simpleai/README.md](.simpleai/README.md)** — COMECE AQUI (spec core obrigatorio)
-2. [.simpleai/first-interaction.md](.simpleai/first-interaction.md) — como o agente abre e conduz a primeira conversa
-3. [.simpleai/agent-flow.md](.simpleai/agent-flow.md) — fases, perguntas e decisoes silenciosas
-4. [.simpleai/flow-order.md](.simpleai/flow-order.md) — Discovery → Producao → Iteracao + ready_to_build
-5. [src/features/discovery/planner.js](src/features/discovery/planner.js) — engine que implementa o spec
-6. [src/app/App.jsx](src/app/App.jsx) — UI principal
-7. [.simpleai/voice-convo-requirements.md](.simpleai/voice-convo-requirements.md) — requisitos de integracao de voz
+1. **[.simpleai/README.md](.simpleai/README.md)** - COMECE AQUI (spec core obrigatorio)
+2. [.simpleai/first-interaction.md](.simpleai/first-interaction.md) - como o agente abre e conduz a primeira conversa
+3. [.simpleai/agent-flow.md](.simpleai/agent-flow.md) - fases, perguntas e decisoes silenciosas
+4. [.simpleai/flow-order.md](.simpleai/flow-order.md) - Discovery -> Producao -> Iteracao + ready_to_build
+5. [src/features/discovery/planner.js](src/features/discovery/planner.js) - engine que implementa o spec
+6. [src/app/App.jsx](src/app/App.jsx) - UI principal
+7. [.simpleai/voice-convo-requirements.md](.simpleai/voice-convo-requirements.md) - requisitos de integracao de voz
 
 ## Estado atual
 
@@ -41,34 +41,34 @@ SIMPLE-AI incorpora um core de conversa em tempo real com Agora Conversational A
 
 ```text
 .
-├── .simpleai/                          ← CORE: spec de comportamento do agente
-│   ├── README.md                       ← Indice obrigatorio (primeira leitura)
-│   ├── first-interaction.md            ← Abertura + notepad + threshold
-│   ├── agent-flow.md                   ← Fases + decisoes silenciosas
-│   ├── flow-order.md                   ← Discovery → Producao → Iteracao
-│   └── voice-convo-requirements.md     ← Requisitos Convo/Voice
+├── .simpleai/                          <- CORE: spec de comportamento do agente
+│   ├── README.md                       <- Indice obrigatorio (primeira leitura)
+│   ├── first-interaction.md            <- Abertura + notepad + threshold
+│   ├── agent-flow.md                   <- Fases + decisoes silenciosas
+│   ├── flow-order.md                   <- Discovery -> Producao -> Iteracao
+│   └── voice-convo-requirements.md     <- Requisitos Convo/Voice
 ├── src/
 │   ├── app/
 │   │   ├── App.jsx
 │   │   └── styles.css
 │   ├── features/
 │   │   └── discovery/
-│   │       └── planner.js              ← Implementa o spec de .simpleai/
+│   │       └── planner.js              <- Implementa o spec de .simpleai/
 │   ├── integrations/
 │   │   └── agora/
 │   └── main.jsx
 ├── server-python/
-│   ├── src/agent.py                    ← Agente Convo que segue .simpleai/ specs
+│   ├── src/agent.py                    <- Agente Convo que segue .simpleai/ specs
 │   ├── src/server.py
 │   └── .env.example
-├── docs/                               ← Docs auxiliares (nao core)
+├── docs/                               <- Docs auxiliares (nao core)
 │   └── README.md
 └── vite.config.js
 ```
 
 ## Responsabilidade por pasta
 
-- `.simpleai/`: **CORE** — especificacao de comportamento, fluxo, notepad e threshold. Fonte de verdade.
+- `.simpleai/`: **CORE** - especificacao de comportamento, fluxo, notepad e threshold. Fonte de verdade.
 - `src/app/`: interface principal e composicao da experiencia
 - `src/features/discovery/`: engine que implementa o spec de `.simpleai/`
 - `src/integrations/agora/`: camada de integracao com voz em tempo real
@@ -95,6 +95,10 @@ Preencha em `server-python/.env.local`:
 
 - `APP_ID`
 - `APP_CERTIFICATE`
+- `AGENT_LLM_PROVIDER` (`anthropic`, `openai-compatible`, `nvidia`, `zai`, `openrouter`)
+- `AGENT_LLM_API_KEY` ou a chave especifica do provider (`ANTHROPIC_API_KEY`, `NVIDIA_API_KEY`, `ZAI_API_KEY`, `OPENROUTER_API_KEY`)
+- `AGENT_LLM_BASE_URL` se quiser sobrescrever o endpoint padrao
+- `AGENT_LLM_MODEL`
 
 ## Rodando
 
@@ -121,4 +125,4 @@ Observacao: `dev:full` chama `python` do PATH. Se voce preferir usar a `venv`, r
 
 ## Limite atual
 
-Sem `APP_ID` e `APP_CERTIFICATE` validos da Agora o backend sobe, mas a sessao real nao conecta.
+Sem `APP_ID` e `APP_CERTIFICATE` validos da Agora o backend sobe, mas a sessao real nao conecta. Se estiver usando `AGENT_LLM_PROVIDER=openai-compatible`, `nvidia`, `zai` ou `openrouter`, o backend tambem precisa da chave do provider e, se quiser, um `AGENT_LLM_BASE_URL` customizado.

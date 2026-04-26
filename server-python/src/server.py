@@ -12,9 +12,30 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from agora_agent.agentkit.token import generate_convo_ai_token
-from agent import Agent
-from agents.oci_agent import Agente03
+try:
+    from agora_agent.agentkit.token import generate_convo_ai_token
+except ImportError as error:  # pragma: no cover - optional during local dev fallback
+    generate_convo_ai_token = None
+    AGORA_TOKEN_IMPORT_ERROR = error
+else:
+    AGORA_TOKEN_IMPORT_ERROR = None
+
+try:
+    from agent import Agent
+except ImportError as error:  # pragma: no cover - optional during local dev fallback
+    Agent = None
+    AGENT_IMPORT_ERROR = error
+else:
+    AGENT_IMPORT_ERROR = None
+
+try:
+    from agents.oci_agent import Agente03
+except ImportError as error:  # pragma: no cover - optional during local dev fallback
+    Agente03 = None
+    OCI_IMPORT_ERROR = error
+else:
+    OCI_IMPORT_ERROR = None
+
 from builder import BuilderAgent
 
 
@@ -24,6 +45,23 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 
 def to_http_error(exc: Exception) -> HTTPException:
+    error_text = str(exc)
+    if "Invalid token" in error_text:
+        return HTTPException(
+            status_code=401,
+            detail=(
+                "A Agora recusou o token do agente. Confira se APP_ID e "
+                "APP_CERTIFICATE pertencem ao mesmo projeto e se o certificado esta ativo."
+            ),
+        )
+    if "Invalid authentication credentials" in error_text:
+        return HTTPException(
+            status_code=401,
+            detail=(
+                "A Agora recusou as credenciais REST. Confira AGORA_CUSTOMER_ID "
+                "e AGORA_CUSTOMER_SECRET ou use autenticacao por token."
+            ),
+        )
     if isinstance(exc, ValueError):
         return HTTPException(status_code=400, detail=str(exc))
     if isinstance(exc, RuntimeError):
@@ -32,6 +70,8 @@ def to_http_error(exc: Exception) -> HTTPException:
 
 
 try:
+    if Agent is None:
+        raise ValueError(f"Agora backend import failed: {AGENT_IMPORT_ERROR}")
     agent = Agent()
 except ValueError as error:
     print(f"Warning: failed to initialize Agora backend: {error}")
@@ -47,6 +87,8 @@ except RuntimeError as error:
 
 
 try:
+    if Agente03 is None:
+        raise RuntimeError(f"Agente 03 import failed: {OCI_IMPORT_ERROR}")
     oci_agent: Optional[Agente03] = Agente03()
 except Exception as error:  # noqa: BLE001 — surface any init failure as warning
     print(f"Warning: failed to initialize Agente 03 (OCI): {error}")
@@ -92,7 +134,7 @@ class BuildRequest(BaseModel):
     segment: Optional[str] = None
     current_workflow: Optional[str] = None
     primary_pain: Optional[str] = None
-    user_facing_actions: Optional[List[str]] = None
+    user_facing_actions: Optional[List[Any]] = None
     data_entities: Optional[List[Dict[str, Any]]] = None
     needs_admin_panel: Optional[bool] = None
     needs_notifications: Optional[bool] = None
@@ -110,6 +152,11 @@ def get_config():
         raise HTTPException(
             status_code=500,
             detail="Agora backend is not configured. Fill APP_ID and APP_CERTIFICATE in server-python/.env.local.",
+        )
+    if generate_convo_ai_token is None:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Agora token generator unavailable: {AGORA_TOKEN_IMPORT_ERROR}",
         )
 
     try:

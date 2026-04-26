@@ -22,12 +22,14 @@
   },
   "homepage": "https://github.com/LucasOl1337/simple-ai#readme",
   "dependencies": {
+    "@remotion/player": "^4.0.451",
     "agora-agent-client-toolkit": "0.1.1",
     "agora-rtc-react": "2.2.0",
     "agora-rtc-sdk-ng": "4.23.0",
     "agora-rtm": "2.2.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "remotion": "^4.0.451"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

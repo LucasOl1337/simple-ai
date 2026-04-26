@@ -235,7 +235,7 @@ const BUSINESS_PATTERNS = [
 
 const FEATURE_SIGNALS = {
   booking: ["agendar", "agendamento", "reserva", "appointment", "agenda", "calendario", "horário", "marcar"],
-  ecommerce: ["vender", "comprar", "carrinho", "pagamento", "checkout", "lojá online", "e-commerce"],
+  ecommerce: ["vender online", "comprar online", "carrinho", "checkout", "lojá online", "e-commerce"],
   auth: ["login", "cadastro", "usuário", "painel", "área do cliente", "acompanhar"],
   forms: ["formulário", "orçamento", "contato", "mensagem", "solicitar"],
   gallery: ["fotos", "portfolio", "galeria", "antes e depois", "trabalhos"],
@@ -313,7 +313,7 @@ function normalize(text) {
 
 function hasSignal(ctx, keywords) {
   const corpus = normalize(Object.values(ctx.answers).filter(Boolean).join(" "));
-  return keywords.some((kw) => corpus.includes(kw));
+  return keywords.some((kw) => corpus.includes(normalize(kw)));
 }
 
 function hasAnyComplexFeature(ctx) {
@@ -344,7 +344,7 @@ function detectFeatures(ctx) {
   const corpus = normalize(Object.values(ctx.answers).filter(Boolean).join(" "));
 
   for (const [feature, keywords] of Object.entries(FEATURE_SIGNALS)) {
-    features[feature] = keywords.some((kw) => corpus.includes(kw));
+    features[feature] = keywords.some((kw) => corpus.includes(normalize(kw)));
   }
 
   return features;
@@ -368,6 +368,8 @@ function resolveContentVolume(answer) {
 function resolvePricingStrategy(answer) {
   if (!answer) return "hidden";
   const n = normalize(answer);
+  if (n.includes("preco")) return "visible";
+  if (n.includes("orcamento")) return "hidden";
   if (n.includes("mostrar") || n.includes("preço") || n.includes("tabela")) return "visible";
   if (n.includes("orçamento") || n.includes("depende")) return "hidden";
   return "hidden";
@@ -376,6 +378,7 @@ function resolvePricingStrategy(answer) {
 function resolveHasMedia(answer) {
   if (!answer) return "unknown";
   const n = normalize(answer);
+  if (n.includes("nao tenho")) return "no";
   if (n.includes("tenho") && !n.includes("não tenho")) return "yes";
   if (n.includes("instagram")) return "yes";
   if (n.includes("nao") || n.includes("nenhum")) return "no";
@@ -386,6 +389,7 @@ function resolveScope(answer) {
   if (!answer) return "local";
   const n = normalize(answer);
   if (n.includes("online") || n.includes("todo brasil") || n.includes("nacional")) return "national";
+  if (n.includes("regiao")) return "regional";
   if (n.includes("estado") || n.includes("região")) return "regional";
   return "local";
 }
@@ -474,6 +478,121 @@ function getMissingImportant(notepad) {
     .map(([key]) => key);
 }
 
+function getFieldConfidence(session, field) {
+  return session.notepad?.[field]?.confidence ?? 0;
+}
+
+function hasReliableField(session, field, min = 0.65) {
+  return getFieldConfidence(session, field) >= min;
+}
+
+function hasNonDefaultField(session, field, min = 0.65) {
+  const entry = session.notepad?.[field];
+  return Boolean(entry && entry.confidence >= min && entry.source !== "default");
+}
+
+function isFilled(value, invalid = []) {
+  if (!value) return false;
+  if (typeof value !== "string") return true;
+
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return false;
+
+  return !invalid.map((item) => item.toLowerCase()).includes(normalized);
+}
+
+function shouldSkipQuestion(session, question) {
+  const skipByQuestion = {
+    brand_name: () => hasReliableField(session, "brand_name", 0.65),
+    what_you_do: () =>
+      shouldSkip(session, "initial_description_detailed") ||
+      (hasReliableField(session, "business_type", 0.65) &&
+        hasReliableField(session, "offerings", 0.6)),
+    target_audience: () => hasReliableField(session, "target_audience", 0.65),
+    scope: () => hasReliableField(session, "scope", 0.7),
+    primary_action: () => hasReliableField(session, "primary_cta", 0.7),
+    current_channels: () => hasReliableField(session, "current_channels", 0.65),
+    content_volume: () => hasReliableField(session, "content_volume", 0.75),
+    has_media: () => hasReliableField(session, "has_media", 0.75),
+    pricing_strategy: () => hasReliableField(session, "pricing_strategy", 0.75),
+    brand_tone: () => hasReliableField(session, "brand_tone", 0.7),
+    brand_assets: () => hasReliableField(session, "brand_colors", 0.7),
+  };
+
+  return skipByQuestion[question.id]?.() ?? false;
+}
+
+function summarizeContext(session) {
+  const summary = buildSummary(session);
+  const business = isFilled(summary.business_type, ["NÃ£o identificado"])
+    ? summary.business_type
+    : "negÃ³cio";
+  const brand = isFilled(summary.brand_name, ["NÃ£o definido"])
+    ? summary.brand_name
+    : "";
+  const cta = isFilled(summary.primary_cta, ["Entrar em contato"])
+    ? summary.primary_cta
+    : "";
+
+  return { business, brand, cta, summary };
+}
+
+function adaptQuestion(session, question) {
+  const { business, brand, cta } = summarizeContext(session);
+  const brandPrefix = brand ? `Sobre a ${brand}: ` : "";
+
+  const adaptiveText = {
+    brand_name: `Como vocÃª quer que o nome do negÃ³cio apareÃ§a no site? Pode ser o nome oficial ou o nome mais conhecido pelos clientes.`,
+    what_you_do: `${brandPrefix}me explica em uma frase simples o que vocÃª vende ou faz, do jeito que um cliente novo entenderia.`,
+    target_audience: `${brandPrefix}quem vocÃª mais quer atrair primeiro? Pode falar como "famÃ­lias do bairro", "empresas pequenas", "alunos iniciantes"...`,
+    scope: `${brandPrefix}esse atendimento Ã© local, por regiÃ£o ou online? Quero acertar o texto de localizaÃ§Ã£o e os botÃµes do site.`,
+    primary_action: `Quando alguÃ©m entrar nesse site de ${business}, qual Ã© a aÃ§Ã£o mais importante: chamar, comprar, agendar, pedir orÃ§amento ou outra coisa?`,
+    current_channels: cta
+      ? `Hoje por onde esse cliente faz "${cta}" com vocÃª? WhatsApp, Instagram, telefone, loja fÃ­sica ou outro canal?`
+      : `Hoje por onde os clientes falam com vocÃª? WhatsApp, Instagram, telefone, loja fÃ­sica ou outro canal?`,
+    existing_presence: `${brandPrefix}jÃ¡ existe algum lugar online que eu possa considerar como referÃªncia de conteÃºdo? Instagram, Google, cardÃ¡pio, catÃ¡logo ou site antigo.`,
+    content_volume: `Para esse site de ${business}, quantos itens vocÃª quer mostrar primeiro? Pode ser poucos destaques, uma lista mÃ©dia ou um catÃ¡logo maior.`,
+    has_media: `VocÃª jÃ¡ tem fotos, prints ou materiais que representam bem ${brand || "esse negÃ³cio"}? Se estiver no Instagram, tambÃ©m serve.`,
+    faq_content: `Quais dÃºvidas os clientes sempre perguntam antes de fechar? Isso ajuda o site a responder objeÃ§Ãµes sozinho.`,
+    pricing_strategy: `Sobre preÃ§os: vocÃª quer mostrar valores no site, mostrar sÃ³ alguns exemplos ou deixar tudo para conversa?`,
+    feature_booking: `Pelo contexto, pode existir agendamento. Seus clientes precisam marcar horÃ¡rio ou reservar alguma coisa? Como isso funciona hoje?`,
+    feature_selling: `Como apareceram produtos/preÃ§os, vocÃª quer vender direto no site agora ou prefere comeÃ§ar com vitrine e chamada para contato?`,
+    feature_area_cliente: `Existe alguma parte que precisaria de login, Ã¡rea do cliente ou acompanhamento de pedido, ou isso pode ficar fora da primeira versÃ£o?`,
+    feature_simplify: `Pelo que vocÃª contou, dÃ¡ para comeÃ§ar enxuto. Quer uma primeira versÃ£o focada em apresentaÃ§Ã£o e contato, ou tem algo indispensÃ¡vel desde o dia um?`,
+    visual_reference: `Tem alguma referÃªncia visual que combina com ${brand || business}? Pode ser site, Instagram, marca ou atÃ© um estilo que vocÃª gosta.`,
+    brand_tone: `Qual sensaÃ§Ã£o o site deve passar: mais profissional, moderno, familiar, premium, divertido ou acolhedor?`,
+    brand_assets: `VocÃª jÃ¡ tem logo, cores ou fotos de marca, ou quer que a primeira versÃ£o proponha uma direÃ§Ã£o visual?`,
+  };
+
+  const asciiAdaptiveText = {
+    brand_name: `Como voce quer que o nome do negocio apareca no site? Pode ser o nome oficial ou o nome mais conhecido pelos clientes.`,
+    what_you_do: `${brandPrefix}me explica em uma frase simples o que voce vende ou faz, do jeito que um cliente novo entenderia.`,
+    target_audience: `${brandPrefix}quem voce mais quer atrair primeiro? Pode falar como "familias do bairro", "empresas pequenas", "alunos iniciantes"...`,
+    scope: `${brandPrefix}esse atendimento e local, por regiao ou online? Quero acertar o texto de localizacao e os botoes do site.`,
+    primary_action: `Quando alguem entrar nesse site de ${business}, qual e a acao mais importante: chamar, comprar, agendar, pedir orcamento ou outra coisa?`,
+    current_channels: cta
+      ? `Hoje por onde esse cliente faz "${cta}" com voce? WhatsApp, Instagram, telefone, loja fisica ou outro canal?`
+      : `Hoje por onde os clientes falam com voce? WhatsApp, Instagram, telefone, loja fisica ou outro canal?`,
+    existing_presence: `${brandPrefix}ja existe algum lugar online que eu possa considerar como referencia de conteudo? Instagram, Google, cardapio, catalogo ou site antigo.`,
+    content_volume: `Para esse site de ${business}, quantos itens voce quer mostrar primeiro? Pode ser poucos destaques, uma lista media ou um catalogo maior.`,
+    has_media: `Voce ja tem fotos, prints ou materiais que representam bem ${brand || "esse negocio"}? Se estiver no Instagram, tambem serve.`,
+    faq_content: `Quais duvidas os clientes sempre perguntam antes de fechar? Isso ajuda o site a responder objecoes sozinho.`,
+    pricing_strategy: `Sobre precos: voce quer mostrar valores no site, mostrar so alguns exemplos ou deixar tudo para conversa?`,
+    feature_booking: `Pelo contexto, pode existir agendamento. Seus clientes precisam marcar horario ou reservar alguma coisa? Como isso funciona hoje?`,
+    feature_selling: `Como apareceram produtos/precos, voce quer vender direto no site agora ou prefere comecar com vitrine e chamada para contato?`,
+    feature_area_cliente: `Existe alguma parte que precisaria de login, area do cliente ou acompanhamento de pedido, ou isso pode ficar fora da primeira versao?`,
+    feature_simplify: `Pelo que voce contou, da para comecar enxuto. Quer uma primeira versao focada em apresentacao e contato, ou tem algo indispensavel desde o dia um?`,
+    visual_reference: `Tem alguma referencia visual que combina com ${brand || business}? Pode ser site, Instagram, marca ou ate um estilo que voce gosta.`,
+    brand_tone: `Qual sensacao o site deve passar: mais profissional, moderno, familiar, premium, divertido ou acolhedor?`,
+    brand_assets: `Voce ja tem logo, cores ou fotos de marca, ou quer que a primeira versao proponha uma direcao visual?`,
+  };
+
+  return {
+    ...question,
+    question: asciiAdaptiveText[question.id] ?? adaptiveText[question.id] ?? question.question,
+  };
+}
+
 function checkReadyToBuild(notepad, messagesCount) {
   const críticalMissing = getMissingCritical(notepad);
   const confidence = getNotepadConfidence(notepad);
@@ -535,7 +654,11 @@ export function getCurrentQuestion(session) {
       idx++;
       continue;
     }
-    return { ...q, _index: idx };
+    if (shouldSkipQuestion(session, q)) {
+      idx++;
+      continue;
+    }
+    return { ...adaptQuestion(session, q), _index: idx };
   }
 
   return null;
@@ -627,9 +750,10 @@ function advancePhase(session) {
 
 function runDetection(session) {
   const ctx = buildContext(session);
+  const allAnswers = Object.values(session.answers).filter(Boolean).join(" ");
 
   const businessType = detectBusinessType(
-    Object.values(session.answers).filter(Boolean).join(" "),
+    allAnswers,
   );
 
   const features = detectFeatures(ctx);
@@ -638,10 +762,10 @@ function runDetection(session) {
     ...session.detected,
     business_type: businessType,
     features,
-    content_volume: resolveContentVolume(session.answers.content_volume),
-    pricing_strategy: resolvePricingStrategy(session.answers.pricing_strategy),
-    has_media: resolveHasMedia(session.answers.has_media),
-    scope: resolveScope(session.answers.scope),
+    content_volume: resolveContentVolume(session.answers.content_volume || allAnswers),
+    pricing_strategy: resolvePricingStrategy(session.answers.pricing_strategy || allAnswers),
+    has_media: resolveHasMedia(session.answers.has_media || allAnswers),
+    scope: resolveScope(session.answers.scope || allAnswers),
     needs_booking: features.booking,
     needs_ecommerce: features.ecommerce,
     needs_auth: features.auth,
@@ -668,6 +792,11 @@ function runNotepadExtraction(session, questionId, answer) {
   }
 
   // Brand name — direct from answer
+  const inferredBrand = extractBrandName(answer);
+  if (inferredBrand && !np.brand_name.value) {
+    np = updateNotepadField(np, "brand_name", inferredBrand, 0.74, "inferred:" + questionId);
+  }
+
   if (questionId === "brand_name" && answer.trim()) {
     np = updateNotepadField(np, "brand_name", answer.trim(), 0.95, "direct:" + questionId);
   }
@@ -675,6 +804,13 @@ function runNotepadExtraction(session, questionId, answer) {
   // Primary CTA — from primary_action or initial signals
   if (questionId === "primary_action" && answer.trim()) {
     np = updateNotepadField(np, "primary_cta", answer.trim(), 0.9, "direct:" + questionId);
+  } else if (corpus.includes("whatsapp") || corpus.includes("orcamento") || corpus.includes("pedido")) {
+    const cta = corpus.includes("whatsapp")
+      ? "Contato via WhatsApp"
+      : corpus.includes("pedido")
+        ? "Receber pedidos"
+        : "Pedir orcamento";
+    np = updateNotepadField(np, "primary_cta", cta, 0.72, "inferred:" + questionId);
   } else if (corpus.includes("whatsapp") || corpus.includes("orçamento")) {
     const cta = corpus.includes("whatsapp") ? "Contato via WhatsApp" : "Pedir orçamento";
     np = updateNotepadField(np, "primary_cta", cta, 0.5, "inferred:" + questionId);
@@ -692,10 +828,22 @@ function runNotepadExtraction(session, questionId, answer) {
     }
   }
 
+  if (questionId !== "scope" && n.includes("regiao")) {
+    np = updateNotepadField(np, "scope", resolveScope(answer), 0.72, "resolved:" + questionId);
+  }
+
+  if (
+    questionId !== "scope" &&
+    !hasReliableField({ notepad: np }, "scope", 0.7) &&
+    (n.includes("bairro") || /\b(?:em|no|na)\s+[a-z]{3,}/.test(n))
+  ) {
+    np = updateNotepadField(np, "scope", resolveScope(answer), 0.72, "resolved:" + questionId);
+  }
+
   // Scope
   if (questionId === "scope" || n.includes("região") || n.includes("local") || n.includes("online")) {
-    const scope = resolveScope(answer);
-    np = updateNotepadField(np, "scope", scope, questionId === "scope" ? 0.9 : 0.5, "resolved:" + questionId);
+    const scope = questionId === "scope" ? answer.trim() : resolveScope(answer);
+    np = updateNotepadField(np, "scope", scope, questionId === "scope" ? 0.9 : 0.72, "resolved:" + questionId);
   }
 
   // Channels
@@ -706,27 +854,38 @@ function runNotepadExtraction(session, questionId, answer) {
     if (corpus.includes("whatsapp")) channels.push("WhatsApp");
     if (corpus.includes("instagram")) channels.push("Instagram");
     if (corpus.includes("telefone")) channels.push("Telefone");
-    np = updateNotepadField(np, "current_channels", channels, 0.45, "inferred:" + questionId);
+    np = updateNotepadField(np, "current_channels", channels, 0.68, "inferred:" + questionId);
   }
 
   // Target audience
   if (questionId === "target_audience" && answer.trim()) {
     np = updateNotepadField(np, "target_audience", answer.trim(), 0.85, "direct:" + questionId);
+  } else {
+    const inferredAudience = inferTargetAudience(answer);
+    if (inferredAudience) {
+      np = updateNotepadField(np, "target_audience", inferredAudience, 0.68, "inferred:" + questionId);
+    }
   }
 
   // Content volume
   if (questionId === "content_volume") {
     np = updateNotepadField(np, "content_volume", resolveContentVolume(answer), 0.85, "direct:" + questionId);
+  } else if (/\b\d+\b/.test(n) || n.includes("cardapio") || n.includes("catalogo") || n.includes("produtos")) {
+    np = updateNotepadField(np, "content_volume", resolveContentVolume(answer), 0.72, "inferred:" + questionId);
   }
 
   // Media
   if (questionId === "has_media") {
     np = updateNotepadField(np, "has_media", resolveHasMedia(answer), 0.85, "direct:" + questionId);
+  } else if (n.includes("foto") || n.includes("imagem") || n.includes("instagram") || n.includes("print")) {
+    np = updateNotepadField(np, "has_media", resolveHasMedia(answer), 0.72, "inferred:" + questionId);
   }
 
   // Pricing
   if (questionId === "pricing_strategy") {
     np = updateNotepadField(np, "pricing_strategy", resolvePricingStrategy(answer), 0.85, "direct:" + questionId);
+  } else if (n.includes("preco") || n.includes("valor") || n.includes("orcamento") || n.includes("tabela")) {
+    np = updateNotepadField(np, "pricing_strategy", resolvePricingStrategy(answer), 0.72, "inferred:" + questionId);
   }
 
   // Brand tone
@@ -757,6 +916,49 @@ function extractOfferings(text) {
   // Split on commas, "e", "/" and filter short fragments
   const parts = n.split(/[,\/]|\be\b/).map(s => s.trim()).filter(s => s.length > 2 && s.length < 60);
   return parts.length > 0 ? parts : [];
+}
+
+function extractBrandName(text) {
+  const patterns = [
+    /(?:chamad[ao]|nome (?:e|é)|neg[oó]cio (?:e|é)|empresa (?:e|é))\s+([^.,;]+)/i,
+    /(?:tenho|sou dono de|sou dona de)\s+(?:uma|um|a|o)?\s*[^.,;]{0,32}?\s+(?:chamad[ao])\s+([^.,;]+)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (!match?.[1]) continue;
+    const candidate = match[1]
+      .split(/\s+(?:em|no|na|para|pra|que|e quero|e preciso)\s+/i)[0]
+      .trim();
+    if (candidate.length >= 2 && candidate.length <= 48) return candidate;
+  }
+
+  return null;
+}
+
+function inferTargetAudience(text) {
+  const n = normalize(text);
+  const focusedAudience = text.match(/(?:foco em|para|pra|atendo|clientes? sao|publico sao)\s+([^.,;]+)/i);
+  if (focusedAudience?.[1]) {
+    return focusedAudience[1].trim();
+  }
+
+  const audienceSignals = [
+    "familia",
+    "familias",
+    "empresas",
+    "clientes",
+    "alunos",
+    "pacientes",
+    "moradores",
+    "bairro",
+    "jovens",
+    "mulheres",
+    "homens",
+    "criancas",
+  ];
+
+  return audienceSignals.some((signal) => n.includes(signal)) ? text.trim() : null;
 }
 
 function runFinalAnalysis(session) {
@@ -809,6 +1011,9 @@ export function buildSummary(session) {
   const d = session.detected;
   const a = session.answers;
   const np = session.notepad;
+  const ctx = buildContext(session);
+  const layout = d.layout ?? resolveLayout({ ...ctx, detected: d });
+  const modules = d.modules?.length ? d.modules : resolveModules({ ...ctx, detected: d });
 
   return {
     brand_name: np.brand_name.value ?? a.brand_name ?? "Não definido",
@@ -822,9 +1027,9 @@ export function buildSummary(session) {
     brand_colors: np.brand_colors.value ?? a.brand_assets ?? "Não definido",
 
     complexity: d.complexity,
-    stack: d.stack,
-    layout: d.layout,
-    modules: d.modules,
+    stack: STACK_MATRIX[d.complexity] ?? d.stack,
+    layout,
+    modules,
     features: d.features,
 
     raw_answers: a,
