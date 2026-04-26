@@ -1,10 +1,8 @@
-import { useState } from "react";
 import AgoraRTC from "agora-rtc-sdk-ng";
-import { AgoraRTCProvider } from "agora-rtc-react";
 import { useAgoraSession } from "./useAgoraSession";
 
 try {
-  AgoraRTC.setParameter("ENABLE_AUDIO_PTS", true);
+  AgoraRTC.setParameter("ENABLE_AUDIO_PTS_METADATA", true);
 } catch {}
 
 try {
@@ -50,11 +48,5 @@ function AgoraVoiceButton({ briefingContext, priorityQuestion, onTranscriptChang
 }
 
 export default function AgoraSessionPanel(props) {
-  const [client] = useState(() => AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }));
-
-  return (
-    <AgoraRTCProvider client={client}>
-      <AgoraVoiceButton {...props} />
-    </AgoraRTCProvider>
-  );
+  return <AgoraVoiceButton {...props} />;
 }

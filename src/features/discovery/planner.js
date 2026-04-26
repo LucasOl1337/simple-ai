@@ -320,6 +320,154 @@ function hasAnyComplexFeature(ctx) {
   return ctx.detected.needs_booking || ctx.detected.needs_ecommerce || ctx.detected.needs_auth;
 }
 
+function classifyAnswer(answer) {
+  const raw = String(answer || "").trim();
+  const normalized = normalize(raw);
+  const words = normalized ? normalized.split(/\s+/).filter(Boolean) : [];
+  const isEmpty = words.length === 0;
+  const isVeryShort = normalized.length <= 2 || words.length <= 2;
+  const affirmative = /^(sim|s|isso|certo|ok|okay|beleza|claro|pode ser|pode|isso mesmo)$/.test(normalized);
+  const negative = /^(nao|n|nah|nenhum|nada|tanto faz|decide voce|decide vc|voce decide|vc decide)$/.test(normalized);
+  const frustrated = /(nao sei|não sei|tanto faz|decide voce|decide vc|voce decide|vc decide|qualquer coisa|me guia|sem preferencia)/.test(
+    normalized,
+  );
+  const binary = affirmative || negative;
+  const lowSignal = isEmpty || isVeryShort;
+
+  return {
+    raw,
+    normalized,
+    words,
+    isEmpty,
+    isVeryShort,
+    affirmative,
+    negative,
+    binary,
+    frustrated,
+    lowSignal,
+    needsRecovery: lowSignal || frustrated,
+  };
+}
+
+function isUsefulTurnForQuestion(questionId, answerProfile) {
+  if (!answerProfile || answerProfile.isEmpty) return false;
+  if (answerProfile.frustrated) return false;
+  if (questionId.startsWith("feature_")) {
+    return answerProfile.binary || !answerProfile.needsRecovery;
+  }
+  if (answerProfile.binary) return false;
+  return !answerProfile.needsRecovery;
+}
+
+function getQuestionFallback(questionId) {
+  const prompts = {
+    initial_description:
+      "Me conta só o básico: qual é seu negócio e o que você quer que o site ajude a fazer?",
+    business_type:
+      "Me fala só qual é o seu negócio. Ex.: padaria, oficina, clínica, salão, loja.",
+    brand_name:
+      "Qual nome eu coloco no site? Pode ser o nome da fachada ou o nome mais conhecido pelos clientes.",
+    what_you_do:
+      "Me explica em uma frase curta o que você faz ou vende, sem complicar.",
+    target_audience:
+      "Quem você quer atrair primeiro? Pode responder de um jeito simples.",
+    scope:
+      "Você atende só na sua região, em várias cidades ou online?",
+    primary_action:
+      "Quando a pessoa entrar no site, o que você quer que ela faça primeiro?",
+    current_channels:
+      "Hoje o cliente fala com você por onde? WhatsApp, Instagram, telefone ou na loja?",
+    existing_presence:
+      "Você já tem Instagram, Google ou algum site antigo que eu possa usar como referência?",
+    content_volume:
+      "Você quer mostrar poucas coisas, uma quantidade média ou muitas?",
+    has_media:
+      "Você já tem fotos ou imagens boas do trabalho? Se tiver no Instagram, também serve.",
+    faq_content:
+      "Tem alguma dúvida que os clientes sempre perguntam antes de fechar?",
+    pricing_strategy:
+      "Você quer mostrar os preços no site ou prefere pedir orçamento?",
+    feature_booking:
+      "Precisa de agendamento ou pode ser só contato mesmo?",
+    feature_selling:
+      "Você quer vender direto no site agora ou começar só com vitrine e contato?",
+    feature_area_cliente:
+      "Precisa de login ou área do cliente, ou isso pode ficar para depois?",
+    feature_simplify:
+      "Dá para começar simples. Quer uma versão só para apresentar e receber contato?",
+    visual_reference:
+      "Tem algum site, Instagram ou estilo visual que você gosta?",
+    brand_tone:
+      "O site deve passar uma sensação mais profissional, moderna, acolhedora ou divertida?",
+    brand_assets:
+      "Você já tem logo ou cores definidas, ou quer que eu proponha uma direção visual?",
+  };
+
+  return prompts[questionId] ?? "Me conta mais um pouco, do jeito que ficar mais fácil para você.";
+}
+
+function getQuestionFocusScore(question, session) {
+  const notepad = session.notepad;
+  const criticalMissing = new Set(getMissingCritical(notepad));
+  const importantMissing = new Set(getMissingImportant(notepad));
+  const answerProfile = session.lastAnswerProfile ?? {};
+  const fields = Array.isArray(question.extracts) ? question.extracts : [];
+
+  let score = 0;
+
+  for (const field of fields) {
+    if (criticalMissing.has(field)) {
+      score += 220;
+      continue;
+    }
+    if (importantMissing.has(field)) {
+      score += 120;
+      continue;
+    }
+    if (field in notepad && notepad[field].confidence < 0.65) {
+      score += 40;
+    }
+  }
+
+  if (question.required) {
+    score += 25;
+  }
+
+  if (answerProfile.needsRecovery) {
+    if (fields.some((field) => criticalMissing.has(field))) {
+      score += 100;
+    } else if (question.id === session.lastAskedQuestionId) {
+      score += 80;
+    }
+  }
+
+  if (question.id === "feature_simplify" && hasAnyComplexFeature(session)) {
+    score += 50;
+  }
+
+  return score;
+}
+
+function isQuestionSolved(session, question) {
+  if (question.id === "feature_booking") {
+    return session.featureDecisions?.booking !== null;
+  }
+  if (question.id === "feature_selling") {
+    return session.featureDecisions?.ecommerce !== null;
+  }
+  if (question.id === "feature_area_cliente") {
+    return session.featureDecisions?.auth !== null;
+  }
+  if (question.id === "feature_simplify") {
+    return Boolean(session.answers.feature_simplify);
+  }
+
+  const fields = Array.isArray(question.extracts) ? question.extracts : [];
+  if (fields.length === 0) return false;
+
+  return fields.every((field) => field in session.notepad && session.notepad[field].confidence >= 0.65);
+}
+
 function detectBusinessType(text) {
   const input = normalize(text);
   let best = null;
@@ -540,6 +688,8 @@ function summarizeContext(session) {
 function adaptQuestion(session, question) {
   const { business, brand, cta } = summarizeContext(session);
   const brandPrefix = brand ? `Sobre a ${brand}: ` : "";
+  const answerProfile = session.lastAnswerProfile ?? {};
+  const fallback = answerProfile.needsRecovery ? getQuestionFallback(question.id) : null;
 
   const adaptiveText = {
     brand_name: `Como vocÃª quer que o nome do negÃ³cio apareÃ§a no site? Pode ser o nome oficial ou o nome mais conhecido pelos clientes.`,
@@ -589,18 +739,22 @@ function adaptQuestion(session, question) {
 
   return {
     ...question,
-    question: asciiAdaptiveText[question.id] ?? adaptiveText[question.id] ?? question.question,
+    question:
+      fallback ??
+      asciiAdaptiveText[question.id] ??
+      adaptiveText[question.id] ??
+      question.question,
   };
 }
 
-function checkReadyToBuild(notepad, messagesCount) {
+function checkReadyToBuild(notepad, usefulMessagesCount) {
   const críticalMissing = getMissingCritical(notepad);
   const confidence = getNotepadConfidence(notepad);
   return {
-    ready: críticalMissing.length === 0 && confidence >= 55 && messagesCount >= 3,
+    ready: críticalMissing.length === 0 && confidence >= 55 && usefulMessagesCount >= 3,
     críticalMissing,
     confidence,
-    messagesCount,
+    messagesCount: usefulMessagesCount,
   };
 }
 
@@ -633,6 +787,14 @@ export function createSession() {
     },
     transcript: [],
     messagesCount: 0,
+    usefulMessagesCount: 0,
+    lastAskedQuestionId: null,
+    lastAnswerProfile: null,
+    featureDecisions: {
+      booking: null,
+      ecommerce: null,
+      auth: null,
+    },
     isComplete: false,
     readyToBuild: false,
     buildProposed: false,
@@ -642,26 +804,29 @@ export function createSession() {
 export function getCurrentQuestion(session) {
   const phaseId = session.phase;
   const questions = PHASE_QUESTIONS[phaseId] ?? [];
+  const candidates = [];
 
-  let idx = session.questionIndex;
-  while (idx < questions.length) {
+  for (let idx = 0; idx < questions.length; idx++) {
     const q = questions[idx];
-    if (q.condition && !q.condition(buildContext(session))) {
-      idx++;
-      continue;
-    }
-    if (q.skip_if && shouldSkip(session, q.skip_if)) {
-      idx++;
-      continue;
-    }
-    if (shouldSkipQuestion(session, q)) {
-      idx++;
-      continue;
-    }
-    return { ...adaptQuestion(session, q), _index: idx };
+    if (q.condition && !q.condition(buildContext(session))) continue;
+    if (q.skip_if && shouldSkip(session, q.skip_if)) continue;
+    if (shouldSkipQuestion(session, q)) continue;
+    if (isQuestionSolved(session, q)) continue;
+
+    candidates.push({
+      question: q,
+      _index: idx,
+      score: getQuestionFocusScore(q, session) + Math.max(0, 20 - idx * 3),
+    });
   }
 
-  return null;
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  candidates.sort((a, b) => b.score - a.score || a._index - b._index);
+  const selected = candidates[0];
+  return { ...adaptQuestion(session, selected.question), _index: selected._index };
 }
 
 function shouldSkip(session, rule) {
@@ -689,6 +854,7 @@ export function submitAnswer(session, answer) {
   }
 
   const trimmed = answer.trim();
+  const answerProfile = classifyAnswer(trimmed);
   const newAnswers = { ...session.answers, [currentQ.id]: trimmed };
 
   const newTranscript = [
@@ -703,12 +869,22 @@ export function submitAnswer(session, answer) {
     transcript: newTranscript,
     questionIndex: currentQ._index + 1,
     messagesCount: session.messagesCount + 1,
+    usefulMessagesCount: session.usefulMessagesCount + (isUsefulTurnForQuestion(currentQ.id, answerProfile) ? 1 : 0),
+    lastAskedQuestionId: currentQ.id,
+    lastAnswerProfile: answerProfile,
   };
 
   newSession = runDetection(newSession);
   newSession = runNotepadExtraction(newSession, currentQ.id, trimmed);
+  newSession = {
+    ...newSession,
+    detected: {
+      ...newSession.detected,
+      complexity: resolveComplexity({ ...buildContext(newSession), detected: newSession.detected }),
+    },
+  };
 
-  const rtb = checkReadyToBuild(newSession.notepad, newSession.messagesCount);
+  const rtb = checkReadyToBuild(newSession.notepad, newSession.usefulMessagesCount);
   newSession.readyToBuild = rtb.ready;
 
   const nextQ = getCurrentQuestion(newSession);
@@ -766,9 +942,9 @@ function runDetection(session) {
     pricing_strategy: resolvePricingStrategy(session.answers.pricing_strategy || allAnswers),
     has_media: resolveHasMedia(session.answers.has_media || allAnswers),
     scope: resolveScope(session.answers.scope || allAnswers),
-    needs_booking: features.booking,
-    needs_ecommerce: features.ecommerce,
-    needs_auth: features.auth,
+    needs_booking: session.featureDecisions?.booking ?? features.booking,
+    needs_ecommerce: session.featureDecisions?.ecommerce ?? features.ecommerce,
+    needs_auth: session.featureDecisions?.auth ?? features.auth,
   };
 
   detected.complexity = resolveComplexity({ ...ctx, detected });
@@ -783,6 +959,9 @@ function runNotepadExtraction(session, questionId, answer) {
   let np = { ...session.notepad };
   const n = normalize(answer);
   const corpus = normalize(Object.values(session.answers).filter(Boolean).join(" "));
+  const answerProfile = classifyAnswer(answer);
+  let nextDetected = { ...session.detected };
+  let nextFeatureDecisions = { ...(session.featureDecisions || {}) };
 
   // Business type — from detection engine
   if (session.detected.business_type && session.detected.business_type.id !== "general") {
@@ -818,6 +997,60 @@ function runNotepadExtraction(session, questionId, answer) {
     np = updateNotepadField(np, "primary_cta", "Agendar horário", 0.55, "inferred:" + questionId);
   } else if (corpus.includes("vender") || corpus.includes("comprar")) {
     np = updateNotepadField(np, "primary_cta", "Comprar online", 0.55, "inferred:" + questionId);
+  }
+
+  if (questionId === "feature_booking") {
+    if (answerProfile.affirmative || n.includes("agendar") || n.includes("marcar")) {
+      nextFeatureDecisions.booking = true;
+      nextDetected = {
+        ...nextDetected,
+        needs_booking: true,
+        features: { ...nextDetected.features, booking: true },
+      };
+    } else if (answerProfile.negative) {
+      nextFeatureDecisions.booking = false;
+      nextDetected = {
+        ...nextDetected,
+        needs_booking: false,
+        features: { ...nextDetected.features, booking: false },
+      };
+    }
+  }
+
+  if (questionId === "feature_selling") {
+    if (answerProfile.affirmative || n.includes("vender") || n.includes("comprar")) {
+      nextFeatureDecisions.ecommerce = true;
+      nextDetected = {
+        ...nextDetected,
+        needs_ecommerce: true,
+        features: { ...nextDetected.features, ecommerce: true },
+      };
+    } else if (answerProfile.negative) {
+      nextFeatureDecisions.ecommerce = false;
+      nextDetected = {
+        ...nextDetected,
+        needs_ecommerce: false,
+        features: { ...nextDetected.features, ecommerce: false },
+      };
+    }
+  }
+
+  if (questionId === "feature_area_cliente") {
+    if (answerProfile.affirmative || n.includes("login") || n.includes("area") || n.includes("cadastro")) {
+      nextFeatureDecisions.auth = true;
+      nextDetected = {
+        ...nextDetected,
+        needs_auth: true,
+        features: { ...nextDetected.features, auth: true },
+      };
+    } else if (answerProfile.negative) {
+      nextFeatureDecisions.auth = false;
+      nextDetected = {
+        ...nextDetected,
+        needs_auth: false,
+        features: { ...nextDetected.features, auth: false },
+      };
+    }
   }
 
   // Offerings — from what_you_do or initial_description
@@ -908,7 +1141,7 @@ function runNotepadExtraction(session, questionId, answer) {
     np = updateNotepadField(np, "existing_presence", answer.trim(), 0.8, "direct:" + questionId);
   }
 
-  return { ...session, notepad: np };
+  return { ...session, notepad: np, detected: nextDetected, featureDecisions: nextFeatureDecisions };
 }
 
 function extractOfferings(text) {

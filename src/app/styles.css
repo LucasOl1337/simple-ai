@@ -396,6 +396,44 @@ article:focus-visible {
   align-items: center;
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.topbar-test-button {
+  background: linear-gradient(180deg, rgba(0, 255, 157, 0.18), rgba(0, 255, 157, 0.06));
+  border: 1px solid rgba(0, 255, 157, 0.2);
+  border-radius: 999px;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  min-height: 38px;
+  padding: 0 12px;
+  text-transform: uppercase;
+  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.topbar-test-button:hover {
+  background: linear-gradient(180deg, rgba(0, 255, 157, 0.24), rgba(0, 255, 157, 0.1));
+  border-color: rgba(0, 255, 157, 0.38);
+  transform: translateY(-1px);
+}
+
+.topbar-test-button.is-running {
+  background: linear-gradient(180deg, rgba(255, 189, 66, 0.16), rgba(255, 189, 66, 0.08));
+  border-color: rgba(255, 189, 66, 0.3);
+  color: #ffcc78;
+}
+
+.topbar-test-label {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  line-height: 1.2;
+  max-width: min(40vw, 360px);
+  text-align: right;
 }
 
 .theme-toggle {
@@ -1099,6 +1137,15 @@ article:focus-visible {
   border-radius: 999px;
   height: 7px;
   overflow: hidden;
+}
+
+.voice-current-step {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.08em;
+  margin: -2px 0 0;
+  text-transform: uppercase;
 }
 
 .voice-meter i {

@@ -21,6 +21,159 @@ const CHAT_SESSIONS_STORAGE_KEY = "simple-ai-chat-sessions-v1";
 const ACTIVE_CHAT_SESSION_STORAGE_KEY = "simple-ai-active-chat-session-v1";
 const THEME_STORAGE_KEY = "simple-ai-theme-v1";
 
+const AUTO_TEST_SCENARIOS = [
+  {
+    id: "padaria",
+    label: "Padaria de bairro",
+    businessName: "Padaria Aurora",
+    opening:
+      "Tenho uma padaria de bairro e quero um site para mostrar produtos, receber encomendas e falar no WhatsApp.",
+    whatYouDo:
+      "A gente faz pão, bolo, salgados e encomendas para festa.",
+    audience: "Famílias do bairro e gente que passa cedo pela região.",
+    scope: "Atendo só na região central e nos bairros perto da padaria.",
+    action: "Quero que a pessoa faça encomenda no WhatsApp.",
+    channels: "Hoje o pessoal fala com a gente pelo WhatsApp e no Instagram.",
+    presence: "Tenho Instagram e uma página no Google.",
+    volume: "Quero mostrar uns 8 itens principais.",
+    media: "Tenho fotos do balcão, dos bolos e do Instagram.",
+    faq: "Horário, entrega e bolo por encomenda.",
+    pricing: "Quero mostrar alguns preços e deixar o resto sob orçamento.",
+    booking: "não",
+    selling: "não",
+    auth: "não",
+    visual: "Quero um visual acolhedor, limpo e confiável.",
+    brandAssets: "Tenho logo em vermelho e branco.",
+  },
+  {
+    id: "oficina",
+    label: "Oficina mecânica",
+    businessName: "Auto Center Silva",
+    opening:
+      "Tenho uma oficina mecânica e quero um site para mostrar serviços, passar confiança e pedir orçamento no WhatsApp.",
+    whatYouDo:
+      "A gente faz revisão, freio, troca de óleo e manutenção em geral.",
+    audience: "Motoristas da região, principalmente quem precisa resolver rápido.",
+    scope: "Atendo na cidade inteira e também recebo alguns clientes de bairros vizinhos.",
+    action: "Quero que a pessoa peça orçamento pelo WhatsApp.",
+    channels: "Hoje fechamos pelo WhatsApp, telefone e indicação.",
+    presence: "Tenho Instagram com fotos de serviços e comentários de clientes.",
+    volume: "Quero mostrar 5 serviços principais.",
+    media: "Tenho fotos reais da oficina e dos carros atendidos.",
+    faq: "Tempo de serviço, garantia e formas de pagamento.",
+    pricing: "Prefiro pedir orçamento.",
+    booking: "não",
+    selling: "não",
+    auth: "não",
+    visual: "Quero algo profissional e forte, sem cara de site genérico.",
+    brandAssets: "Tenho logo azul e prata.",
+  },
+  {
+    id: "clinica",
+    label: "Clínica de estética",
+    businessName: "Clínica Aura",
+    opening:
+      "Tenho uma clínica de estética e preciso de um site bonito para mostrar tratamentos e agendar pelo WhatsApp.",
+    whatYouDo:
+      "Fazemos limpeza de pele, botox, harmonização e protocolos faciais.",
+    audience: "Mulheres que procuram cuidado com a pele e atendimento personalizado.",
+    scope: "Atendo em um bairro fixo, com público da cidade toda.",
+    action: "Quero agendamento e contato rápido.",
+    channels: "As clientes chegam pelo Instagram e pelo WhatsApp.",
+    presence: "Tenho Instagram forte e algumas avaliações boas no Google.",
+    volume: "Quero mostrar poucos tratamentos, mas com mais detalhe.",
+    media: "Tenho fotos de antes e depois e imagens da clínica.",
+    faq: "Tempo de sessão, indicação e valores.",
+    pricing: "Prefiro mostrar alguns valores e deixar o restante sob consulta.",
+    booking: "sim",
+    selling: "não",
+    auth: "não",
+    visual: "Quero uma sensação premium, leve e moderna.",
+    brandAssets: "Tenho logo dourado e branco.",
+  },
+  {
+    id: "salao",
+    label: "Salão de beleza",
+    businessName: "Studio Bela",
+    opening:
+      "Tenho um salão de beleza e quero um site para mostrar serviços, atrair clientes e marcar horário.",
+    whatYouDo:
+      "Faço cabelo, unhas, sobrancelha e maquiagem.",
+    audience: "Público feminino da região e clientes que gostam de cuidar da aparência.",
+    scope: "Atendo só na minha cidade.",
+    action: "Quero que a pessoa marque horário.",
+    channels: "Hoje o agendamento vai por WhatsApp e Instagram.",
+    presence: "Tenho Instagram e várias fotos de trabalhos.",
+    volume: "Quero mostrar 6 serviços principais.",
+    media: "Tenho fotos boas e vídeos curtos.",
+    faq: "Duração do atendimento, horário de sábado e formas de pagamento.",
+    pricing: "Quero mostrar valores básicos.",
+    booking: "sim",
+    selling: "não",
+    auth: "não",
+    visual: "Quero algo moderno, feminino e acolhedor.",
+    brandAssets: "Tenho logo rosa e branco.",
+  },
+  {
+    id: "loja",
+    label: "Loja de roupas",
+    businessName: "Moda Viva",
+    opening:
+      "Tenho uma loja de roupas e quero um site para mostrar catálogo, separar novidades e receber pedidos.",
+    whatYouDo:
+      "Vendemos roupas femininas, acessórios e peças de temporada.",
+    audience: "Mulheres que compram pela internet e também quem passa na loja.",
+    scope: "Atendo online e também na loja física.",
+    action: "Quero receber pedidos e chamar para comprar.",
+    channels: "Hoje a maioria fala com a gente pelo Instagram e WhatsApp.",
+    presence: "Tenho Instagram com catálogo e algumas campanhas antigas.",
+    volume: "Quero mostrar bastante coisa, mas com organização.",
+    media: "Tenho fotos de catálogo e ensaios.",
+    faq: "Troca, envio, tamanho e prazo de entrega.",
+    pricing: "Quero mostrar alguns preços e promoções.",
+    booking: "não",
+    selling: "sim",
+    auth: "não",
+    visual: "Quero um visual elegante e comercial.",
+    brandAssets: "Tenho logo minimalista em preto e bege.",
+  },
+];
+
+function wait(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function pickAutoTestScenario(previousId = null) {
+  const pool = AUTO_TEST_SCENARIOS.filter((scenario) => scenario.id !== previousId);
+  return pool[Math.floor(Math.random() * pool.length)] ?? AUTO_TEST_SCENARIOS[0];
+}
+
+function buildAutoTestAnswer(question, scenario) {
+  const answers = {
+    initial_description: scenario.opening,
+    what_you_do: scenario.whatYouDo,
+    brand_name: scenario.businessName,
+    target_audience: scenario.audience,
+    scope: scenario.scope,
+    primary_action: scenario.action,
+    current_channels: scenario.channels,
+    existing_presence: scenario.presence,
+    content_volume: scenario.volume,
+    has_media: scenario.media,
+    faq_content: scenario.faq,
+    pricing_strategy: scenario.pricing,
+    feature_booking: scenario.booking,
+    feature_selling: scenario.selling,
+    feature_area_cliente: scenario.auth,
+    feature_simplify: "Pode começar simples.",
+    visual_reference: scenario.visual,
+    brand_tone: scenario.visual,
+    brand_assets: scenario.brandAssets,
+  };
+
+  return answers[question.id] || scenario.opening;
+}
+
 function createChatSessionRecord(overrides = {}) {
   const id = overrides.id ?? `chat-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const now = Date.now();
@@ -173,6 +326,54 @@ function isFilled(value, invalid = []) {
 
 function normalizeMessageText(value) {
   return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function getVoiceTurnStatus(turn) {
+  return String(turn?.status ?? "").toLowerCase();
+}
+
+function isVoiceTurnInProgress(turn) {
+  const status = getVoiceTurnStatus(turn);
+  return turn?.status === TurnStatus.IN_PROGRESS || status.includes("progress");
+}
+
+function createVoiceCommitKey(questionId, text) {
+  return `${questionId || "no-question"}::${normalizeMessageText(text)}`;
+}
+
+function rememberVoiceCommit(cache, key, timestamp = Date.now()) {
+  cache.set(key, timestamp);
+
+  if (cache.size > 80) {
+    const oldest = [...cache.entries()].sort((first, second) => first[1] - second[1]).slice(0, 24);
+    oldest.forEach(([oldKey]) => cache.delete(oldKey));
+  }
+}
+
+function removePlannerAssistantEcho(previousSession, nextSession, answer) {
+  const previousLength = previousSession?.transcript?.length ?? 0;
+  const transcript = nextSession?.transcript ?? [];
+  const assistantIndex = previousLength;
+  const userIndex = previousLength + 1;
+  const assistantTurn = transcript[assistantIndex];
+  const userTurn = transcript[userIndex];
+
+  if (
+    assistantTurn?.role !== "assistant" ||
+    userTurn?.role !== "user" ||
+    normalizeMessageText(userTurn.content) !== normalizeMessageText(answer)
+  ) {
+    return nextSession;
+  }
+
+  return {
+    ...nextSession,
+    transcript: [
+      ...transcript.slice(0, assistantIndex),
+      userTurn,
+      ...transcript.slice(userIndex + 1),
+    ],
+  };
 }
 
 function buildKnownNotes(summary) {
@@ -911,6 +1112,7 @@ function VoiceDiagnostics({ diagnostics, logs }) {
   const hasAudio = (diagnostics?.microphoneLevel ?? 0) > 0.015;
   const userTurns = diagnostics?.userTranscriptCount ?? 0;
   const agentTurns = diagnostics?.agentTranscriptCount ?? 0;
+  const agoraUserTurns = diagnostics?.agoraUserTranscriptCount ?? 0;
   const hasUserTranscripts = userTurns > 0;
   const hasAgentTranscripts = agentTurns > 0;
   const micError = diagnostics?.microphoneErrorMessage || "";
@@ -931,6 +1133,10 @@ function VoiceDiagnostics({ diagnostics, logs }) {
                   : "aguardando audio"}
         </strong>
       </div>
+
+      {diagnostics?.currentStep ? (
+        <p className="voice-current-step">etapa: {diagnostics.currentStep}</p>
+      ) : null}
 
       <div className="voice-meter" aria-label={`Nivel do microfone ${micPercent}%`}>
         <i style={{ width: `${micPercent}%` }} />
@@ -954,6 +1160,12 @@ function VoiceDiagnostics({ diagnostics, logs }) {
           warn={Boolean(micError) || (diagnostics?.isMicrophoneReady && !hasAudio)}
         />
         <DiagnosticStep
+          active={diagnostics?.isMicrophonePublished}
+          label="publish"
+          value={diagnostics?.isMicrophonePublished ? "mic no canal" : "nao publicado"}
+          warn={diagnostics?.isRtcConnected && !diagnostics?.isMicrophonePublished}
+        />
+        <DiagnosticStep
           active={diagnostics?.isRtmReady}
           label="rtm"
           value={diagnostics?.isRtmReady ? "canal ativo" : "sem eventos"}
@@ -971,7 +1183,7 @@ function VoiceDiagnostics({ diagnostics, logs }) {
         <DiagnosticStep
           active={hasUserTranscripts}
           label="stt"
-          value={`usuario ${userTurns} / agente ${agentTurns}`}
+          value={`usuario ${agoraUserTurns} / agente ${agentTurns}`}
           warn={hasAudio && diagnostics?.isAgentStarted && !hasUserTranscripts}
         />
       </ul>
@@ -1029,8 +1241,12 @@ function VoiceFirstControls({
         ? "A sessao abriu. Falta liberar o microfone."
         : lastError
           ? "A voz pausou. Toque para tentar de novo."
-      : "A conversa por voz começa sozinha. Se travar, toque no ponto verde.";
-  const actionLabel = isConnected ? "encerrar voz" : "reconectar voz";
+      : "Toque para iniciar a conversa por voz.";
+  const actionLabel = isConnecting
+    ? "cancelar"
+    : isConnected
+      ? "encerrar voz"
+      : "ativar voz";
 
   return (
     <section className="voice-first-panel" aria-live="polite">
@@ -1072,6 +1288,12 @@ export default function App() {
   const [attachment, setAttachment] = useState(null);
   const [theme, setTheme] = useState(storedTheme);
   const [isTextFallbackOpen, setIsTextFallbackOpen] = useState(false);
+  const [autoTestState, setAutoTestState] = useState({
+    running: false,
+    scenario: null,
+    step: 0,
+    message: "",
+  });
   const [, setIsAgentAvailable] = useState(
     typeof navigator === "undefined" ? true : navigator.onLine,
   );
@@ -1080,8 +1302,15 @@ export default function App() {
   const activeChatSessionIdRef = useRef(activeChatSessionId);
   const fileInputRef = useRef(null);
   const transcriptEndRef = useRef(null);
-  const processedAgoraTurnsRef = useRef(new Set());
+  const processedAgoraTurnsRef = useRef(new Map());
+  const lastCommittedVoiceTurnRef = useRef({ fingerprint: "", turnId: 0 });
   const autoVoiceStartedSessionRef = useRef(null);
+  const autoTestRunRef = useRef({ runId: 0, cancelled: false, scenarioId: null });
+  const voiceControlRef = useRef({
+    disconnect: null,
+    isConnected: false,
+    isConnecting: false,
+  });
 
   useEffect(() => {
     sessionRef.current = session;
@@ -1296,6 +1525,9 @@ export default function App() {
     const next = chatSessions.find((item) => item.id === sessionId);
     if (!next || next.id === activeChatSessionId) return;
 
+    autoTestRunRef.current.cancelled = true;
+    setAutoTestState((current) => (current.running ? { ...current, running: false, message: "Teste interrompido." } : current));
+
     commitActiveChatSession({
       session: sessionRef.current,
       buildState: buildStateRef.current,
@@ -1307,11 +1539,13 @@ export default function App() {
     setComposer("");
     setIsTextFallbackOpen(false);
     clearAttachment();
-    processedAgoraTurnsRef.current = new Set();
+    processedAgoraTurnsRef.current = new Map();
   }, [activeChatSessionId, chatSessions, clearAttachment, commitActiveChatSession]);
 
   const handleCreateChatSession = useCallback(() => {
     const next = createChatSessionRecord();
+    autoTestRunRef.current.cancelled = true;
+    setAutoTestState((current) => (current.running ? { ...current, running: false, message: "Teste interrompido." } : current));
     commitActiveChatSession({
       session: sessionRef.current,
       buildState: buildStateRef.current,
@@ -1324,12 +1558,15 @@ export default function App() {
     setComposer("");
     setIsTextFallbackOpen(false);
     clearAttachment();
-    processedAgoraTurnsRef.current = new Set();
+    processedAgoraTurnsRef.current = new Map();
   }, [clearAttachment, commitActiveChatSession]);
 
   const handleDeleteChatSession = useCallback((sessionId) => {
     const target = chatSessions.find((item) => item.id === sessionId);
     if (!target) return;
+
+    autoTestRunRef.current.cancelled = true;
+    setAutoTestState((current) => (current.running ? { ...current, running: false, message: "Teste interrompido." } : current));
 
     const title = target.title || "Nova sessao";
     const confirmed = window.confirm(
@@ -1350,40 +1587,46 @@ export default function App() {
         setComposer("");
         setIsTextFallbackOpen(false);
         clearAttachment();
-        processedAgoraTurnsRef.current = new Set();
+        processedAgoraTurnsRef.current = new Map();
       }
 
       return nextSessions;
     });
   }, [chatSessions, clearAttachment]);
 
-  const handleConversationSubmit = useCallback((rawInput) => {
+  const handleConversationSubmit = useCallback((rawInput, options = {}) => {
     const trimmed = rawInput.trim();
     if (!trimmed) return;
 
     const currentSession = sessionRef.current;
+    const isVoiceInput = options.source === "voice";
 
     if (!currentSession) {
       const created = createSession();
       const nextSession = submitAnswer(created, trimmed);
-      setSession(nextSession);
-      commitActiveChatSession({ session: nextSession, buildState: buildStateRef.current });
+      const committedSession = isVoiceInput
+        ? removePlannerAssistantEcho(created, nextSession, trimmed)
+        : nextSession;
+      setSession(committedSession);
+      commitActiveChatSession({ session: committedSession, buildState: buildStateRef.current });
       setComposer("");
       clearAttachment();
       return;
     }
 
     const nextSession = submitAnswer(currentSession, trimmed);
-    setSession(nextSession);
-    commitActiveChatSession({ session: nextSession, buildState: buildStateRef.current });
+    const committedSession = isVoiceInput
+      ? removePlannerAssistantEcho(currentSession, nextSession, trimmed)
+      : nextSession;
+    setSession(committedSession);
+    commitActiveChatSession({ session: committedSession, buildState: buildStateRef.current });
     setComposer("");
     clearAttachment();
   }, [clearAttachment, commitActiveChatSession]);
 
-  const handleStartBuild = useCallback(async () => {
-    const currentSession = sessionRef.current;
+  const startBuildForSession = useCallback(async (currentSession = sessionRef.current) => {
     if (!currentSession) return;
-    if (buildState && buildState.status !== "error") return;
+    if (buildStateRef.current && buildStateRef.current.status !== "error") return;
 
     setBuildState({ status: "starting", started_at: Date.now() });
 
@@ -1429,25 +1672,182 @@ export default function App() {
         started_at: Date.now(),
       });
     }
-  }, [buildState]);
+  }, []);
+
+  const handleStartBuild = useCallback(() => {
+    startBuildForSession(sessionRef.current);
+  }, [startBuildForSession]);
 
   const handleResetBuild = useCallback(() => {
     setBuildState(null);
-    processedAgoraTurnsRef.current = new Set();
+    processedAgoraTurnsRef.current = new Map();
+    lastCommittedVoiceTurnRef.current = { fingerprint: "", turnId: 0 };
   }, []);
+
+  const handleStopAutoTest = useCallback(() => {
+    autoTestRunRef.current.cancelled = true;
+    setAutoTestState((current) =>
+      current.running
+        ? {
+            ...current,
+            running: false,
+            message: "Teste interrompido.",
+          }
+        : current,
+    );
+  }, []);
+
+  const handleStartAutoTest = useCallback(async () => {
+    if (autoTestState.running) return;
+
+    if (voiceControlRef.current.isConnected || voiceControlRef.current.isConnecting) {
+      try {
+        await voiceControlRef.current.disconnect?.();
+      } catch {
+        /* ignore voice shutdown failures during test mode */
+      }
+    }
+
+    const scenario = pickAutoTestScenario(autoTestRunRef.current.scenarioId);
+    autoTestRunRef.current = {
+      runId: autoTestRunRef.current.runId + 1,
+      cancelled: false,
+      scenarioId: scenario.id,
+    };
+    const runId = autoTestRunRef.current.runId;
+
+    handleStopAutoTest();
+    handleResetBuild();
+
+    commitActiveChatSession({
+      session: sessionRef.current,
+      buildState: buildStateRef.current,
+    });
+
+    const nextRecord = createChatSessionRecord({
+      title: `Teste rápido: ${scenario.label}`,
+    });
+
+    activeChatSessionIdRef.current = nextRecord.id;
+    setChatSessions((current) => [nextRecord, ...current]);
+    setActiveChatSessionId(nextRecord.id);
+    setSession(null);
+    setBuildState(null);
+    setComposer("");
+    setIsTextFallbackOpen(false);
+    clearAttachment();
+    processedAgoraTurnsRef.current = new Map();
+    lastCommittedVoiceTurnRef.current = { fingerprint: "", turnId: 0 };
+
+    let workingSession = createSession();
+    setSession(workingSession);
+    commitActiveChatSession({ session: workingSession, buildState: null });
+    setAutoTestState({
+      running: true,
+      scenario,
+      step: 0,
+      message: "Preparando cenário de teste...",
+    });
+
+    for (let step = 0; step < 18; step += 1) {
+      if (autoTestRunRef.current.cancelled || autoTestRunRef.current.runId !== runId) {
+        return;
+      }
+
+      const currentQuestion = getCurrentQuestion(workingSession);
+      if (!currentQuestion) break;
+
+      const answer = buildAutoTestAnswer(currentQuestion, scenario);
+      workingSession = submitAnswer(workingSession, answer);
+      setSession(workingSession);
+      commitActiveChatSession({ session: workingSession, buildState: null });
+      setAutoTestState({
+        running: true,
+        scenario,
+        step: step + 1,
+        message: `${currentQuestion.question} -> ${answer}`,
+      });
+
+      if (workingSession.readyToBuild || getNotepadState(workingSession).readyToBuild) {
+        break;
+      }
+
+      await wait(650);
+    }
+
+    if (autoTestRunRef.current.cancelled || autoTestRunRef.current.runId !== runId) {
+      return;
+    }
+
+    commitActiveChatSession({ session: workingSession, buildState: buildStateRef.current });
+
+    const readyToBuild = workingSession.readyToBuild || getNotepadState(workingSession).readyToBuild;
+    setAutoTestState({
+      running: false,
+      scenario,
+      step: getNotepadState(workingSession).messagesCount,
+      message: readyToBuild
+        ? "Teste concluído. Iniciando a geração do site..."
+        : "Teste concluído, mas o briefing ainda não ficou pronto.",
+    });
+
+    if (readyToBuild) {
+      await startBuildForSession(workingSession);
+    }
+  }, [
+    autoTestState.running,
+    clearAttachment,
+    commitActiveChatSession,
+    handleResetBuild,
+    handleStopAutoTest,
+    startBuildForSession,
+  ]);
 
   const handleAgoraTranscript = useCallback((turns) => {
     if (!Array.isArray(turns)) return;
 
-    for (const turn of turns) {
-      if (turn.type !== "user") continue;
-      if (turn.status === TurnStatus.IN_PROGRESS) continue;
-      if (!turn.text || !turn.text.trim()) continue;
-      if (processedAgoraTurnsRef.current.has(turn.id)) continue;
+    const finalUserTurns = turns
+      .filter((turn) => turn.type === "user")
+      .filter((turn) => !isVoiceTurnInProgress(turn))
+      .filter((turn) => turn.text && turn.text.trim())
+      .sort((first, second) => {
+        const firstOrder = Number(first.turnId) || Number(first.timestamp) || 0;
+        const secondOrder = Number(second.turnId) || Number(second.timestamp) || 0;
+        return firstOrder - secondOrder;
+      });
 
-      processedAgoraTurnsRef.current.add(turn.id);
-      handleConversationSubmit(turn.text);
+    const turn = finalUserTurns[finalUserTurns.length - 1];
+    if (!turn) return;
+
+    const currentSession = sessionRef.current;
+    const currentQuestion = currentSession ? getCurrentQuestion(currentSession) : null;
+    const questionId = currentQuestion?.id || "initial";
+    const now = Date.now();
+
+    const normalized = normalizeMessageText(turn.text);
+    if (!normalized || normalized.length < 3) return;
+
+    const turnId = Number(turn.turnId) || 0;
+    const fingerprint = `${turnId || turn.timestamp || "no-turn"}::${normalized}`;
+    if (turnId && turnId <= lastCommittedVoiceTurnRef.current.turnId) return;
+    if (fingerprint === lastCommittedVoiceTurnRef.current.fingerprint) return;
+
+    const commitKey = createVoiceCommitKey(questionId, normalized);
+    if (processedAgoraTurnsRef.current.has(commitKey)) return;
+
+    const recentUserText = sessionRef.current?.transcript
+      ?.filter((message) => message.role === "user")
+      ?.slice(-4)
+      ?.some((message) => normalizeMessageText(message.content) === normalized);
+    if (recentUserText) {
+      rememberVoiceCommit(processedAgoraTurnsRef.current, commitKey, now);
+      lastCommittedVoiceTurnRef.current = { fingerprint, turnId };
+      return;
     }
+
+    rememberVoiceCommit(processedAgoraTurnsRef.current, commitKey, now);
+    lastCommittedVoiceTurnRef.current = { fingerprint, turnId };
+    handleConversationSubmit(turn.text, { source: "voice" });
   }, [handleConversationSubmit]);
 
   const {
@@ -1467,21 +1867,36 @@ export default function App() {
     language: "pt-BR",
   });
 
+  useEffect(() => {
+    voiceControlRef.current = {
+      disconnect,
+      isConnected: isAgoraConnected,
+      isConnecting: isAgoraConnecting,
+    };
+  }, [disconnect, isAgoraConnected, isAgoraConnecting]);
+
   const voiceTranscriptMessages = useMemo(() => {
     const committedTexts = new Set(
       (session?.transcript ?? []).map((message) => normalizeMessageText(message.content)),
     );
 
-    return agoraTranscripts
+    const latestBySignature = new Map();
+
+    agoraTranscripts
       .filter((turn) => turn.text && turn.text.trim())
       .filter((turn) => {
-        if (turn.status === TurnStatus.IN_PROGRESS) return true;
+        if (isVoiceTurnInProgress(turn)) return true;
         return !committedTexts.has(normalizeMessageText(turn.text));
       })
-      .map((turn) => ({
+      .forEach((turn) => {
+        const signature = `${turn.type}-${normalizeMessageText(turn.text)}-${isVoiceTurnInProgress(turn) ? "live" : "final"}`;
+        latestBySignature.set(signature, turn);
+      });
+
+    return [...latestBySignature.values()].slice(-4).map((turn) => ({
         role: turn.type === "user" ? "user" : "assistant",
         content: turn.text,
-        isLive: turn.status === TurnStatus.IN_PROGRESS,
+        isLive: isVoiceTurnInProgress(turn),
       }));
   }, [agoraTranscripts, session?.transcript]);
 
@@ -1495,23 +1910,9 @@ export default function App() {
   }, [displayedTranscript]);
 
   useEffect(() => {
-    if (autoVoiceStartedSessionRef.current === activeChatSessionId) return undefined;
-    if (isAgoraConnected || isAgoraConnecting) return undefined;
-
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      if (cancelled) return;
-      autoVoiceStartedSessionRef.current = activeChatSessionId;
-      connect().catch((error) => {
-        console.error("[Agora] auto voice start failed", error);
-      });
-    }, 450);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [activeChatSessionId, connect, isAgoraConnected, isAgoraConnecting]);
+    if (typeof window === "undefined") return;
+    autoVoiceStartedSessionRef.current = null;
+  }, []);
 
   function buildOutgoingMessage() {
     const parts = [];
@@ -1574,7 +1975,7 @@ export default function App() {
   const voiceButtonLabel = isAgoraConnected
     ? "Encerrar voz"
     : isAgoraConnecting
-      ? "Conectando..."
+      ? "Cancelar voz"
       : "Ativar voz";
   const voiceStatusClass = isAgoraConnected
     ? "is-online"
@@ -1595,6 +1996,19 @@ export default function App() {
       <header className="whiteboard-topbar">
         <img alt="Simple AI" className="brand-logo" src={logoUrl} />
         <div className="topbar-actions">
+          <button
+            className={`topbar-test-button ${autoTestState.running ? "is-running" : ""}`}
+            onClick={autoTestState.running ? handleStopAutoTest : handleStartAutoTest}
+            type="button"
+          >
+            {autoTestState.running ? "parar teste" : "teste rápido"}
+          </button>
+          {autoTestState.scenario ? (
+            <small className="topbar-test-label">
+              {autoTestState.scenario.label}
+              {autoTestState.message ? ` · ${autoTestState.message}` : ""}
+            </small>
+          ) : null}
           <ThemeToggle
             theme={theme}
             onToggle={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}

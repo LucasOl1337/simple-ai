@@ -63,3 +63,35 @@ export async function stopAgent(agentId) {
 
   await parseJson(response);
 }
+
+export function stopAgentKeepalive(agentId) {
+  if (!agentId) return false;
+
+  try {
+    fetch(`${API_BASE_URL}/v2/stopAgent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ agentId }),
+      keepalive: true,
+    }).catch(() => {});
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function stopAllKnownAgents() {
+  const response = await fetch(`${API_BASE_URL}/v2/stopAllKnownAgents`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ scope: "known" }),
+  });
+
+  const result = await parseJson(response);
+
+  if (result.code !== 0) {
+    throw new Error(result.msg || "Nao foi possivel encerrar agentes conhecidos.");
+  }
+
+  return result.data;
+}

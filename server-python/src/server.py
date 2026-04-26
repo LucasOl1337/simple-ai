@@ -123,6 +123,10 @@ class StopAgentRequest(BaseModel):
     agentId: str
 
 
+class StopAllAgentsRequest(BaseModel):
+    scope: str = "known"
+
+
 class OciAgentChatRequest(BaseModel):
     message: str
     history: Optional[List[Dict[str, Any]]] = None
@@ -225,6 +229,23 @@ def stop_agent(request: StopAgentRequest):
     except Exception as error:
         if isinstance(error, ValueError):
             raise HTTPException(status_code=404, detail=str(error))
+        raise to_http_error(error)
+
+
+@router.post("/v2/stopAllKnownAgents")
+def stop_all_known_agents(request: StopAllAgentsRequest):
+    if agent is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Agora backend is not configured. Fill APP_ID and APP_CERTIFICATE in server-python/.env.local.",
+        )
+    if request.scope != "known":
+        raise HTTPException(status_code=400, detail="Only scope='known' is supported.")
+
+    try:
+        result = agent.stop_all_known()
+        return {"code": 0, "msg": "success", "data": result}
+    except Exception as error:
         raise to_http_error(error)
 
 

@@ -15,6 +15,7 @@ coverage/
 server-python/.venv/
 server-python/venv/
 server-python/sites/
+server-python/.active-agents.json
 __pycache__/
 *.pyc
 

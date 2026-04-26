@@ -1,5 +1,7 @@
 import os
 import time
+import json
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from agora_agent import Agora, Area
@@ -40,6 +42,10 @@ Core rules (from .simpleai/agent-flow.md):
 - Be concise because this is a voice interaction.
 - Ask only ONE question at a time — never bombard the user.
 - The user knows NOTHING about technology — never use technical jargon.
+- Do not follow a rigid script. Re-evaluate the latest answer and choose the next most useful missing point.
+- If the user already answered a field, skip it and move on.
+- If the user answer is short, vague, or just "n"/"sim"/"não sei", do not treat it as complete. Ask a simpler follow-up or give a concrete example.
+- If the user gives information out of order, absorb it immediately instead of waiting for the next scripted step.
 - Prioritize critical fields first: business_type, brand_name, primary_cta.
 - Then important fields: offerings, scope, current_channels.
 - Then desired fields: target_audience, brand_tone, content_volume.
@@ -83,6 +89,61 @@ class Agent:
             app_certificate=self.app_certificate,
         )
         self._sessions: Dict[str, Any] = {}
+        self._session_records: Dict[str, Dict[str, Any]] = {}
+        self._registry_path = Path(__file__).resolve().parents[1] / ".active-agents.json"
+        self._load_registry()
+
+    def _load_registry(self) -> None:
+        try:
+            raw = self._registry_path.read_text(encoding="utf-8")
+            parsed = json.loads(raw)
+        except Exception:
+            self._session_records = {}
+            return
+
+        if isinstance(parsed, dict):
+            self._session_records = {
+                str(agent_id): record
+                for agent_id, record in parsed.items()
+                if isinstance(record, dict)
+            }
+
+    def _save_registry(self) -> None:
+        try:
+            self._registry_path.write_text(
+                json.dumps(self._session_records, indent=2, sort_keys=True),
+                encoding="utf-8",
+            )
+        except Exception:
+            pass
+
+    def _register_session(self, agent_id: str, channel_name: str, agent_uid: str, user_uid: str) -> None:
+        self._session_records[agent_id] = {
+            "agent_uid": str(agent_uid),
+            "channel_name": str(channel_name),
+            "created_at": int(time.time()),
+            "user_uid": str(user_uid),
+        }
+        self._save_registry()
+
+    def _forget_session(self, agent_id: str) -> None:
+        self._session_records.pop(agent_id, None)
+        self._save_registry()
+
+    def _client_for_record(self, record: Dict[str, Any]) -> Agora:
+        token = generate_convo_ai_token(
+            app_id=self.app_id,
+            app_certificate=self.app_certificate,
+            channel_name=str(record["channel_name"]),
+            account=str(record["agent_uid"]),
+            token_expire=3600,
+        )
+        return Agora(
+            area=self.area,
+            app_id=self.app_id,
+            app_certificate=self.app_certificate,
+            auth_token=token,
+        )
 
     @staticmethod
     def _normalize_provider(provider: Optional[str]) -> str:
@@ -105,12 +166,22 @@ class Agent:
                 return value.strip()
         return None
 
+    @staticmethod
+    def _chat_completions_url(value: Optional[str], default: str) -> str:
+        url = (value or default).strip().rstrip("/")
+        if url.endswith("/chat/completions"):
+            return url
+        if url.endswith("/v1") or url.endswith("/v4"):
+            return f"{url}/chat/completions"
+        return url
+
     def _build_llm(self, greeting: str):
         provider = self._normalize_provider(os.getenv("AGENT_LLM_PROVIDER"))
         model = os.getenv("AGENT_LLM_MODEL")
         temperature = float(os.getenv("AGENT_LLM_TEMPERATURE", "0.4"))
         top_p = float(os.getenv("AGENT_LLM_TOP_P", "0.9"))
-        max_tokens = int(os.getenv("AGENT_LLM_MAX_TOKENS", "1024"))
+        max_tokens = int(os.getenv("AGENT_LLM_MAX_TOKENS", "384"))
+        max_history = int(os.getenv("AGENT_LLM_MAX_HISTORY", "6"))
 
         if provider == "anthropic":
             api_key = self._first_env("ANTHROPIC_API_KEY", "AGENT_LLM_API_KEY")
@@ -122,7 +193,7 @@ class Agent:
                 api_key=api_key,
                 model=model or "claude-opus-4-7",
                 failure_message="Desculpe, tive um problema para processar essa parte. Pode repetir de forma curta?",
-                max_history=15,
+                max_history=max_history,
                 max_tokens=max_tokens,
                 temperature=temperature,
                 top_p=top_p,
@@ -132,33 +203,34 @@ class Agent:
             provider_defaults = {
                 "openai": {
                     "api_key": self._first_env("AGENT_LLM_API_KEY", "OPENAI_API_KEY"),
-                    "base_url": self._first_env(
-                        "AGENT_LLM_BASE_URL", "OPENAI_BASE_URL", "OPENAI_API_BASE"
+                    "url": self._chat_completions_url(
+                        self._first_env("AGENT_LLM_BASE_URL", "OPENAI_BASE_URL", "OPENAI_API_BASE"),
+                        "https://api.openai.com/v1/chat/completions",
                     ),
                     "default_model": "gpt-4o-mini",
                 },
                 "nvidia": {
                     "api_key": self._first_env("NVIDIA_API_KEY", "AGENT_LLM_API_KEY"),
-                    "base_url": self._first_env(
-                        "AGENT_LLM_BASE_URL", "NVIDIA_BASE_URL"
-                    )
-                    or "https://integrate.api.nvidia.com/v1",
+                    "url": self._chat_completions_url(
+                        self._first_env("AGENT_LLM_BASE_URL", "NVIDIA_BASE_URL"),
+                        "https://integrate.api.nvidia.com/v1/chat/completions",
+                    ),
                     "default_model": "nvidia/llama-3.1-8b-instruct",
                 },
                 "zai": {
                     "api_key": self._first_env("ZAI_API_KEY", "AGENT_LLM_API_KEY"),
-                    "base_url": self._first_env(
-                        "AGENT_LLM_BASE_URL", "ZAI_BASE_URL"
-                    )
-                    or "https://api.z.ai/api/paas/v4",
+                    "url": self._chat_completions_url(
+                        self._first_env("AGENT_LLM_BASE_URL", "ZAI_BASE_URL"),
+                        "https://api.z.ai/api/paas/v4/chat/completions",
+                    ),
                     "default_model": "glm-5.1",
                 },
                 "openrouter": {
                     "api_key": self._first_env("OPENROUTER_API_KEY", "AGENT_LLM_API_KEY"),
-                    "base_url": self._first_env(
-                        "AGENT_LLM_BASE_URL", "OPENROUTER_BASE_URL"
-                    )
-                    or "https://openrouter.ai/api/v1",
+                    "url": self._chat_completions_url(
+                        self._first_env("AGENT_LLM_BASE_URL", "OPENROUTER_BASE_URL"),
+                        "https://openrouter.ai/api/v1/chat/completions",
+                    ),
                     "default_model": "openai/gpt-4o-mini",
                 },
             }
@@ -173,9 +245,9 @@ class Agent:
             return OpenAI(
                 api_key=api_key,
                 model=selected_model,
-                base_url=provider_config["base_url"],
+                base_url=provider_config["url"],
                 failure_message="Desculpe, tive um problema para processar essa parte. Pode repetir de forma curta?",
-                max_history=15,
+                max_history=max_history,
                 max_tokens=max_tokens,
                 temperature=temperature,
                 top_p=top_p,
@@ -271,7 +343,10 @@ class Agent:
         llm = self._build_llm(greeting)
         stt = self._build_stt(language)
         tts = MiniMaxTTS(
+            key=self._first_env("MINIMAX_API_KEY", "AGENT_TTS_API_KEY"),
+            group_id=self._first_env("MINIMAX_GROUP_ID", "AGENT_TTS_GROUP_ID"),
             model=os.getenv("AGENT_TTS_MODEL", "speech_2_6_turbo"),
+            url=self._first_env("MINIMAX_TTS_URL", "AGENT_TTS_URL"),
             voice_id=os.getenv("AGENT_TTS_VOICE_ID", "English_captivating_female1"),
         )
 
@@ -309,15 +384,16 @@ class Agent:
             channel=channel_name,
             token=agent_token,
             agent_uid=str(agent_uid),
-            remote_uids=[str(user_uid)],
+            remote_uids=["*"],
             enable_string_uid=True,
-            idle_timeout=0,
+            idle_timeout=int(os.getenv("AGENT_IDLE_TIMEOUT", "45")),
             expires_in=3600,
             debug=os.getenv("AGENT_DEBUG", "0") == "1",
         )
 
         agent_id = session.start()
         self._sessions[agent_id] = session
+        self._register_session(agent_id, channel_name, agent_uid, user_uid)
 
         return {
             "agent_id": agent_id,
@@ -333,6 +409,28 @@ class Agent:
         session = self._sessions.pop(agent_id, None)
         if session:
             session.stop()
+            self._forget_session(agent_id)
+            return
+
+        record = self._session_records.get(agent_id)
+        if record:
+            client = self._client_for_record(record)
+            client.agents.stop(self.app_id, agent_id)
+            self._forget_session(agent_id)
             return
 
         raise ValueError(f"No active session found for agent_id: {agent_id}")
+
+    def stop_all_known(self) -> Dict[str, Any]:
+        stopped = []
+        failed = []
+        agent_ids = list(set([*self._sessions.keys(), *self._session_records.keys()]))
+
+        for agent_id in agent_ids:
+            try:
+                self.stop(agent_id)
+                stopped.append(agent_id)
+            except Exception as error:
+                failed.append({"agent_id": agent_id, "error": str(error)})
+
+        return {"stopped": stopped, "failed": failed}
