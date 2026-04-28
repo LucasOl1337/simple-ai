@@ -1,0 +1,68 @@
+[
+  {
+    "id": "framer-small-business-examples-home",
+    "segment": ["small-business", "multi-segment"],
+    "style": ["clean-professional", "varied"],
+    "layout_pattern": ["landing", "small-business-showcase"],
+    "cta_type": ["mixed"],
+    "source_url": "https://www.framer.com/blog/small-business-website-examples/",
+    "file": null,
+    "status": "planned",
+    "notes": "Capturar exemplos com boa adaptacao para pequenos negocios nao SaaS."
+  },
+  {
+    "id": "landingfolio-hero-examples",
+    "segment": ["multi-segment"],
+    "style": ["mixed"],
+    "layout_pattern": ["hero-section"],
+    "cta_type": ["mixed"],
+    "source_url": "https://www.landingfolio.com/components/hero",
+    "file": null,
+    "status": "planned",
+    "notes": "Boa fonte para capturas de hero forte com CTA e hierarquia clara."
+  },
+  {
+    "id": "one-page-love-gallery-scan",
+    "segment": ["multi-segment"],
+    "style": ["mixed"],
+    "layout_pattern": ["one-page"],
+    "cta_type": ["mixed"],
+    "source_url": "https://onepagelove.com/gallery",
+    "file": null,
+    "status": "planned",
+    "notes": "Selecionar capturas com composicao forte, clareza e boa navegacao vertical."
+  },
+  {
+    "id": "landingfolio-hero-browser-capture-01",
+    "segment": ["multi-segment"],
+    "style": ["mixed"],
+    "layout_pattern": ["hero-section"],
+    "cta_type": ["mixed"],
+    "source_url": "https://www.landingfolio.com/components/hero",
+    "file": null,
+    "status": "captured-external-session",
+    "notes": "Captura feita via navegador MCP mostrando biblioteca de heroes. Ainda sem persistencia local de imagem no workspace. Serviu para validar o fluxo de curadoria visual."
+  },
+  {
+    "id": "framer-small-business-examples-01",
+    "segment": ["small-business", "multi-segment"],
+    "style": ["clean-professional", "varied"],
+    "layout_pattern": ["small-business-showcase", "landing"],
+    "cta_type": ["mixed"],
+    "source_url": "https://www.framer.com/blog/small-business-website-examples/",
+    "file": null,
+    "status": "planned",
+    "notes": "Prioridade alta para uma proxima rodada de capturas persistidas."
+  },
+  {
+    "id": "justinmind-hero-examples-01",
+    "segment": ["food", "local-service", "beauty", "multi-segment"],
+    "style": ["image-led", "warm-artisanal", "mixed"],
+    "layout_pattern": ["hero-section", "image-dominant"],
+    "cta_type": ["mixed"],
+    "source_url": "https://www.justinmind.com/blog/inspiring-hero-image-websites/",
+    "file": null,
+    "status": "planned",
+    "notes": "Boa fonte para capturas de hero mais sensorial e baseado em imagem."
+  }
+]

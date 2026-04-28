@@ -1,0 +1,126 @@
+export const STORAGE_KEY = "simple-ai-whiteboard-v5";
+export const BUILD_STORAGE_KEY = "simple-ai-build-v1";
+export const NOTE_LAYOUT_STORAGE_KEY = "simple-ai-note-layout-v2";
+export const CHAT_SESSIONS_STORAGE_KEY = "simple-ai-chat-sessions-v1";
+export const ACTIVE_CHAT_SESSION_STORAGE_KEY = "simple-ai-active-chat-session-v1";
+export const THEME_STORAGE_KEY = "simple-ai-theme-v1";
+
+export const OPENING_MESSAGE = "Oi. Me conta com calma o que você faz e o que você gostaria que o site ajudasse a resolver.";
+
+export const AUTO_TEST_SCENARIOS = [
+  {
+    id: "padaria",
+    label: "Padaria de bairro",
+    businessName: "Padaria Aurora",
+    opening:
+      "Tenho uma padaria de bairro e quero um site para mostrar produtos, receber encomendas e falar no WhatsApp.",
+    whatYouDo:
+      "A gente faz pão, bolo, salgados e encomendas para festa.",
+    audience: "Famílias do bairro e gente que passa cedo pela região.",
+    scope: "Atendo só na região central e nos bairros perto da padaria.",
+    action: "Quero que a pessoa faça encomenda no WhatsApp.",
+    channels: "Hoje o pessoal fala com a gente pelo WhatsApp e no Instagram.",
+    presence: "Tenho Instagram e uma página no Google.",
+    volume: "Quero mostrar uns 8 itens principais.",
+    media: "Tenho fotos do balcão, dos bolos e do Instagram.",
+    faq: "Horário, entrega e bolo por encomenda.",
+    pricing: "Quero mostrar alguns preços e deixar o resto sob orçamento.",
+    booking: "não",
+    selling: "não",
+    auth: "não",
+    visual: "Quero um visual acolhedor, limpo e confiável.",
+    brandAssets: "Tenho logo em vermelho e branco.",
+  },
+  {
+    id: "oficina",
+    label: "Oficina mecânica",
+    businessName: "Auto Center Silva",
+    opening:
+      "Tenho uma oficina mecânica e quero um site para mostrar serviços, passar confiança e pedir orçamento no WhatsApp.",
+    whatYouDo:
+      "A gente faz revisão, freio, troca de óleo e manutenção em geral.",
+    audience: "Motoristas da região, principalmente quem precisa resolver rápido.",
+    scope: "Atendo na cidade inteira e também recebo alguns clientes de bairros vizinhos.",
+    action: "Quero que a pessoa peça orçamento pelo WhatsApp.",
+    channels: "Hoje fechamos pelo WhatsApp, telefone e indicação.",
+    presence: "Tenho Instagram com fotos de serviços e comentários de clientes.",
+    volume: "Quero mostrar 5 serviços principais.",
+    media: "Tenho fotos reais da oficina e dos carros atendidos.",
+    faq: "Tempo de serviço, garantia e formas de pagamento.",
+    pricing: "Prefiro pedir orçamento.",
+    booking: "não",
+    selling: "não",
+    auth: "não",
+    visual: "Quero algo profissional e forte, sem cara de site genérico.",
+    brandAssets: "Tenho logo azul e prata.",
+  },
+  {
+    id: "clinica",
+    label: "Clínica de estética",
+    businessName: "Clínica Aura",
+    opening:
+      "Tenho uma clínica de estética e preciso de um site bonito para mostrar tratamentos e agendar pelo WhatsApp.",
+    whatYouDo:
+      "Fazemos limpeza de pele, botox, harmonização e protocolos faciais.",
+    audience: "Mulheres que procuram cuidado com a pele e atendimento personalizado.",
+    scope: "Atendo em um bairro fixo, com público da cidade toda.",
+    action: "Quero agendamento e contato rápido.",
+    channels: "As clientes chegam pelo Instagram e pelo WhatsApp.",
+    presence: "Tenho Instagram forte e algumas avaliações boas no Google.",
+    volume: "Quero mostrar poucos tratamentos, mas com mais detalhe.",
+    media: "Tenho fotos de antes e depois e imagens da clínica.",
+    faq: "Tempo de sessão, indicação e valores.",
+    pricing: "Prefiro mostrar alguns valores e deixar o restante sob consulta.",
+    booking: "sim",
+    selling: "não",
+    auth: "não",
+    visual: "Quero uma sensação premium, leve e moderna.",
+    brandAssets: "Tenho logo dourado e branco.",
+  },
+  {
+    id: "salao",
+    label: "Salão de beleza",
+    businessName: "Studio Bela",
+    opening:
+      "Tenho um salão de beleza e quero um site para mostrar serviços, atrair clientes e marcar horário.",
+    whatYouDo:
+      "Faço cabelo, unhas, sobrancelha e maquiagem.",
+    audience: "Público feminino da região e clientes que gostam de cuidar da aparência.",
+    scope: "Atendo só na minha cidade.",
+    action: "Quero que a pessoa marque horário.",
+    channels: "Hoje o agendamento vai por WhatsApp e Instagram.",
+    presence: "Tenho Instagram e várias fotos de trabalhos.",
+    volume: "Quero mostrar 6 serviços principais.",
+    media: "Tenho fotos boas e vídeos curtos.",
+    faq: "Duração do atendimento, horário de sábado e formas de pagamento.",
+    pricing: "Quero mostrar valores básicos.",
+    booking: "sim",
+    selling: "não",
+    auth: "não",
+    visual: "Quero algo moderno, feminino e acolhedor.",
+    brandAssets: "Tenho logo rosa e branco.",
+  },
+  {
+    id: "loja",
+    label: "Loja de roupas",
+    businessName: "Moda Viva",
+    opening:
+      "Tenho uma loja de roupas e quero um site para mostrar catálogo, separar novidades e receber pedidos.",
+    whatYouDo:
+      "Vendemos roupas femininas, acessórios e peças de temporada.",
+    audience: "Mulheres que compram pela internet e também quem passa na loja.",
+    scope: "Atendo online e também na loja física.",
+    action: "Quero receber pedidos e chamar para comprar.",
+    channels: "Hoje a maioria fala com a gente pelo Instagram e WhatsApp.",
+    presence: "Tenho Instagram com catálogo e algumas campanhas antigas.",
+    volume: "Quero mostrar bastante coisa, mas com organização.",
+    media: "Tenho fotos de catálogo e ensaios.",
+    faq: "Troca, envio, tamanho e prazo de entrega.",
+    pricing: "Quero mostrar alguns preços e promoções.",
+    booking: "não",
+    selling: "sim",
+    auth: "não",
+    visual: "Quero um visual elegante e comercial.",
+    brandAssets: "Tenho logo minimalista em preto e bege.",
+  },
+];

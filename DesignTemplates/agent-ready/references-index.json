@@ -1,0 +1,92 @@
+[
+  {
+    "id": "landingfolio-home",
+    "type": "gallery",
+    "title": "Landingfolio",
+    "url": "https://www.landingfolio.com/",
+    "focus": ["landing-pages", "components", "hero", "cta"],
+    "strength": "High",
+    "notes": "Forte para anatomia de secoes e comparacao de heroes, CTAs e componentes. Bom para landing curta e clareza de estrutura."
+  },
+  {
+    "id": "lapa-ninja-2025",
+    "type": "gallery",
+    "title": "Lapa Ninja 2025",
+    "url": "https://www.lapa.ninja/year/2025/",
+    "focus": ["landing-pages", "trends", "full-page"],
+    "strength": "High",
+    "notes": "Bom para observar tendencias recentes e paginas completas. Usar com filtro para nao importar estetica SaaS sem contexto."
+  },
+  {
+    "id": "one-page-love-gallery",
+    "type": "gallery",
+    "title": "One Page Love",
+    "url": "https://onepagelove.com/gallery",
+    "focus": ["one-page", "landing-pages", "full-page"],
+    "strength": "High",
+    "notes": "Excelente para paginas enxutas e para estudar ritmo vertical, composicao e CTA recorrente."
+  },
+  {
+    "id": "land-book-landing",
+    "type": "gallery",
+    "title": "Land-book",
+    "url": "https://land-book.com/?category=landing-page",
+    "focus": ["landing-pages", "visual-language", "templates"],
+    "strength": "High",
+    "notes": "Forte para variedade visual e para estudar personalidade sem perder estrutura."
+  },
+  {
+    "id": "framer-small-business-examples",
+    "type": "article",
+    "title": "Framer Small Business Examples",
+    "url": "https://www.framer.com/blog/small-business-website-examples/",
+    "focus": ["small-business", "templates", "examples"],
+    "strength": "Medium",
+    "notes": "Mais proximo do universo de pequenos negocios, util para adaptar direcoes a casos reais."
+  },
+  {
+    "id": "reddit-good-inspiration-thread",
+    "type": "community",
+    "title": "Reddit: where do you find actually good website design inspiration",
+    "url": "https://www.reddit.com/r/web_design/comments/1ko8f6i/where_do_you_find_actually_good_website_design/",
+    "focus": ["meta", "inspiration-sources"],
+    "strength": "Medium",
+    "notes": "Mostra consenso util: concorrentes reais e setores especificos costumam render referencias melhores que galerias excessivamente artisticas."
+  },
+  {
+    "id": "awesome-inspiration-repo",
+    "type": "github-list",
+    "title": "awesome-inspiration",
+    "url": "https://github.com/SHSFWork/awesome-inspiration",
+    "focus": ["directory", "galleries", "components"],
+    "strength": "Medium",
+    "notes": "Bom hub para expandir a biblioteca sem depender de busca ad hoc a cada sessao."
+  },
+  {
+    "id": "unbounce-best-landing-pages",
+    "type": "article",
+    "title": "Unbounce Best Landing Page Examples",
+    "url": "https://unbounce.com/landing-page-examples/best-landing-page-examples/",
+    "focus": ["conversion", "landing-pages", "cta"],
+    "strength": "Medium",
+    "notes": "Bom para entender como paginas de alta conversao estruturam narrativa e CTA ao redor do objetivo principal."
+  },
+  {
+    "id": "elementor-small-business-examples",
+    "type": "article",
+    "title": "Elementor Small Business Examples",
+    "url": "https://elementor.com/blog/best-small-business-website-examples/",
+    "focus": ["small-business", "examples", "brand-clarity"],
+    "strength": "Medium",
+    "notes": "Ajuda a aproximar a biblioteca do universo de pequenos negocios e nao apenas de landing pages de software."
+  },
+  {
+    "id": "justinmind-hero-examples",
+    "type": "article",
+    "title": "Justinmind Hero Image Examples",
+    "url": "https://www.justinmind.com/blog/inspiring-hero-image-websites/",
+    "focus": ["hero", "image-led", "conversion"],
+    "strength": "Medium",
+    "notes": "Boa referencia para heroes baseados em imagem, especialmente em negocios sensoriais e categorias visuais."
+  }
+]

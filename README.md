@@ -1,128 +1,144 @@
 # SIMPLE-AI
 
-SIMPLE-AI e um projeto de descoberta conversacional para pessoas totalmente leigas em tecnologia. A interface e a arquitetura do produto precisam preservar simplicidade extrema em todas as entregas.
+Qualquer pessoa cria seu site conversando em português.  
+Sem saber nada de tecnologia. O sistema decide tudo nos bastidores.
 
-## Material para avaliadores
+---
 
-- [PDF da apresentacao](AVALIADORES%20READ%20ME/SIMPLE-AI-Apresentacao-Avaliadores.pdf)
-- [Pasta de avaliadores](AVALIADORES%20READ%20ME/README.md)
+## O que é
 
-## Regra global de produto
+SIMPLE-AI é uma plataforma que transforma uma conversa em texto em um site funcional e publicado.
 
-Estas regras sao obrigatorias para qualquer agente ou colaborador que atuar nesta repo:
+O usuário descreve o negócio em linguagem natural. O sistema extrai as informações necessárias, toma todas as decisões técnicas de forma invisível (stack, layout, módulos), e entrega um site pronto — sem que o usuário veja uma única palavra técnica durante o processo.
 
-- A interface deve ser extremamente simples, inclusive para um usuario idoso ou sem familiaridade digital.
-- A tela inicial deve permanecer vazia no lado da lousa, sem menus, dashboards, modos ou botoes extras.
-- O unico fluxo primario visivel deve ser a conversa.
-- A dock de chat deve expor apenas dois controles de acao:
-  - um botao primario para enviar mensagem ou imagem
-  - um botao de microfone para iniciar a conversa por voz
-- Nao adicionar acoes secundarias como tabs, toggles, menus de modo, botoes de preview, botoes tecnicos ou atalhos que aumentem carga cognitiva.
-- A lousa da esquerda so deve mostrar o minimo necessario: informacoes-chave ja preenchidas, o que falta responder e o fluxo atual do briefing.
-- Sempre preferir menos elementos, menos decisoes e menos texto por tela.
+**Para quem:** donos de pequenos negócios brasileiros sem nenhuma experiência digital.  
+**Diferencial:** o usuário nunca vê, entende ou é exposto a nenhum termo técnico. A conversa é o produto.
 
-## Ordem de leitura para agentes
+---
 
-Se voce entrou agora na branch, siga esta ordem:
+## Os 3 Módulos
 
-1. **[.simpleai/README.md](.simpleai/README.md)** - COMECE AQUI (spec core obrigatorio)
-2. [.simpleai/first-interaction.md](.simpleai/first-interaction.md) - como o agente abre e conduz a primeira conversa
-3. [.simpleai/agent-flow.md](.simpleai/agent-flow.md) - fases, perguntas e decisoes silenciosas
-4. [.simpleai/flow-order.md](.simpleai/flow-order.md) - Discovery -> Producao -> Iteracao + ready_to_build
-5. [src/features/discovery/planner.js](src/features/discovery/planner.js) - engine que implementa o spec
-6. [src/app/App.jsx](src/app/App.jsx) - UI principal
-7. [.simpleai/voice-convo-requirements.md](.simpleai/voice-convo-requirements.md) - requisitos de integracao de voz
+| Módulo | Pasta | Responsabilidade |
+|--------|-------|-----------------|
+| **Intake** | `intake/` | Coleta inteligente via conversa — transforma linguagem natural em especificação técnica |
+| **Builder** | `builder/` | Agente LLM que recebe o briefing e gera um site HTML funcional |
+| **API** | `api/` | Servidor FastAPI, orquestração, fila de build, serving dos sites gerados |
 
-## Estado atual
+---
 
-SIMPLE-AI incorpora um core de conversa em tempo real com Agora Conversational AI + RTC, mas a interface principal continua focada no fluxo mais simples possivel.
+## Fluxo Principal
 
-## Estrutura
-
-```text
-.
-├── .simpleai/                          <- CORE: spec de comportamento do agente
-│   ├── README.md                       <- Indice obrigatorio (primeira leitura)
-│   ├── first-interaction.md            <- Abertura + notepad + threshold
-│   ├── agent-flow.md                   <- Fases + decisoes silenciosas
-│   ├── flow-order.md                   <- Discovery -> Producao -> Iteracao
-│   └── voice-convo-requirements.md     <- Requisitos Convo/Voice
-├── src/
-│   ├── app/
-│   │   ├── App.jsx
-│   │   └── styles.css
-│   ├── features/
-│   │   └── discovery/
-│   │       └── planner.js              <- Implementa o spec de .simpleai/
-│   ├── integrations/
-│   │   └── agora/
-│   └── main.jsx
-├── server-python/
-│   ├── src/agent.py                    <- Agente Convo que segue .simpleai/ specs
-│   ├── src/server.py
-│   └── .env.example
-├── docs/                               <- Docs auxiliares (nao core)
-│   └── README.md
-└── vite.config.js
+```
+Usuário escreve em texto
+        │
+        ▼
+  [intake/engine]          Motor de discovery: fases conversacionais,
+  Agente 01                notepad interno, threshold ready_to_build
+        │
+        │  briefing consolidado (JSON)
+        ▼
+   [api/server]            Fila de build, polling de status
+        │
+        │  spec do negócio
+        ▼
+  [builder/agent]          Agente 02: gera HTML via LLM (ou fallback local)
+  Agente 02
+        │
+        │  index.html
+        ▼
+  [api/sites/{id}/]        Site servido publicamente
+        │
+        ▼
+  Usuário recebe o link
 ```
 
-## Responsabilidade por pasta
+---
 
-- `.simpleai/`: **CORE** - especificacao de comportamento, fluxo, notepad e threshold. Fonte de verdade.
-- `src/app/`: interface principal e composicao da experiencia
-- `src/features/discovery/`: engine que implementa o spec de `.simpleai/`
-- `src/integrations/agora/`: camada de integracao com voz em tempo real
-- `server-python/`: backend local para token, agente Convo e configuracao
-- `docs/`: documentacao auxiliar e anotacoes (nao core)
+## Setup Completo
 
-## Setup
+### Pré-requisitos
+- Node.js 18+
+- Python 3.11+
+- (Opcional) Chave de API de um LLM para o Agente 02
 
-### 1. Frontend
+### Frontend (Módulo Intake)
 
 ```bash
-npm install --legacy-peer-deps
+npm install
+npm run dev          # http://localhost:5175
 ```
 
-### 2. Backend
+### Backend (Módulos API + Builder)
 
 ```bash
-python -m venv server-python/.venv
-server-python\.venv\Scripts\python -m pip install -r server-python/requirements.txt
-copy server-python\.env.example server-python\.env.local
+cd api
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# Configure o LLM (opcional — sem ele, usa fallback local)
+cp .env.example .env.local
+# Edite .env.local com suas credenciais
+
+python server.py     # http://localhost:8000
 ```
 
-Preencha em `server-python/.env.local`:
-
-- `APP_ID`
-- `APP_CERTIFICATE`
-- `AGENT_LLM_PROVIDER` (`anthropic`, `openai-compatible`, `nvidia`, `zai`, `openrouter`)
-- `AGENT_LLM_API_KEY` ou a chave especifica do provider (`ANTHROPIC_API_KEY`, `NVIDIA_API_KEY`, `ZAI_API_KEY`, `OPENROUTER_API_KEY`)
-- `AGENT_LLM_BASE_URL` se quiser sobrescrever o endpoint padrao
-- `AGENT_LLM_MODEL`
-
-## Rodando
-
-Em dois terminais:
+### Rodar tudo junto
 
 ```bash
-npm run dev
-server-python\.venv\Scripts\python server-python/src/server.py
+npm run dev:full     # roda frontend + backend em paralelo
 ```
 
-Ou use:
+---
 
-```bash
-npm run dev:full
+## Configuração do LLM (Agente 02)
+
+O Agente 02 aceita qualquer provedor OpenAI-compatible. Configure em `api/.env.local`:
+
+```env
+# Escolha um provedor:
+AGENT_LLM_PROVIDER=anthropic        # anthropic | openai-compatible | nvidia | zai | openrouter
+AGENT_LLM_API_KEY=sk-...
+AGENT_LLM_MODEL=claude-opus-4-7     # opcional — tem defaults por provedor
 ```
 
-Observacao: `dev:full` chama `python` do PATH. Se voce preferir usar a `venv`, rode o backend no comando acima.
+Sem configuração, o sistema usa um fallback determinístico local (site HTML limpo baseado no briefing).
 
-## Validacao feita
+---
 
-- `npm run build`
-- `server-python\.venv\Scripts\python -m compileall server-python\src`
-- `server-python\.venv\Scripts\python -c "import sys; sys.path.insert(0, 'server-python/src'); import server; print('backend-import-ok')"`
+## Regras Absolutas do Produto
 
-## Limite atual
+Estes princípios são invioláveis em todo o código, UX e documentação:
 
-Sem `APP_ID` e `APP_CERTIFICATE` validos da Agora o backend sobe, mas a sessao real nao conecta. Se estiver usando `AGENT_LLM_PROVIDER=openai-compatible`, `nvidia`, `zai` ou `openrouter`, o backend tambem precisa da chave do provider e, se quiser, um `AGENT_LLM_BASE_URL` customizado.
+1. **Zero jargão técnico** — o usuário nunca vê: frontend, backend, API, deploy, React, banco de dados, servidor, endpoint
+2. **Uma pergunta por vez** — nunca bombardear o usuário com múltiplas perguntas
+3. **O agente decide em silêncio** — stack, layout e módulos são escolhas invisíveis baseadas no notepad
+4. **Notepad é a única fonte de verdade** — todas as decisões técnicas derivam do que foi anotado
+5. **Acessível para um idoso de 68 anos sem experiência digital** — linguagem, ritmo e clareza não são negociáveis
+6. **Tela inicial completamente vazia** — sem menus, dashboards, botões técnicos
+7. **Só a conversa é visível** — sem tabs, toggles, modos ou atalhos técnicos
+
+---
+
+## Estado Atual
+
+**Fase 1 — Texto:** toda a interação é por texto. A UI é uma conversa simples.
+
+**Fase 2 — Voz (roadmap):** interação por voz está prevista para uma fase futura. Nenhum código de voz existe na base atual.
+
+---
+
+## Ordem de Leitura para Colaboradores
+
+```
+1. README.md (este arquivo)            — visão geral e regras
+2. docs/spec/README.md                 — especificação comportamental do agente
+3. docs/spec/first-interaction.md      — como a primeira mensagem é tratada
+4. docs/spec/agent-flow.md             — as 7 fases da conversa
+5. docs/spec/flow-order.md             — threshold de ready_to_build
+6. docs/spec/NOTEPAD-SCHEMA.md         — schema completo do notepad
+7. docs/architecture.md                — arquitetura técnica atual
+8. intake/README.md                    — módulo de coleta
+9. builder/README.md                   — módulo de geração
+10. api/README.md                       — módulo de servidor
+```

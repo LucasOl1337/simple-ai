@@ -34,6 +34,13 @@ Thumbs.db
 .vscode/
 .idea/
 
-# temporary pdf tooling
-tmp/pydeps/
-tmp/pdfs/renders/
+# temporary files and runtime output
+tmp/
+
+# codex / vite process output (no extension or .err/.out)
+.codex-*
+.vite-live.*
+frontend.err
+frontend.out
+tmp-vite.err
+tmp-vite.out

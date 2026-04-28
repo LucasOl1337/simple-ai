@@ -1,6 +1,4 @@
-import { defineConfig } from "vite";
-
-export default defineConfig({
+export default {
   server: {
     proxy: {
       "/api": {
@@ -10,4 +8,4 @@ export default defineConfig({
       },
     },
   },
-});
+};

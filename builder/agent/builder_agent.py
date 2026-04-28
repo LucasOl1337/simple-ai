@@ -1,0 +1,1706 @@
+# -*- coding: utf-8 -*-
+"""
+Agente 02 — Builder runtime.
+
+Streams HTML from an LLM given a business spec, then writes the result to
+disk for the FastAPI app to serve.
+
+Provider resolution order:
+  1. AGENT_LLM_PROVIDER env var (anthropic | openai-compatible | nvidia | zai | openrouter)
+  2. Presence of ANTHROPIC_API_KEY alone (backwards compat — implies provider=anthropic)
+  3. Local deterministic fallback when no provider is configured
+"""
+from __future__ import annotations
+
+import os
+import re
+import html
+import base64
+import json
+import time
+import threading
+import unicodedata
+import requests
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, Optional
+from urllib.parse import quote, quote_plus
+
+try:
+    import anthropic
+except ImportError:
+    anthropic = None
+
+from builder.prompts.builder import (
+    AGENTE_02_BUILDER_SYSTEM_PROMPT,
+    PROMPT_VERSION,
+    build_messages,
+)
+
+
+HTML_FENCE_PATTERN = re.compile(
+    r"^```(?:html)?\s*\n(.*?)\n```\s*$",
+    re.DOTALL,
+)
+
+_PROVIDER_KEY_MAP = {
+    "anthropic": "ANTHROPIC_API_KEY",
+    "nvidia": "NVIDIA_API_KEY",
+    "zai": "ZAI_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
+}
+
+_PROVIDER_BASE_URLS = {
+    "nvidia": "https://integrate.api.nvidia.com/v1",
+    "zai": "https://api.z.ai/api/paas/v4",
+    "openrouter": "https://openrouter.ai/api/v1",
+}
+
+_PROVIDER_DEFAULT_MODELS = {
+    "anthropic": "claude-opus-4-7",
+    "openrouter": "anthropic/claude-opus-4",
+    "nvidia": "meta/llama-3.3-70b-instruct",
+    "zai": "gpt-4o",
+    "openai-compatible": "gpt-4o",
+}
+
+_VALID_PROVIDERS = frozenset(
+    {"anthropic", "openai-compatible", "nvidia", "zai", "openrouter"}
+)
+
+_DEFAULT_BUILDER_AGENT_PROFILE = "site-builder-core"
+_DEFAULT_IMAGE_BASE_URL = "http://localhost:20128/v1"
+
+_SEGMENT_THEMES = {
+    "mechanic": {
+        "ink": "#f0f0f0", "muted": "#9ca3af", "paper": "#111111",
+        "line": "#2d2d2d", "accent": "#f57c00", "accent_dark": "#e65100",
+        "warm": "#1e1e1e", "card": "rgba(30, 30, 30, 0.9)",
+    },
+    "bakery": {
+        "ink": "#3e2723", "muted": "#6d4c41", "paper": "#fdf8f0",
+        "line": "#d7ccc8", "accent": "#bf360c", "accent_dark": "#e64a19",
+        "warm": "#fff3e0", "card": "rgba(255, 255, 255, 0.88)",
+    },
+    "clinic": {
+        "ink": "#1a237e", "muted": "#546e7a", "paper": "#f8fafd",
+        "line": "#cfd8dc", "accent": "#0077b6", "accent_dark": "#005f8e",
+        "warm": "#e3f2fd", "card": "rgba(255, 255, 255, 0.92)",
+    },
+    "beauty": {
+        "ink": "#212121", "muted": "#757575", "paper": "#fdf6f0",
+        "line": "#e0d0c1", "accent": "#8d2848", "accent_dark": "#6a1b35",
+        "warm": "#fce4ec", "card": "rgba(255, 255, 255, 0.88)",
+    },
+    "restaurant": {
+        "ink": "#1a0a00", "muted": "#8d6e63", "paper": "#fff8f0",
+        "line": "#d7ccc8", "accent": "#c62828", "accent_dark": "#a31515",
+        "warm": "#fff3e0", "card": "rgba(255, 255, 255, 0.9)",
+    },
+    "default": {
+        "ink": "#17211b", "muted": "#5d6b63", "paper": "#fbfaf6",
+        "line": "#d8ded5", "accent": "#2f7d59", "accent_dark": "#1f5f42",
+        "warm": "#f3dfb6", "card": "rgba(255, 255, 255, 0.78)",
+    },
+}
+
+_SEGMENT_TAGLINES = {
+    "mechanic": "Serviços automotivos com qualidade, rapidez e transparência.",
+    "bakery": "Produtos frescos feitos com cuidado, todo dia.",
+    "clinic": "Atendimento especializado com cuidado e atenção.",
+    "beauty": "Beleza e bem-estar com dedicação e carinho.",
+    "restaurant": "Sabor e qualidade em cada refeição.",
+    "retail": "Produtos selecionados para o seu dia a dia.",
+    "education": "Conhecimento e desenvolvimento para todos.",
+    "legal": "Assessoria jurídica com seriedade e comprometimento.",
+    "cleaning": "Limpeza profissional para o seu espaço.",
+    "fitness": "Saúde e qualidade de vida ao seu alcance.",
+    "construction": "Construção e reforma com excelência e cuidado.",
+    "tech": "Soluções em tecnologia sob medida para você.",
+    "default": "Atendimento de qualidade para o seu negócio.",
+}
+
+
+def _resolve_llm_config() -> tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
+    """Return (provider, api_key, base_url, model) or (None, ...) for local fallback."""
+    provider = os.getenv("AGENT_LLM_PROVIDER", "").lower().strip()
+
+    if not provider:
+        # Backwards compat: ANTHROPIC_API_KEY alone means anthropic provider
+        if os.getenv("ANTHROPIC_API_KEY", "").strip():
+            provider = "anthropic"
+        else:
+            return None, None, None, None
+
+    if provider not in _VALID_PROVIDERS:
+        print(f"[BUILDER] Unknown AGENT_LLM_PROVIDER={provider!r}. Falling back to local mode.")
+        return None, None, None, None
+
+    # API key
+    api_key = os.getenv("AGENT_LLM_API_KEY", "").strip()
+    if not api_key:
+        env_var = _PROVIDER_KEY_MAP.get(provider, "")
+        api_key = os.getenv(env_var, "").strip() if env_var else ""
+    if not api_key:
+        print(f"[BUILDER] No API key found for provider={provider!r}. Falling back to local mode.")
+        return None, None, None, None
+
+    # Base URL
+    base_url = os.getenv("AGENT_LLM_BASE_URL", "").strip() or _PROVIDER_BASE_URLS.get(provider, "")
+
+    # Model
+    model = (
+        os.getenv("AGENT_LLM_MODEL", "").strip()
+        or os.getenv("BUILDER_LLM_MODEL", "").strip()
+        or _PROVIDER_DEFAULT_MODELS.get(provider, "gpt-4o")
+    )
+
+    return provider, api_key, base_url, model
+
+
+def _normalize_for_match(text: str) -> str:
+    nfkd = unicodedata.normalize("NFKD", text.lower())
+    return "".join(c for c in nfkd if unicodedata.category(c) != "Mn")
+
+
+def _detect_segment_id(segment_label: str) -> str:
+    s = _normalize_for_match(segment_label)
+    if any(k in s for k in ("oficina", "automotivo", "mecanico", "construcao", "reforma")):
+        return "mechanic"
+    if any(k in s for k in ("padaria", "confeitaria", "cafe", "doce", "restaurante", "alimentacao", "lanchonete", "hamburgueria", "pizzaria")):
+        return "bakery"
+    if any(k in s for k in ("clinica", "consultorio", "medico", "dentista", "fisioterapia", "estetica", "saude")):
+        return "clinic"
+    if any(k in s for k in ("salao", "barbearia", "beleza", "spa", "nail", "manicure", "cabelo")):
+        return "beauty"
+    if any(k in s for k in ("restaurante", "alimentacao", "menu")):
+        return "restaurant"
+    if any(k in s for k in ("loja", "comercio", "produto", "varejo")):
+        return "retail"
+    if any(k in s for k in ("escola", "curso", "aula", "ensino", "mentoria", "coaching")):
+        return "education"
+    if any(k in s for k in ("advocacia", "contador", "contabilidade", "juridico")):
+        return "legal"
+    if any(k in s for k in ("limpeza", "faxina", "diarista")):
+        return "cleaning"
+    if any(k in s for k in ("academia", "personal", "treino", "fitness")):
+        return "fitness"
+    if any(k in s for k in ("construcao", "reforma", "arquiteto", "engenheiro")):
+        return "construction"
+    if any(k in s for k in ("informatica", "computador", "celular", "software", "app")):
+        return "tech"
+    return "default"
+
+
+@dataclass
+class BuildJob:
+    job_id: str
+    status: str  # queued | building | done | error
+    spec: Dict[str, Any]
+    site_path: Optional[Path] = None
+    site_url: Optional[str] = None
+    error: Optional[str] = None
+    streamed_chars: int = 0
+    usage: Dict[str, int] = field(default_factory=dict)
+
+    def snapshot(self) -> Dict[str, Any]:
+        return {
+            "job_id": self.job_id,
+            "status": self.status,
+            "site_url": self.site_url,
+            "error": self.error,
+            "streamed_chars": self.streamed_chars,
+            "usage": self.usage,
+        }
+
+
+def _strip_html_fence(text: str) -> str:
+    text = text.strip()
+    match = HTML_FENCE_PATTERN.match(text)
+    if match:
+        return match.group(1).strip()
+    if text.lower().startswith("<!doctype"):
+        return text
+    doctype_idx = text.lower().find("<!doctype")
+    if doctype_idx > 0:
+        return text[doctype_idx:].strip()
+    return text
+
+
+def _should_runtime_fallback(exc: Exception) -> bool:
+    message = str(exc or "").lower()
+    transient_signals = (
+        "insufficient balance",
+        "no resource package",
+        "rate limit",
+        "429",
+        "quota",
+        "temporarily unavailable",
+        "timeout",
+        "connection",
+        "api connection",
+        "service unavailable",
+    )
+    return any(signal in message for signal in transient_signals)
+
+
+class BuilderAgent:
+    def __init__(self, sites_dir: Path, model: Optional[str] = None):
+        provider, api_key, base_url, resolved_model = _resolve_llm_config()
+
+        self.provider = provider
+        self.use_local_fallback = provider is None
+        self.model = model or resolved_model or "claude-opus-4-7"
+        self.sites_dir = sites_dir
+        self.sites_dir.mkdir(parents=True, exist_ok=True)
+
+        self._jobs: Dict[str, BuildJob] = {}
+        self._lock = threading.Lock()
+        self._project_root = Path(__file__).resolve().parents[2]
+        self._profiles_dir = self._project_root / "AgentesProfiles"
+        self._design_templates_dir = self._project_root / "DesignTemplates"
+        self._design_taxonomy_dir = self._design_templates_dir / "taxonomy"
+        self._design_agent_ready_dir = self._design_templates_dir / "agent-ready"
+        self._default_agent_profile = (
+            os.getenv("BUILDER_AGENT_PROFILE", _DEFAULT_BUILDER_AGENT_PROFILE).strip()
+            or _DEFAULT_BUILDER_AGENT_PROFILE
+        )
+        self.client = None
+        self._openai_client = None
+        self._image_client = None
+        self._image_api_key = ""
+        self._image_base_url = ""
+        self.image_model = os.getenv("AGENT_IMAGE_MODEL", "cx/gpt-5.4-image").strip() or "cx/gpt-5.4-image"
+        self.image_size = os.getenv("AGENT_IMAGE_SIZE", "auto").strip() or "auto"
+        self.image_quality = os.getenv("AGENT_IMAGE_QUALITY", "auto").strip() or "auto"
+        self.image_background = os.getenv("AGENT_IMAGE_BACKGROUND", "auto").strip() or "auto"
+        self.image_detail = os.getenv("AGENT_IMAGE_DETAIL", "high").strip() or "high"
+        self.image_output_format = os.getenv("AGENT_IMAGE_OUTPUT_FORMAT", "png").strip() or "png"
+        self.image_timeout_seconds = int(os.getenv("AGENT_IMAGE_TIMEOUT_SECONDS", "45").strip() or "45")
+        self.image_optional_slot_timeout_seconds = int(os.getenv("AGENT_IMAGE_OPTIONAL_SLOT_TIMEOUT_SECONDS", "12").strip() or "12")
+        self.image_enabled = os.getenv("AGENT_IMAGE_ENABLED", "1").strip().lower() not in {
+            "0",
+            "false",
+            "no",
+            "off",
+        }
+
+        def activate_local_fallback(reason: str) -> None:
+            print(f"[BUILDER] {reason}. Falling back to local mode.")
+            self.provider = None
+            self.client = None
+            self._openai_client = None
+            self._image_client = None
+            self._image_api_key = ""
+            self._image_base_url = ""
+            self.use_local_fallback = True
+
+        if provider == "anthropic":
+            if anthropic is None:
+                activate_local_fallback(
+                    "anthropic package is required for provider=anthropic (run: pip install anthropic)"
+                )
+            else:
+                self.client = anthropic.Anthropic(api_key=api_key)
+                print(f"[BUILDER] provider=anthropic model={self.model}")
+
+        elif provider in ("openai-compatible", "nvidia", "zai", "openrouter"):
+            try:
+                import openai as _openai
+                self._openai_client = _openai.OpenAI(
+                    api_key=api_key,
+                    base_url=base_url or None,
+                )
+                print(f"[BUILDER] provider={provider} base_url={base_url!r} model={self.model}")
+            except ImportError:
+                activate_local_fallback(
+                    f"openai package is required for provider={provider} (run: pip install openai)"
+                )
+
+        else:
+            print("[BUILDER] No LLM provider configured — using local fallback mode.")
+
+        self._init_image_client()
+
+    def _resolve_profile_name(self, job: BuildJob) -> str:
+        design_plan = job.spec.get("design_plan") or {}
+        planned = str(design_plan.get("agent_profile") or "").strip() if isinstance(design_plan, dict) else ""
+        requested = str(job.spec.get("agent_profile") or "").strip()
+        return requested or planned or self._default_agent_profile
+
+    def _profile_path(self, profile_name: str) -> Path:
+        safe = profile_name.strip().replace("..", "").replace("/", "-").replace("\\", "-")
+        if safe.endswith(".md"):
+            safe = safe[:-3]
+        return self._profiles_dir / f"{safe}.md"
+
+    def _load_profile_prompt(self, profile_name: str) -> str:
+        path = self._profile_path(profile_name)
+        if not path.exists() or not path.is_file():
+            raise RuntimeError(f"Perfil de agente nao encontrado: {profile_name}. Esperado em {path}")
+        return path.read_text(encoding="utf-8").strip()
+
+    def _read_design_template_text(self, *relative_parts: str) -> str:
+        path = self._design_templates_dir.joinpath(*relative_parts)
+        if not path.exists() or not path.is_file():
+            return ""
+        try:
+            return path.read_text(encoding="utf-8").strip()
+        except OSError:
+            return ""
+
+    def _load_design_reference_index(self) -> list[dict[str, Any]]:
+        raw = self._read_design_template_text("agent-ready", "references-index.json")
+        if not raw:
+            return []
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            return []
+        return data if isinstance(data, list) else []
+
+    def _resolve_layout_guidance_file(self, layout_family: str) -> Optional[str]:
+        mapping = {
+            "conversion-landing": "landing-pages/README.md",
+            "local-trust": "local-services/README.md",
+            "catalog-grid": "catalogs/README.md",
+            "image-led": "warm-artisanal/README.md",
+            "editorial-onepage": "editorial-premium/README.md",
+        }
+        return mapping.get(layout_family)
+
+    def _collect_design_library_context(self, job: BuildJob) -> str:
+        design_plan = job.spec.get("design_plan") or job.spec.get("summary", {}).get("design_plan") or {}
+        if not isinstance(design_plan, dict) or not design_plan:
+            return ""
+
+        layout_family = str(design_plan.get("layout_family") or "").strip()
+        visual_style = str(design_plan.get("visual_style") or "").strip()
+        design_notes = design_plan.get("design_notes") if isinstance(design_plan.get("design_notes"), dict) else {}
+        reference_ids = design_notes.get("reference_ids") or []
+
+        sections: list[str] = []
+
+        design_rules = self._read_design_template_text("agent-ready", "design-rules.md")
+        if design_rules:
+            sections.append("# BIBLIOTECA DE DESIGN: REGRAS OPERACIONAIS\n" + design_rules)
+
+        style_map = self._read_design_template_text("agent-ready", "style-to-segment-map.md")
+        if style_map:
+            sections.append("# BIBLIOTECA DE DESIGN: MAPA DE ESTILO POR SEGMENTO\n" + style_map)
+
+        layout_matrix = self._read_design_template_text("agent-ready", "layout-selection-matrix.md")
+        if layout_matrix:
+            sections.append("# BIBLIOTECA DE DESIGN: MATRIZ DE LAYOUT\n" + layout_matrix)
+
+        anti_patterns = self._read_design_template_text("taxonomy", "anti-patterns.md")
+        if anti_patterns:
+            sections.append("# BIBLIOTECA DE DESIGN: ANTI-PADROES\n" + anti_patterns)
+
+        if visual_style:
+            visual_styles = self._read_design_template_text("taxonomy", "visual-styles.md")
+            if visual_styles:
+                sections.append("# BIBLIOTECA DE DESIGN: ESTILOS VISUAIS\n" + visual_styles)
+
+        layout_file = self._resolve_layout_guidance_file(layout_family)
+        if layout_file:
+            gallery_text = self._read_design_template_text("galleries", *layout_file.split("/"))
+            if gallery_text:
+                sections.append("# BIBLIOTECA DE DESIGN: GALERIA RELEVANTE\n" + gallery_text)
+
+        index_entries = self._load_design_reference_index()
+        if index_entries and reference_ids:
+            matched_entries = [
+                entry for entry in index_entries
+                if isinstance(entry, dict) and entry.get("id") in reference_ids
+            ]
+            if matched_entries:
+                lines = []
+                for entry in matched_entries[:5]:
+                    title = entry.get("title") or entry.get("id") or "referencia"
+                    url = entry.get("url") or ""
+                    notes = entry.get("notes") or ""
+                    focus = ", ".join(entry.get("focus") or []) if isinstance(entry.get("focus"), list) else ""
+                    lines.append(f"- {title}: {focus}. {notes} Fonte: {url}")
+                sections.append("# BIBLIOTECA DE DESIGN: REFERENCIAS RECOMENDADAS\n" + "\n".join(lines))
+
+        return "\n\n".join(section for section in sections if section).strip()
+
+    def _build_system_prompt_for_job(self, job: BuildJob) -> str:
+        profile_name = self._resolve_profile_name(job)
+        profile_text = self._load_profile_prompt(profile_name)
+        design_plan = job.spec.get("design_plan") or job.spec.get("summary", {}).get("design_plan") or {}
+        design_notes = design_plan.get("design_notes") if isinstance(design_plan, dict) else None
+        design_library_context = self._collect_design_library_context(job)
+
+        design_context = ""
+        if isinstance(design_plan, dict) and design_plan:
+            design_context = (
+                "# PLANO DE DESIGN E DIRECAO VISUAL\n"
+                f"- layout_family: {design_plan.get('layout_family') or 'não definido'}\n"
+                f"- visual_style: {design_plan.get('visual_style') or 'não definido'}\n"
+                f"- content_density: {design_plan.get('content_density') or 'não definido'}\n"
+                f"- trust_strategy: {', '.join(design_plan.get('trust_strategy') or []) or 'não definido'}\n"
+                f"- section_order: {', '.join((design_plan.get('ui_direction') or {}).get('section_order') or []) or 'não definido'}\n"
+                f"- cta_type: {(design_plan.get('cta_strategy') or {}).get('type') or 'não definido'}\n"
+                f"- palette_hint: {design_plan.get('palette_hint') or 'não definido'}\n"
+            )
+
+        design_notes_context = ""
+        if isinstance(design_notes, dict) and design_notes:
+            design_notes_context = (
+                "# NOTAS INTERNAS DO AGENTE\n"
+                f"- layout_reason: {design_notes.get('layout_reason') or 'não definido'}\n"
+                f"- style_reason: {design_notes.get('style_reason') or 'não definido'}\n"
+                f"- must_have_sections: {', '.join(design_notes.get('must_have_sections') or []) or 'não definido'}\n"
+                f"- trust_priority: {design_notes.get('trust_priority') or 'não definido'}\n"
+                f"- avoid: {', '.join(design_notes.get('avoid') or []) or 'não definido'}\n"
+            )
+
+        return (
+            f"{AGENTE_02_BUILDER_SYSTEM_PROMPT}\n\n"
+            f"# PERFIL ATIVO DO AGENTE ({profile_name})\n"
+            f"{profile_text}\n\n"
+            f"{design_context}\n"
+            f"{design_notes_context}\n"
+            f"{design_library_context}\n"
+        ).strip()
+
+    def _init_image_client(self) -> None:
+        if not self.image_enabled:
+            return
+
+        image_api_key = (
+            os.getenv("AGENT_IMAGE_API_KEY", "").strip()
+            or os.getenv("OPENAI_API_KEY", "").strip()
+            or os.getenv("AGENT_LLM_API_KEY", "").strip()
+            or os.getenv("FIRST_INTERACTION_API_KEY", "").strip()
+            or os.getenv("INTAKE_FILTER_API_KEY", "").strip()
+        )
+        if not image_api_key:
+            return
+
+        image_base_url = os.getenv("AGENT_IMAGE_BASE_URL", "").strip() or _DEFAULT_IMAGE_BASE_URL
+        self._image_api_key = image_api_key
+        self._image_base_url = image_base_url.rstrip("/")
+        self._image_client = True
+        print(f"[BUILDER] image-provider=9router-http base_url={self._image_base_url!r} model={self.image_model}")
+
+    def get_job(self, job_id: str) -> Optional[BuildJob]:
+        with self._lock:
+            return self._jobs.get(job_id)
+
+    def enqueue(self, job_id: str, spec: Dict[str, Any]) -> BuildJob:
+        job = BuildJob(job_id=job_id, status="queued", spec=spec)
+        with self._lock:
+            self._jobs[job_id] = job
+        thread = threading.Thread(
+            target=self._run_build,
+            args=(job,),
+            name=f"builder-{job_id}",
+            daemon=True,
+        )
+        thread.start()
+        return job
+
+    def _run_build(self, job: BuildJob) -> None:
+        with self._lock:
+            job.status = "building"
+
+        try:
+            site_dir = self.sites_dir / job.job_id
+            site_dir.mkdir(parents=True, exist_ok=True)
+            local_usage: Dict[str, int] = {}
+
+            if self.use_local_fallback:
+                generated_html, local_usage = self._build_local_html_v2(job, site_dir)
+            else:
+                try:
+                    if self.provider == "anthropic":
+                        generated_html = _strip_html_fence(self._call_claude(job))
+                    else:
+                        generated_html = _strip_html_fence(self._call_openai_compatible(job))
+                except Exception as exc:
+                    if not _should_runtime_fallback(exc):
+                        raise
+                    print(f"[BUILDER] provider runtime failed, using local fallback: {exc}")
+                    generated_html, local_usage = self._build_local_html_v2(job, site_dir)
+                    with self._lock:
+                        job.usage = {
+                            **job.usage,
+                            "provider_runtime_fallback": 1,
+                            **local_usage,
+                        }
+
+            if not generated_html.lower().lstrip().startswith("<!doctype"):
+                raise RuntimeError("Modelo não retornou um HTML válido (sem <!doctype>).")
+
+            site_path = site_dir / "index.html"
+            site_path.write_text(generated_html, encoding="utf-8")
+
+            with self._lock:
+                job.site_path = site_path
+                job.site_url = f"/api/sites/{job.job_id}/"
+                job.status = "done"
+                if self.use_local_fallback:
+                    job.usage = {"local_fallback": 1, **local_usage}
+                elif local_usage and not job.usage.get("provider_runtime_fallback"):
+                    job.usage = {**job.usage, **local_usage}
+
+            print(f"[BUILDER] job={job.job_id} done chars={len(generated_html)} url={job.site_url}")
+
+        except Exception as exc:
+            print(f"[BUILDER] job={job.job_id} error: {exc}")
+            with self._lock:
+                job.status = "error"
+                job.error = str(exc)
+
+    def _call_claude(self, job: BuildJob) -> str:
+        if self.client is None:
+            raise RuntimeError("Anthropic client not initialized.")
+
+        messages = build_messages(job.spec)
+        system_prompt = self._build_system_prompt_for_job(job)
+
+        chunks: list[str] = []
+        with self.client.messages.stream(
+            model=self.model,
+            max_tokens=32000,
+            system=[
+                {
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+            messages=messages,
+            metadata={"user_id": f"simple-ai-builder-{PROMPT_VERSION}"},
+        ) as stream:
+            for text in stream.text_stream:
+                chunks.append(text)
+                with self._lock:
+                    job.streamed_chars += len(text)
+
+            final_message = stream.get_final_message()
+
+        with self._lock:
+            job.usage = {
+                "input_tokens": final_message.usage.input_tokens,
+                "output_tokens": final_message.usage.output_tokens,
+                "cache_read_input_tokens": getattr(
+                    final_message.usage, "cache_read_input_tokens", 0
+                ) or 0,
+                "cache_creation_input_tokens": getattr(
+                    final_message.usage, "cache_creation_input_tokens", 0
+                ) or 0,
+            }
+
+        return "".join(chunks)
+
+    def _call_openai_compatible(self, job: BuildJob) -> str:
+        if self._openai_client is None:
+            raise RuntimeError("OpenAI-compatible client not initialized.")
+
+        user_messages = build_messages(job.spec)
+        system_prompt = self._build_system_prompt_for_job(job)
+        openai_messages = [
+            {"role": "system", "content": system_prompt},
+            *user_messages,
+        ]
+
+        response = self._openai_client.chat.completions.create(
+            model=self.model,
+            messages=openai_messages,
+            max_tokens=32000,
+        )
+
+        with self._lock:
+            usage = response.usage
+            job.usage = {
+                "input_tokens": usage.prompt_tokens if usage else 0,
+                "output_tokens": usage.completion_tokens if usage else 0,
+            }
+
+        return response.choices[0].message.content or ""
+
+    def _build_local_html(self, job: BuildJob) -> str:
+        """
+        Deterministic fallback when no LLM is configured.
+        Generates a minimal but presentable site without exposing internal tooling language.
+        """
+        import datetime
+
+        summary = job.spec.get("summary") or {}
+        design_plan = job.spec.get("design_plan") or summary.get("design_plan") or job.spec.get("visual_plan") or summary.get("visual_plan") or {}
+        business_name = _clean_text(
+            job.spec.get("business_name") or summary.get("brand_name") or "Seu Negócio"
+        )
+        segment = _clean_text(
+            job.spec.get("segment") or summary.get("business_type") or "Negócio local"
+        )
+        primary_cta = _clean_text(
+            summary.get("primary_cta") or "Entre em contato"
+        )
+        brand_tone = _clean_text(summary.get("brand_tone") or "")
+        modules = job.spec.get("user_facing_actions") or summary.get("modules") or []
+        raw_quotes = job.spec.get("raw_quotes") or []
+
+        segment_id = _detect_segment_id(segment)
+        theme = _SEGMENT_THEMES.get(segment_id, _SEGMENT_THEMES["default"])
+        tagline = _SEGMENT_TAGLINES.get(segment_id, _SEGMENT_TAGLINES["default"])
+
+        # Resolve service labels from modules
+        service_labels: list[str] = []
+        for item in modules:
+            if isinstance(item, dict):
+                label = item.get("label") or item.get("id") or ""
+            else:
+                label = str(item)
+            label = label.strip()
+            if label and label.lower() not in ("hero", "hero section"):
+                service_labels.append(_clean_text(label))
+
+        if not service_labels:
+            service_labels = ["Qualidade no atendimento", "Experiência e dedicação", "Contato fácil"]
+
+        service_labels = service_labels[:6]
+
+        # CTA link
+        cta_uses_whatsapp = any(
+            k in primary_cta.lower()
+            for k in ("whatsapp", "zap", "whats")
+        )
+        if cta_uses_whatsapp:
+            wa_text = quote(f"Olá! Vim pelo site da {business_name} e quero saber mais.")
+            cta_href = f"https://wa.me/?text={wa_text}"
+            cta_label = primary_cta if "whatsapp" in primary_cta.lower() else f"Chamar no WhatsApp"
+        else:
+            cta_href = "#contato"
+            cta_label = primary_cta
+
+        year = datetime.datetime.now().year
+
+        # Build service cards HTML
+        service_cards_html = "\n      ".join(
+            f'<div class="card"><strong>{html.escape(label)}</strong></div>'
+            for label in service_labels
+        )
+
+        # Build hero features list (first 3 services)
+        hero_list_html = "\n        ".join(
+            f'<li>{html.escape(label)}</li>'
+            for label in service_labels[:3]
+        )
+
+        # Tone badge text
+        tone_badge = html.escape(brand_tone) if brand_tone and brand_tone != "Não informado" else ""
+        tone_row = f'<p class="tone-badge">{tone_badge}</p>' if tone_badge else ""
+
+        return f"""<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{html.escape(business_name)}</title>
+  <style>
+    :root {{
+      color-scheme: light;
+      --ink: {theme['ink']};
+      --muted: {theme['muted']};
+      --paper: {theme['paper']};
+      --line: {theme['line']};
+      --accent: {theme['accent']};
+      --accent-dark: {theme['accent_dark']};
+      --warm: {theme['warm']};
+      --card: {theme['card']};
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    }}
+    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    body {{
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.6;
+    }}
+    a {{ color: inherit; text-decoration: none; }}
+
+    /* Nav */
+    nav {{
+      padding: 18px min(7vw, 72px);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--paper);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }}
+    .brand {{ font-weight: 800; font-size: 18px; letter-spacing: -0.3px; }}
+    .nav-cta {{
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 18px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+    }}
+
+    /* Hero */
+    .hero {{
+      padding: clamp(48px, 10vh, 96px) min(7vw, 72px) clamp(48px, 10vh, 96px);
+      background:
+        radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 40%),
+        linear-gradient(120deg, color-mix(in srgb, var(--accent) 10%, var(--paper)), var(--paper));
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr minmax(260px, 400px);
+      gap: clamp(32px, 6vw, 80px);
+      align-items: center;
+    }}
+    .hero-eyebrow {{
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }}
+    h1 {{
+      font-size: clamp(36px, 6vw, 80px);
+      line-height: 1.05;
+      letter-spacing: -1px;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }}
+    .hero-sub {{
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 540px;
+      margin-bottom: 32px;
+    }}
+    .btn {{
+      display: inline-flex;
+      align-items: center;
+      min-height: 52px;
+      padding: 0 28px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent);
+      transition: opacity 0.15s;
+    }}
+    .btn:hover {{ opacity: 0.88; }}
+
+    /* Hero panel */
+    .hero-panel {{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: clamp(24px, 4vw, 36px);
+    }}
+    .hero-panel h2 {{
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--ink);
+    }}
+    .hero-panel ul {{
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }}
+    .hero-panel li {{
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-weight: 600;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }}
+    .hero-panel li::before {{
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }}
+
+    /* Sections */
+    section {{
+      padding: clamp(48px, 8vw, 96px) min(7vw, 72px);
+    }}
+    section h2 {{
+      font-size: clamp(24px, 3vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }}
+    .section-sub {{
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 600px;
+      margin-bottom: 40px;
+    }}
+    .grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      max-width: 960px;
+    }}
+    .card {{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.055);
+      min-height: 90px;
+      display: flex;
+      align-items: flex-start;
+    }}
+    .card strong {{
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.3;
+    }}
+
+    /* Contact strip */
+    .contact-strip {{
+      background: var(--ink);
+      color: white;
+      border-radius: 20px;
+      margin: 0 min(7vw, 72px) 56px;
+      padding: clamp(28px, 5vw, 48px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }}
+    .contact-strip h2 {{ font-size: clamp(22px, 3vw, 36px); color: white; margin-bottom: 8px; }}
+    .contact-strip p {{ color: rgba(255,255,255,0.65); font-size: 16px; }}
+    .btn-white {{
+      display: inline-flex;
+      align-items: center;
+      min-height: 52px;
+      padding: 0 28px;
+      border-radius: 10px;
+      background: white;
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 16px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }}
+
+    /* Footer */
+    footer {{
+      padding: 28px min(7vw, 72px);
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }}
+
+    /* Responsive */
+    @media (max-width: 820px) {{
+      .hero {{ grid-template-columns: 1fr; }}
+      .hero-panel {{ display: none; }}
+      .contact-strip {{ flex-direction: column; align-items: flex-start; margin-inline: 18px; }}
+      footer {{ flex-direction: column; align-items: flex-start; }}
+    }}
+  </style>
+</head>
+<body>
+
+  <nav>
+    <span class="brand">{html.escape(business_name)}</span>
+    <a class="nav-cta" href="{cta_href}">{html.escape(cta_label)}</a>
+  </nav>
+
+  <div class="hero">
+    <div>
+      <p class="hero-eyebrow">{html.escape(segment)}</p>
+      <h1>{html.escape(business_name)}</h1>
+      <p class="hero-sub">{html.escape(tagline)}</p>
+      <a class="btn" href="{cta_href}">{html.escape(cta_label)}</a>
+    </div>
+    <aside class="hero-panel">
+      <h2>O que oferecemos</h2>
+      <ul>
+        {hero_list_html}
+      </ul>
+    </aside>
+  </div>
+
+  <section id="servicos">
+    <h2>Nossos serviços</h2>
+    <p class="section-sub">{html.escape(tagline)}</p>
+    <div class="grid">
+      {service_cards_html}
+    </div>
+  </section>
+
+  <div class="contact-strip" id="contato">
+    <div>
+      <h2>Fale com a gente</h2>
+      <p>Pronto para começar? Entre em contato agora mesmo.</p>
+    </div>
+    <a class="btn-white" href="{cta_href}">{html.escape(cta_label)}</a>
+  </div>
+
+  <footer>
+    <span>{html.escape(business_name)}</span>
+    <span>© {year}</span>
+  </footer>
+
+</body>
+</html>
+"""
+
+
+    def _build_local_html_v2(self, job: BuildJob, site_dir: Path) -> tuple[str, Dict[str, int]]:
+        """
+        Deterministic fallback when no LLM is configured.
+        Produces a polished site using briefing data plus visual prompts.
+        """
+        import datetime
+
+        summary = job.spec.get("summary") or {}
+        design_plan = job.spec.get("design_plan") or summary.get("design_plan") or job.spec.get("visual_plan") or summary.get("visual_plan") or {}
+        business_name = _clean_text(
+            job.spec.get("business_name") or summary.get("brand_name") or "Seu Negócio"
+        )
+        segment = _clean_text(
+            job.spec.get("segment") or summary.get("business_type") or "Negócio local"
+        )
+        primary_cta = _clean_text(summary.get("primary_cta") or "Entre em contato")
+        brand_tone = _clean_text(summary.get("brand_tone") or "")
+        scope = _clean_text(summary.get("scope") or "Atendimento local")
+        modules = job.spec.get("user_facing_actions") or summary.get("modules") or []
+        raw_quotes = job.spec.get("raw_quotes") or []
+
+        segment_id = _detect_segment_id(segment)
+        theme = _SEGMENT_THEMES.get(segment_id, _SEGMENT_THEMES["default"])
+        visual_style = _clean_text(design_plan.get("visual_style") or "clean-professional")
+        layout_family = _clean_text(design_plan.get("layout_family") or "conversion-landing")
+        section_order = ((design_plan.get("ui_direction") or {}).get("section_order") or []) if isinstance(design_plan, dict) else []
+        trust_strategy = design_plan.get("trust_strategy") or [] if isinstance(design_plan, dict) else []
+        content_density = _clean_text(design_plan.get("content_density") or "comfortable")
+        design_notes = design_plan.get("design_notes") or {} if isinstance(design_plan, dict) else {}
+        tagline = _SEGMENT_TAGLINES.get(segment_id, _SEGMENT_TAGLINES["default"])
+        font_url = self._resolve_font_family(segment_id)
+
+        if visual_style == "editorial-premium":
+            tagline = f"{tagline} Com presença mais refinada, calma e objetiva."
+        elif visual_style == "bold-conversion":
+            tagline = f"{tagline} Resposta rápida e ação visível desde o primeiro bloco."
+        elif visual_style == "warm-artisanal":
+            tagline = f"{tagline} Presença humana, próxima e acolhedora em cada detalhe."
+
+        service_labels: list[str] = []
+        for item in modules:
+            if isinstance(item, dict):
+                label = item.get("label") or item.get("id") or ""
+            else:
+                label = str(item)
+            label = label.strip()
+            normalized_label = _normalize_for_match(label)
+            is_internal_label = any(
+                token in normalized_label
+                for token in (
+                    "hero",
+                    "hero section",
+                    "contact",
+                    "contato",
+                    "botao flutuante",
+                    "feed do instagram",
+                    "instagram feed",
+                    "mapa",
+                    "sobre o negocio",
+                    "about",
+                )
+            )
+            if label and not is_internal_label:
+                service_labels.append(_clean_text(label))
+
+        if not service_labels:
+            service_labels = ["Qualidade no atendimento", "Experiência e dedicação", "Contato rápido"]
+        service_labels = service_labels[:6]
+
+        cta_uses_whatsapp = any(k in primary_cta.lower() for k in ("whatsapp", "zap", "whats"))
+        if cta_uses_whatsapp:
+            wa_text = quote(f"Olá! Vim pelo site da {business_name} e quero saber mais.")
+            cta_href = f"https://wa.me/?text={wa_text}"
+            cta_label = primary_cta if "whatsapp" in primary_cta.lower() else "Chamar no WhatsApp"
+        else:
+            cta_href = "#contato"
+            cta_label = primary_cta
+
+        visual_prompts = self._resolve_visual_prompts(
+            visual_plan=job.spec.get("visual_plan") or summary.get("visual_plan") or {},
+            business_name=business_name,
+            segment=segment,
+            brand_tone=brand_tone,
+            target_audience=summary.get("target_audience") or "",
+            services=service_labels,
+        )
+        image_assets, generated_images = self._materialize_image_assets(
+            site_dir=site_dir,
+            image_prompts=visual_prompts,
+            fallback_segment=segment,
+            fallback_services=service_labels,
+        )
+        hero_asset = image_assets[0]
+        supporting_assets = image_assets[1:]
+        planned_images = len(visual_prompts)
+
+        service_cards_html = "\n          ".join(
+            f'<article class="service-card"><h3>{html.escape(label)}</h3><p>Atendimento direto, organizado e com foco em resultado.</p></article>'
+            for label in service_labels
+        )
+        priorities_html = "\n            ".join(
+            f"<li>{html.escape(label)}</li>" for label in service_labels[:3]
+        )
+        gallery_html = "\n          ".join(
+            (
+                "<figure class=\"gallery-card\">"
+                f"<img src=\"{html.escape(asset['url'])}\" alt=\"{html.escape(asset['alt'])}\" />"
+                f"<figcaption>{html.escape(asset['caption'])}</figcaption>"
+                "</figure>"
+            )
+            for asset in supporting_assets
+        )
+
+        quote_block = ""
+        if raw_quotes:
+            quote_text = _clean_text(raw_quotes[0])
+            if quote_text.lower() not in {"não informado", "nao informado"}:
+                quote_block = (
+                    "<blockquote class=\"client-voice\">"
+                    f"<p>{html.escape(quote_text)}</p>"
+                    "<span>Mensagem do cliente</span>"
+                    "</blockquote>"
+                )
+
+        normalized_tone = _normalize_for_match(brand_tone)
+        tone_badge = (
+            html.escape(brand_tone)
+            if brand_tone and normalized_tone not in {"nao informado", "nao definido", "n/a"}
+            else ""
+        )
+        tone_row = f'<p class="hero-note">{tone_badge}</p>' if tone_badge else ""
+        design_note_row = ""
+        if isinstance(design_notes, dict) and design_notes.get("trust_priority") == "show-early":
+            design_note_row = '<p class="hero-note">Primeira versão com foco em confiança, clareza e ação principal visível.</p>'
+        hero_support_text = html.escape(scope)
+        if layout_family == "catalog-grid":
+            hero_support_text = "Catálogo organizado para leitura rápida"
+        elif layout_family == "image-led":
+            hero_support_text = "Experiência visual pensada para gerar conexão imediata"
+        elif layout_family == "local-trust":
+            hero_support_text = "Atendimento próximo, presença real e contato fácil"
+
+        section_intro_services = "Selecionamos os pontos principais para facilitar sua decisão e acelerar o contato."
+        section_intro_about = "Seu atendimento é organizado com foco em clareza, velocidade e confiança."
+        section_intro_gallery = "Referências visuais alinhadas com o estilo do negócio e o que seu público espera."
+        cta_title = "Vamos começar?"
+        cta_copy = "Fale com a equipe e receba o próximo passo com rapidez."
+
+        if layout_family == "catalog-grid":
+            section_intro_services = "Organizamos os itens principais em uma estrutura escaneável e fácil de comparar."
+            section_intro_about = "A navegação foi pensada para mostrar variedade sem confundir a leitura."
+            section_intro_gallery = "Imagens e destaques ajudam a orientar a escolha e reforçar a proposta."
+            cta_title = "Quer ver mais detalhes?"
+            cta_copy = "Entre em contato para receber orientação rápida sobre os itens que mais fazem sentido para você."
+        elif layout_family == "image-led":
+            section_intro_services = "Os destaques foram organizados para equilibrar atmosfera, clareza e desejo."
+            section_intro_about = "A composição visual valoriza o contexto real do negócio sem perder objetividade."
+            section_intro_gallery = "As imagens reforçam o clima e a experiência que o público deve sentir ao chegar até você."
+            cta_title = "Vamos conversar?"
+            cta_copy = "Fale com a equipe e transforme essa primeira impressão em um contato real."
+        elif layout_family == "local-trust":
+            section_intro_services = "Os serviços principais aparecem com clareza para acelerar o próximo passo do cliente."
+            section_intro_about = "A prioridade desta versão é passar confiança logo cedo e facilitar o contato."
+            section_intro_gallery = "O apoio visual reforça presença real, rotina de atendimento e credibilidade."
+            cta_title = "Precisa de um retorno rápido?"
+            cta_copy = "Chame agora e receba orientação com mais agilidade e clareza."
+
+        if "social-proof-early" in trust_strategy:
+            section_intro_about = "A página prioriza sinais de confiança e consistência logo após a apresentação principal."
+        year = datetime.datetime.now().year
+
+        page_html = f"""<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{html.escape(business_name)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="{font_url}" rel="stylesheet">
+  <style>
+    :root {{
+      color-scheme: light;
+      --ink: {theme['ink']};
+      --muted: {theme['muted']};
+      --paper: {theme['paper']};
+      --line: {theme['line']};
+      --accent: {theme['accent']};
+      --warm: {theme['warm']};
+      --card: rgba(255, 255, 255, 0.88);
+      --shadow: 0 24px 64px rgba(0, 0, 0, 0.14);
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      font-family: 'Manrope', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: var(--paper);
+    }}
+    .container {{ width: min(1120px, 92vw); margin-inline: auto; }}
+    nav {{
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+      background: color-mix(in srgb, var(--paper) 86%, white 14%);
+    }}
+    .nav-inner {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+    }}
+    .brand {{
+      font-size: 1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+    }}
+    .pill {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      border: 0;
+    }}
+    .hero {{
+      position: relative;
+      min-height: min(82vh, 760px);
+      display: grid;
+      place-items: end start;
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+      isolation: isolate;
+    }}
+    .hero::before {{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(112deg, color-mix(in srgb, var(--ink) 86%, transparent), color-mix(in srgb, var(--ink) 28%, transparent)),
+        url('{html.escape(hero_asset["url"])}') center / cover no-repeat;
+      z-index: -2;
+    }}
+    .hero::after {{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 45%, color-mix(in srgb, var(--ink) 35%, transparent));
+      z-index: -1;
+    }}
+    .hero-content {{
+      width: min(740px, 92vw);
+      margin: 0 auto clamp(32px, 8vh, 72px);
+      padding: clamp(18px, 4vw, 32px);
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(4px);
+      color: white;
+    }}
+    .hero-eyebrow {{
+      margin: 0 0 8px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      opacity: 0.92;
+    }}
+    h1 {{
+      margin: 0;
+      font-size: clamp(2.1rem, 5.5vw, 4.6rem);
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      max-width: 17ch;
+    }}
+    .hero-sub {{
+      margin: 14px 0 0;
+      max-width: 60ch;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      color: rgba(255, 255, 255, 0.9);
+    }}
+    .hero-actions {{
+      margin-top: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }}
+    .hero-note {{
+      margin: 0;
+      font-size: 0.86rem;
+      color: rgba(255, 255, 255, 0.86);
+    }}
+    section {{ padding: clamp(48px, 8vw, 96px) 0; }}
+    h2 {{
+      margin: 0;
+      font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }}
+    .section-sub {{
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 1.03rem;
+      max-width: 68ch;
+    }}
+    .service-grid {{
+      margin-top: 26px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }}
+    .service-card {{
+      padding: 20px 18px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    }}
+    .service-card h3 {{ margin: 0; font-size: 1.05rem; }}
+    .service-card p {{ margin: 10px 0 0; color: var(--muted); font-size: 0.94rem; }}
+    .about-shell {{
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+      gap: clamp(18px, 4vw, 42px);
+      margin-top: 24px;
+      align-items: start;
+    }}
+    .about-panel {{
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }}
+    .about-panel p {{ margin: 0; color: var(--muted); font-size: 1rem; line-height: 1.65; }}
+    .list-panel {{
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }}
+    .list-panel li {{
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.5);
+      display: flex;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 0.94rem;
+    }}
+    .list-panel li::before {{
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 0.42rem;
+      flex-shrink: 0;
+    }}
+    .client-voice {{
+      margin: 18px 0 0;
+      padding: 18px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--warm) 76%, white 24%);
+    }}
+    .client-voice p {{ margin: 0; color: var(--ink); }}
+    .client-voice span {{
+      margin-top: 8px;
+      display: inline-block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 700;
+    }}
+    .gallery-grid {{
+      margin-top: 24px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }}
+    .gallery-card {{
+      margin: 0;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: white;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.08);
+    }}
+    .gallery-card img {{
+      width: 100%;
+      display: block;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }}
+    .gallery-card figcaption {{
+      padding: 11px 12px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }}
+    .cta-strip {{
+      margin: clamp(30px, 6vw, 70px) auto clamp(24px, 5vw, 56px);
+      padding: clamp(24px, 5vw, 42px);
+      border-radius: 22px;
+      background: var(--ink);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }}
+    .cta-strip h2 {{
+      color: white;
+      font-size: clamp(1.6rem, 3.6vw, 2.4rem);
+    }}
+    .cta-strip p {{ margin: 10px 0 0; color: rgba(255, 255, 255, 0.8); }}
+    .pill-ghost {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 0 24px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 800;
+      background: white;
+      color: var(--accent);
+    }}
+    footer {{
+      padding: 22px 0 34px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.86rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }}
+    @media (max-width: 900px) {{
+      .about-shell {{ grid-template-columns: 1fr; }}
+    }}
+    @media (max-width: 740px) {{
+      .hero-content {{ margin-bottom: 24px; padding: 18px; }}
+      .cta-strip {{ border-radius: 16px; }}
+      .pill, .pill-ghost {{ width: 100%; }}
+    }}
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container nav-inner">
+      <span class="brand">{html.escape(business_name)}</span>
+      <a class="pill" href="{cta_href}">{html.escape(cta_label)}</a>
+    </div>
+  </nav>
+
+  <header class="hero" role="banner">
+    <div class="hero-content">
+      <p class="hero-eyebrow">{html.escape(segment)}</p>
+      <h1>{html.escape(business_name)}</h1>
+      <p class="hero-sub">{html.escape(tagline)}</p>
+      <div class="hero-actions">
+        <a class="pill" href="{cta_href}">{html.escape(cta_label)}</a>
+        <span class="hero-note">{hero_support_text}</span>
+      </div>
+      {tone_row}
+      {design_note_row}
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="servicos">
+      <h2>O que oferecemos</h2>
+      <p class="section-sub">{section_intro_services}</p>
+      <div class="service-grid">
+        {service_cards_html}
+      </div>
+    </section>
+
+    <section id="sobre">
+      <h2>Como funciona</h2>
+      <p class="section-sub">{section_intro_about}</p>
+      <div class="about-shell">
+        <article class="about-panel">
+          <p>{html.escape(tagline)}</p>
+          {quote_block}
+        </article>
+        <aside class="about-panel">
+          <h3 style="margin:0;font-size:1rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Prioridades</h3>
+          <ul class="list-panel">
+            {priorities_html}
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="galeria">
+      <h2>Ambiente e experiência</h2>
+      <p class="section-sub">{section_intro_gallery}</p>
+      <div class="gallery-grid">
+        {gallery_html}
+      </div>
+    </section>
+
+    <section class="cta-strip" id="contato">
+      <div>
+        <h2>{cta_title}</h2>
+        <p>{cta_copy}</p>
+      </div>
+      <a class="pill-ghost" href="{cta_href}">{html.escape(cta_label)}</a>
+    </section>
+
+    <footer>
+      <span>{html.escape(business_name)} · {html.escape(segment)}</span>
+      <span>© {year}</span>
+    </footer>
+  </main>
+</body>
+</html>
+"""
+
+        return page_html, {
+            "images_planned": planned_images,
+            "images_generated": generated_images,
+            "design_plan_version": 1,
+            "layout_family": layout_family,
+            "visual_style": visual_style,
+            "content_density": content_density,
+            "section_count": len(section_order) if isinstance(section_order, list) else 0,
+        }
+
+    def _resolve_font_family(self, segment_id: str) -> str:
+        if segment_id in {"bakery", "restaurant"}:
+            return "https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+        if segment_id in {"mechanic", "tech"}:
+            return "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+        return "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
+
+    def _resolve_visual_prompts(
+        self,
+        visual_plan: Dict[str, Any],
+        business_name: str,
+        segment: str,
+        brand_tone: str,
+        target_audience: str,
+        services: list[str],
+    ) -> list[Dict[str, str]]:
+        prompts = visual_plan.get("image_prompts") if isinstance(visual_plan, dict) else None
+        resolved: list[Dict[str, str]] = []
+
+        if isinstance(prompts, list):
+            for item in prompts:
+                if not isinstance(item, dict):
+                    continue
+                prompt = _clean_text(item.get("prompt") or "")
+                if prompt.lower() in {"não informado", "nao informado", "não definido", "nao definido"}:
+                    continue
+                resolved.append(
+                    {
+                        "slot": str(item.get("slot") or f"image-{len(resolved) + 1}"),
+                        "prompt": prompt,
+                        "alt": _clean_text(item.get("alt") or f"Imagem de {business_name}"),
+                        "caption": _clean_text(item.get("alt") or item.get("slot") or "Imagem de apoio"),
+                    }
+                )
+
+        if len(resolved) >= 3:
+            return resolved[:3]
+
+        service_text = ", ".join(services[:3]) or "serviços locais"
+        tone_text = (
+            brand_tone
+            if brand_tone and brand_tone.lower() not in {"não informado", "nao informado", "não definido", "nao definido"}
+            else "estilo profissional"
+        )
+        audience_text = (
+            target_audience
+            if target_audience and target_audience.lower() not in {"não informado", "nao informado", "não definido", "nao definido"}
+            else "clientes da região"
+        )
+        defaults = [
+            {
+                "slot": "hero",
+                "prompt": f"Foto realista de {segment}, ambiente profissional, {tone_text}, sem texto.",
+                "alt": f"Ambiente principal de {business_name}",
+                "caption": "Visão principal",
+            },
+            {
+                "slot": "services",
+                "prompt": f"Foto editorial de {segment} com foco em {service_text}, iluminação natural.",
+                "alt": f"Serviços de {business_name}",
+                "caption": "Serviços em destaque",
+            },
+            {
+                "slot": "audience",
+                "prompt": f"Clientes reais de {segment}, público {audience_text}, atendimento próximo.",
+                "alt": f"Clientes de {business_name}",
+                "caption": "Experiência do cliente",
+            },
+        ]
+        for default in defaults:
+            if len(resolved) >= 3:
+                break
+            resolved.append(default)
+        return resolved[:3]
+
+    def _materialize_image_assets(
+        self,
+        site_dir: Path,
+        image_prompts: list[Dict[str, str]],
+        fallback_segment: str,
+        fallback_services: list[str],
+    ) -> tuple[list[Dict[str, str]], int]:
+        assets_dir = site_dir / "assets"
+        assets_dir.mkdir(parents=True, exist_ok=True)
+        generated_count = 0
+        assets: list[Dict[str, str]] = []
+        started_at = time.monotonic()
+
+        for idx, entry in enumerate(image_prompts):
+            prompt = _clean_text(entry.get("prompt") or "")
+            alt = _clean_text(entry.get("alt") or "Imagem do negócio")
+            caption = _clean_text(entry.get("caption") or alt)
+            slot = re.sub(r"[^a-z0-9_-]+", "-", (entry.get("slot") or f"image-{idx + 1}").lower()).strip("-")
+            slot = slot or f"image-{idx + 1}"
+            is_optional_slot = idx > 0
+            elapsed = time.monotonic() - started_at
+            generated_url = None
+            if not is_optional_slot or elapsed < self.image_optional_slot_timeout_seconds:
+                generated_url = self._try_generate_image_asset(
+                    assets_dir=assets_dir,
+                    prompt=prompt,
+                    stem=f"{idx + 1:02d}-{slot}",
+                )
+            if generated_url:
+                generated_count += 1
+                image_url = generated_url
+            else:
+                image_url = self._fallback_image_url(
+                    prompt=prompt,
+                    fallback_segment=fallback_segment,
+                    fallback_services=fallback_services,
+                )
+            assets.append(
+                {
+                    "slot": slot,
+                    "url": image_url,
+                    "alt": alt,
+                    "caption": caption,
+                }
+            )
+
+        return assets, generated_count
+
+    def _try_generate_image_asset(self, assets_dir: Path, prompt: str, stem: str) -> Optional[str]:
+        if self._image_client is None or not self._image_api_key or not self._image_base_url:
+            return None
+        try:
+            payload = {
+                "model": self.image_model,
+                "prompt": prompt,
+                "n": 1,
+                "size": self.image_size,
+                "quality": self.image_quality,
+                "background": self.image_background,
+                "image_detail": self.image_detail,
+                "output_format": self.image_output_format,
+            }
+            response = requests.post(
+                f"{self._image_base_url}/images/generations",
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {self._image_api_key}",
+                },
+                json=payload,
+                timeout=self.image_timeout_seconds,
+            )
+            response.raise_for_status()
+            body = response.json()
+            items = body.get("data") if isinstance(body, dict) else None
+            if not items:
+                return None
+
+            first = items[0] if isinstance(items, list) else None
+            if not isinstance(first, dict):
+                return None
+
+            image_url = first.get("url")
+            if image_url:
+                return image_url
+
+            b64_payload = first.get("b64_json") or first.get("base64") or first.get("image_base64")
+            if not b64_payload:
+                return None
+
+            payload = re.sub(r"\s+", "", b64_payload)
+            image_bytes = base64.b64decode(payload, validate=False)
+            filename = f"{stem}.png"
+            file_path = assets_dir / filename
+            file_path.write_bytes(image_bytes)
+            return f"./assets/{filename}"
+        except Exception as error:
+            print(f"[BUILDER] image generation fallback engaged: {error}")
+            return None
+
+    def _fallback_image_url(self, prompt: str, fallback_segment: str, fallback_services: list[str]) -> str:
+        normalized = _normalize_for_match(prompt)
+        tokens = re.findall(r"[a-z0-9]+", normalized)
+        if len(tokens) < 3:
+            seed_text = f"{fallback_segment} {' '.join(fallback_services[:2])}".strip()
+            tokens = re.findall(r"[a-z0-9]+", _normalize_for_match(seed_text))
+        keywords = ",".join(tokens[:6]) if tokens else "small-business,local,service"
+        return f"https://source.unsplash.com/1600x900/?{quote_plus(keywords)}"
+
+def _clean_text(value: Any) -> str:
+    text = str(value or "").strip()
+    return text if text else "Não informado"
