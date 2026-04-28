@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moda Viva | Loja de roupas</title>
+  <meta name="description" content="Moda Viva: loja de roupas com catálogo organizado, novidades selecionadas e pedidos pelo WhatsApp.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --verde: #173f35;
+      --grafite: #202423;
+      --neutro: #f4f0e8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", sans-serif;
+      color: var(--grafite);
+      background: var(--neutro);
+      line-height: 1.6;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 2rem));
+      margin: 0 auto;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 1rem;
+      background: var(--verde);
+      color: var(--neutro);
+      padding: .75rem 1rem;
+      border-radius: 999px;
+      z-index: 10;
+    }
+
+    .skip-link:focus {
+      top: 1rem;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(244, 240, 232, .92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(32, 36, 35, .12);
+    }
+
+    .topbar {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      font-weight: 800;
+      letter-spacing: -.04em;
+      font-size: 1.25rem;
+      text-decoration: none;
+      color: var(--verde);
+    }
+
+    nav {
+      display: none;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .95rem;
+      color: rgba(32, 36, 35, .82);
+    }
+
+    .nav-link:hover,
+    .nav-link:focus {
+      color: var(--verde);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: .85rem 1.1rem;
+      border-radius: 999px;
+      text-decoration: none;
+      border: 2px solid transparent;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+    }
+
+    .btn:hover,
+    .btn:focus {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: var(--verde);
+      color: var(--neutro);
+    }
+
+    .btn-secondary {
+      border-color: rgba(23, 63, 53, .28);
+      color: var(--verde);
+      background: transparent;
+    }
+
+    .hero {
+      padding: 2rem 0 4.5rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 1rem;
+      font-size: .78rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--verde);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.35rem, 13vw, 4.6rem);
+      line-height: .95;
+      letter-spacing: -.075em;
+      color: var(--grafite);
+      max-width: 10ch;
+    }
+
+    .hero-text {
+      margin: 1.25rem 0 0;
+      font-size: clamp(1.05rem, 4vw, 1.35rem);
+      max-width: 34rem;
+      color: rgba(32, 36, 35, .82);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+      margin-top: 1.75rem;
+    }
+
+    .hero-note {
+      margin-top: 1rem;
+      font-size: .95rem;
+      color: rgba(32, 36, 35, .7);
+    }
+
+    .image-frame {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      background: rgba(23, 63, 53, .08);
+      border: 1px solid rgba(32, 36, 35, .12);
+    }
+
+    .image-frame img {
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      object-fit: cover;
+    }
+
+    .caption {
+      position: absolute;
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+      margin: 0;
+      padding: .8rem .9rem;
+      border-radius: 18px;
+      background: rgba(244, 240, 232, .9);
+      color: var(--grafite);
+      font-size: .92rem;
+      font-weight: 700;
+    }
+
+    section {
+      padding: 4rem 0;
+    }
+
+    .section-kicker {
+      margin: 0 0 .6rem;
+      color: var(--verde);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .75rem;
+      font-weight: 800;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1.85rem, 7vw, 3.15rem);
+      line-height: 1.02;
+      letter-spacing: -.055em;
+      color: var(--grafite);
+      max-width: 12ch;
+    }
+
+    .section-intro {
+      margin: 1rem 0 0;
+      max-width: 42rem;
+      font-size: 1.05rem;
+      color: rgba(32, 36, 35, .78);
+    }
+
+    .offer-grid {
+      display: grid;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .offer-card {
+      padding: 1.35rem;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, .46);
+      border: 1px solid rgba(32, 36, 35, .12);
+    }
+
+    .offer-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.35rem;
+      height: 2.35rem;
+      border-radius: 50%;
+      background: var(--verde);
+      color: var(--neutro);
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .offer-card h3 {
+      margin: 0 0 .5rem;
+      font-size: 1.2rem;
+      letter-spacing: -.03em;
+    }
+
+    .offer-card p {
+      margin: 0;
+      color: rgba(32, 36, 35, .75);
+    }
+
+    .catalog-section {
+      background: var(--verde);
+      color: var(--neutro);
+    }
+
+    .catalog-section .section-kicker,
+    .catalog-section h2,
+    .catalog-section .section-intro {
+      color: var(--neutro);
+    }
+
+    .catalog-section .section-intro {
+      color: rgba(244, 240, 232, .82);
+    }
+
+    .catalog-layout {
+      display: grid;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .catalog-list {
+      display: grid;
+      gap: .85rem;
+      margin: 2rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .catalog-list li {
+      padding: 1rem;
+      border: 1px solid rgba(244, 240, 232, .22);
+      border-radius: 18px;
+      background: rgba(244, 240, 232, .06);
+      font-weight: 700;
+    }
+
+    .catalog-section .image-frame {
+      border-color: rgba(244, 240, 232, .22);
+      background: rgba(244, 240, 232, .08);
+    }
+
+    .catalog-section .caption {
+      background: rgba(23, 63, 53, .88);
+      color: var(--neutro);
+      border: 1px solid rgba(244, 240, 232, .18);
+    }
+
+    .about-grid {
+      display: grid;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .about-copy {
+      font-size: 1.08rem;
+      color: rgba(32, 36, 35, .78);
+    }
+
+    .about-copy p {
+      margin: 1rem 0 0;
+    }
+
+    .contact-box {
+      border-radius: 32px;
+      background: var(--grafite);
+      color: var(--neutro);
+      padding: 2rem;
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .contact-box h2 {
+      color: var(--neutro);
+      max-width: 11ch;
+    }
+
+    .contact-box p {
+      margin: 0;
+      color: rgba(244, 240, 232, .78);
+      font-size: 1.05rem;
+      max-width: 42rem;
+    }
+
+    .contact-box .btn-primary {
+      background: var(--neutro);
+      color: var(--verde);
+    }
+
+    footer {
+      padding: 2rem 0;
+      border-top: 1px solid rgba(32, 36, 35, .12);
+      color: rgba(32, 36, 35, .7);
+    }
+
+    .footer-row {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    .footer-row strong {
+      color: var(--verde);
+    }
+
+    @media (min-width: 680px) {
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 1.35rem;
+      }
+
+      .hero-actions {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .offer-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .footer-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    @media (min-width: 900px) {
+      .hero {
+        padding: 3.5rem 0 6rem;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1.04fr .96fr;
+        gap: 4rem;
+      }
+
+      .catalog-layout,
+      .about-grid {
+        grid-template-columns: .95fr 1.05fr;
+        gap: 4rem;
+      }
+
+      .catalog-layout .image-frame {
+        order: -1;
+      }
+
+      section {
+        padding: 5.5rem 0;
+      }
+
+      .contact-box {
+        padding: 3.5rem;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .btn {
+        transition: none;
+      }
+
+      .btn:hover,
+      .btn:focus {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header>
+    <div class="container topbar">
+      <a class="brand" href="#topo" aria-label="Moda Viva - início">Moda Viva</a>
+      <nav aria-label="Navegação principal">
+        <a class="nav-link" href="#catalogo">Catálogo</a>
+        <a class="nav-link" href="#novidades">Novidades</a>
+        <a class="nav-link" href="#sobre">Sobre</a>
+      </nav>
+      <a class="btn btn-primary" href="https://wa.me/" target="_blank" rel="noopener">Pedir pelo WhatsApp</a>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    <section class="hero" id="topo">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">Loja de roupas</p>
+          <h1>Moda Viva</h1>
+          <p class="hero-text">Roupas selecionadas para quem gosta de escolher com calma, ver novidades e pedir direto pelo WhatsApp.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://wa.me/" target="_blank" rel="noopener">Pedir pelo WhatsApp</a>
+            <a class="btn btn-secondary" href="#catalogo">Ver catálogo</a>
+          </div>
+          <p class="hero-note">Atendimento direto para tirar dúvidas sobre peças, tamanhos e disponibilidade.</p>
+        </div>
+
+        <figure class="image-frame">
+          <img src="./assets/01-hero.png" alt="Interior elegante da loja Moda Viva">
+          <figcaption class="caption">Moda organizada para escolher com calma</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="catalogo" aria-labelledby="catalogo-titulo">
+      <div class="container">
+        <p class="section-kicker">O que oferecemos</p>
+        <h2 id="catalogo-titulo">Um caminho simples para escolher suas peças.</h2>
+        <p class="section-intro">A Moda Viva organiza o atendimento para facilitar a compra: você vê o catálogo, acompanha as novidades e faz o pedido pelo WhatsApp.</p>
+
+        <div class="offer-grid">
+          <article class="offer-card">
+            <span class="offer-number">1</span>
+            <h3>Catálogo de roupas</h3>
+            <p>Peças apresentadas de forma clara para você conhecer opções antes de chamar a loja.</p>
+          </article>
+
+          <article class="offer-card">
+            <span class="offer-number">2</span>
+            <h3>Novidades da loja</h3>
+            <p>Atualizações com novas peças e combinações para manter você por dentro do que chegou.</p>
+          </article>
+
+          <article class="offer-card">
+            <span class="offer-number">3</span>
+            <h3>Pedidos pelo WhatsApp</h3>
+            <p>Contato direto para consultar disponibilidade, tirar dúvidas e encaminhar seu pedido.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="catalog-section" id="novidades" aria-labelledby="novidades-titulo">
+      <div class="container catalog-layout">
+        <div>
+          <p class="section-kicker">Catálogo e novidades</p>
+          <h2 id="novidades-titulo">Peças selecionadas, sem complicar a escolha.</h2>
+          <p class="section-intro">O catálogo da Moda Viva ajuda você a visualizar estilos, separar preferências e conversar com a loja de forma rápida pelo WhatsApp.</p>
+
+          <ul class="catalog-list" aria-label="Destaques do atendimento">
+            <li>Catálogo organizado para consulta</li>
+            <li>Novidades destacadas com frequência</li>
+            <li>Pedido e dúvidas em uma conversa direta</li>
+          </ul>
+        </div>
+
+        <figure class="image-frame">
+          <img src="./assets/02-services.png" alt="Catálogo de roupas da Moda Viva">
+          <figcaption class="caption">Peças selecionadas e novidades</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="sobre" aria-labelledby="sobre-titulo">
+      <div class="container about-grid">
+        <div class="about-copy">
+          <p class="section-kicker">Sobre a loja</p>
+          <h2 id="sobre-titulo">Moda moderna com atendimento próximo.</h2>
+          <p>A Moda Viva é uma loja de roupas voltada para clientes que gostam de comprar online e também na loja física. O foco é mostrar o catálogo, destacar o que acabou de chegar e manter o atendimento simples pelo WhatsApp.</p>
+          <p>Você escolhe as peças com mais tranquilidade e fala diretamente com a loja para confirmar detalhes antes de pedir.</p>
+        </div>
+
+        <figure class="image-frame">
+          <img src="./assets/03-audience.png" alt="Cliente escolhendo roupas na Moda Viva">
+          <figcaption class="caption">Atendimento próximo pelo WhatsApp e na loja</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="contato" aria-labelledby="contato-titulo">
+      <div class="container">
+        <div class="contact-box">
+          <div>
+            <p class="section-kicker">Contato</p>
+            <h2 id="contato-titulo">Gostou de uma peça?</h2>
+            <p>Chame a Moda Viva pelo WhatsApp para consultar o catálogo, ver novidades e fazer seu pedido.</p>
+          </div>
+          <a class="btn btn-primary" href="https://wa.me/" target="_blank" rel="noopener">Pedir pelo WhatsApp</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-row">
+      <strong>Moda Viva</strong>
+      <span>© 2026 Moda Viva. Todos os direitos reservados.</span>
+    </div>
+  </footer>
+</body>
+</html>

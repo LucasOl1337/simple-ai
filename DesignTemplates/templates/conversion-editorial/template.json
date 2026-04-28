@@ -1,0 +1,55 @@
+{
+  "id": "conversion-editorial",
+  "version": 1,
+  "intent_signals": {
+    "primary_cta_types": ["contact", "whatsapp", "schedule", "quote"],
+    "content_volume": ["low", "medium"],
+    "image_dependence": ["medium", "high"],
+    "trust_need": ["medium", "high"]
+  },
+  "best_for": [
+    "landing curta com forte primeira dobra",
+    "negocios que precisam parecer mais premium sem perder clareza",
+    "paginas que dependem de composicao visual melhor"
+  ],
+  "avoid": [
+    "cards repetitivos sem hierarquia",
+    "hero centralizado generico com gradiente de IA",
+    "sequencia previsivel sem assinatura visual"
+  ],
+  "section_blueprint": [
+    "hero-editorial",
+    "proof-or-context",
+    "offer-grid",
+    "cta-strip"
+  ],
+  "hero": {
+    "composition": "hero com composicao forte, texto + prova/contexto + CTA visivel",
+    "aspect_ratio": "free",
+    "mobile_strategy": "primeira dobra precisa continuar forte em 375px",
+    "tone": "high-clarity editorial"
+  },
+  "image_policy": {
+    "hero_slot": {
+      "allow_object_fit_cover": true,
+      "recommended_object_position": "center"
+    },
+    "hard_rules": [
+      "nao usar imagem que contradiga a marca ou o negocio",
+      "nao esconder CTA em nome de composicao visual",
+      "nao depender de imagem para explicar tudo"
+    ]
+  },
+  "copy_rules": [
+    "clareza antes de conceito",
+    "headline curta e especifica",
+    "texto secundario com proposta concreta",
+    "CTA repetido sem ruido"
+  ],
+  "qa_focus": [
+    "a primeira dobra parece intencional e nao generica",
+    "o CTA principal aparece cedo",
+    "ha variacao visual suficiente entre secoes",
+    "o mobile continua claro e forte"
+  ]
+}

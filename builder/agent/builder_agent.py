@@ -15,13 +15,10 @@ from __future__ import annotations
 import os
 import re
 import html
-import base64
 import json
 import time
 import threading
 import unicodedata
-import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -36,6 +33,24 @@ from builder.prompts.builder import (
     AGENTE_02_BUILDER_SYSTEM_PROMPT,
     PROMPT_VERSION,
     build_messages,
+)
+from builder.core.asset_inputs import extract_asset_inputs_from_spec
+from builder.core.image_pipeline import (
+    ImagePipeline,
+    build_asset_prompt_context,
+    ensure_assets_present_in_html,
+    resolve_visual_prompts,
+)
+from builder.core.site_qa import repair_site_html
+from builder.core.content_strategy import build_content_strategy
+from builder.core.layout_recipes import build_layout_recipes
+from builder.core.link_content_inputs import (
+    build_link_content_prompt_context,
+    enrich_visual_prompts_with_link_content,
+)
+from builder.core.design_template_selector import (
+    select_design_template,
+    selected_template_to_prompt_block,
 )
 
 
@@ -71,6 +86,7 @@ _VALID_PROVIDERS = frozenset(
 
 _DEFAULT_BUILDER_AGENT_PROFILE = "site-builder-core"
 _DEFAULT_IMAGE_BASE_URL = "http://localhost:20128/v1"
+_ENABLE_PREGENERATED_ASSETS = os.getenv("BUILDER_ASSET_FIRST_ENABLED", "1").strip().lower() not in {"0", "false", "no", "off"}
 
 _SEGMENT_THEMES = {
     "mechanic": {
@@ -268,33 +284,13 @@ class BuilderAgent:
         )
         self.client = None
         self._openai_client = None
-        self._image_client = None
-        self._image_api_key = ""
-        self._image_base_url = ""
-        self.image_model = os.getenv("AGENT_IMAGE_MODEL", "cx/gpt-5.4-image").strip() or "cx/gpt-5.4-image"
-        self.image_size = os.getenv("AGENT_IMAGE_SIZE", "auto").strip() or "auto"
-        self.image_quality = os.getenv("AGENT_IMAGE_QUALITY", "auto").strip() or "auto"
-        self.image_background = os.getenv("AGENT_IMAGE_BACKGROUND", "auto").strip() or "auto"
-        self.image_detail = os.getenv("AGENT_IMAGE_DETAIL", "high").strip() or "high"
-        self.image_output_format = os.getenv("AGENT_IMAGE_OUTPUT_FORMAT", "png").strip() or "png"
-        self.image_timeout_seconds = int(os.getenv("AGENT_IMAGE_TIMEOUT_SECONDS", "45").strip() or "45")
-        self.image_optional_slot_timeout_seconds = int(os.getenv("AGENT_IMAGE_OPTIONAL_SLOT_TIMEOUT_SECONDS", "12").strip() or "12")
-        self.image_parallel_workers = int(os.getenv("AGENT_IMAGE_PARALLEL_WORKERS", "3").strip() or "3")
-        self.image_enabled = os.getenv("AGENT_IMAGE_ENABLED", "1").strip().lower() not in {
-            "0",
-            "false",
-            "no",
-            "off",
-        }
+        self._image_pipeline = ImagePipeline()
 
         def activate_local_fallback(reason: str) -> None:
             print(f"[BUILDER] {reason}. Falling back to local mode.")
             self.provider = None
             self.client = None
             self._openai_client = None
-            self._image_client = None
-            self._image_api_key = ""
-            self._image_base_url = ""
             self.use_local_fallback = True
 
         if provider == "anthropic":
@@ -322,7 +318,7 @@ class BuilderAgent:
         else:
             print("[BUILDER] No LLM provider configured — using local fallback mode.")
 
-        self._init_image_client()
+        self._image_pipeline.log_startup()
 
     def _resolve_profile_name(self, job: BuildJob) -> str:
         design_plan = job.spec.get("design_plan") or {}
@@ -387,6 +383,10 @@ class BuilderAgent:
         if design_rules:
             sections.append("# BIBLIOTECA DE DESIGN: REGRAS OPERACIONAIS\n" + design_rules)
 
+        hyperframes_quality = self._read_design_template_text("agent-ready", "hyperframes-site-quality.md")
+        if hyperframes_quality:
+            sections.append("# BIBLIOTECA DE DESIGN: QUALIDADE INSPIRADA EM HYPERFRAMES\n" + hyperframes_quality)
+
         style_map = self._read_design_template_text("agent-ready", "style-to-segment-map.md")
         if style_map:
             sections.append("# BIBLIOTECA DE DESIGN: MAPA DE ESTILO POR SEGMENTO\n" + style_map)
@@ -433,7 +433,12 @@ class BuilderAgent:
         profile_text = self._load_profile_prompt(profile_name)
         design_plan = job.spec.get("design_plan") or job.spec.get("summary", {}).get("design_plan") or {}
         design_notes = design_plan.get("design_notes") if isinstance(design_plan, dict) else None
+        selected_template = select_design_template(job.spec, self._project_root)
+        selected_template_context = selected_template_to_prompt_block(selected_template)
         design_library_context = self._collect_design_library_context(job)
+        content_strategy_context = build_content_strategy(job.spec).to_prompt_block()
+        layout_recipe_context = build_layout_recipes(job.spec).to_prompt_block()
+        link_content_context = build_link_content_prompt_context(job.spec.get("link_content"))
 
         design_context = ""
         if isinstance(design_plan, dict) and design_plan:
@@ -459,34 +464,21 @@ class BuilderAgent:
                 f"- avoid: {', '.join(design_notes.get('avoid') or []) or 'não definido'}\n"
             )
 
+        asset_context = build_asset_prompt_context(job.spec.get("_materialized_assets"))
+
         return (
             f"{AGENTE_02_BUILDER_SYSTEM_PROMPT}\n\n"
             f"# PERFIL ATIVO DO AGENTE ({profile_name})\n"
             f"{profile_text}\n\n"
             f"{design_context}\n"
             f"{design_notes_context}\n"
+            f"{selected_template_context}\n"
+            f"{content_strategy_context}\n"
+            f"{layout_recipe_context}\n"
+            f"{link_content_context}\n"
             f"{design_library_context}\n"
+            f"{asset_context}\n"
         ).strip()
-
-    def _init_image_client(self) -> None:
-        if not self.image_enabled:
-            return
-
-        image_api_key = (
-            os.getenv("AGENT_IMAGE_API_KEY", "").strip()
-            or os.getenv("OPENAI_API_KEY", "").strip()
-            or os.getenv("AGENT_LLM_API_KEY", "").strip()
-            or os.getenv("FIRST_INTERACTION_API_KEY", "").strip()
-            or os.getenv("INTAKE_FILTER_API_KEY", "").strip()
-        )
-        if not image_api_key:
-            return
-
-        image_base_url = os.getenv("AGENT_IMAGE_BASE_URL", "").strip() or _DEFAULT_IMAGE_BASE_URL
-        self._image_api_key = image_api_key
-        self._image_base_url = image_base_url.rstrip("/")
-        self._image_client = True
-        print(f"[BUILDER] image-provider=9router-http base_url={self._image_base_url!r} model={self.image_model}")
 
     def get_job(self, job_id: str) -> Optional[BuildJob]:
         with self._lock:
@@ -517,11 +509,44 @@ class BuilderAgent:
             if self.use_local_fallback:
                 generated_html, local_usage = self._build_local_html_v2(job, site_dir)
             else:
+                # Asset-first: materialize images before the LLM generates HTML
+                if _ENABLE_PREGENERATED_ASSETS:
+                    try:
+                        business_name, segment, brand_tone, target_audience, service_labels = extract_asset_inputs_from_spec(job.spec)
+                        summary = job.spec.get("summary") or {}
+                        visual_prompts = resolve_visual_prompts(
+                            visual_plan=job.spec.get("visual_plan") or summary.get("visual_plan") or {},
+                            business_name=business_name,
+                            segment=segment,
+                            brand_tone=brand_tone,
+                            target_audience=target_audience,
+                            services=service_labels,
+                        )
+                        visual_prompts = enrich_visual_prompts_with_link_content(visual_prompts, job.spec.get("link_content"))
+                        image_assets, image_generation = self._image_pipeline.materialize(
+                            site_dir=site_dir,
+                            image_prompts=visual_prompts,
+                            fallback_segment=segment,
+                            fallback_services=service_labels,
+                        )
+                        job.spec["_materialized_assets"] = image_assets
+                        with self._lock:
+                            job.usage = {**job.usage, **image_generation, "asset_first_generation": 1}
+                        print(
+                            f"[BUILDER] job={job.job_id} assets-first llm: "
+                            f"generated={image_generation.get('count', 0)}/{len(visual_prompts)}"
+                        )
+                    except Exception as exc:
+                        print(f"[BUILDER] job={job.job_id} asset pre-generation skipped: {exc}")
+                else:
+                    print(f"[BUILDER] job={job.job_id} asset-first disabled by BUILDER_ASSET_FIRST_ENABLED=0")
+
                 try:
                     if self.provider == "anthropic":
                         generated_html = _strip_html_fence(self._call_claude(job))
                     else:
                         generated_html = _strip_html_fence(self._call_openai_compatible(job))
+                    generated_html = ensure_assets_present_in_html(generated_html, job.spec.get("_materialized_assets"))
                 except Exception as exc:
                     if not _should_runtime_fallback(exc):
                         raise
@@ -536,6 +561,18 @@ class BuilderAgent:
 
             if not generated_html.lower().lstrip().startswith("<!doctype"):
                 raise RuntimeError("Modelo não retornou um HTML válido (sem <!doctype>).")
+
+            qa_result = repair_site_html(
+                html=generated_html,
+                site_dir=site_dir,
+                materialized_assets=job.spec.get("_materialized_assets"),
+                spec=job.spec,
+            )
+            generated_html = qa_result.html
+            with self._lock:
+                job.usage = {**job.usage, "html_qa": qa_result.usage_payload()}
+            if not qa_result.passed:
+                raise RuntimeError(f"HTML QA failed: {qa_result.usage_payload()}")
 
             site_path = site_dir / "index.html"
             site_path.write_text(generated_html, encoding="utf-8")
@@ -1000,11 +1037,70 @@ class BuilderAgent:
         visual_style = _clean_text(design_plan.get("visual_style") or "clean-professional")
         layout_family = _clean_text(design_plan.get("layout_family") or "conversion-landing")
         section_order = ((design_plan.get("ui_direction") or {}).get("section_order") or []) if isinstance(design_plan, dict) else []
+        hero_style = _clean_text(((design_plan.get("ui_direction") or {}).get("hero_style") or "editorial-clean") if isinstance(design_plan, dict) else "editorial-clean")
         trust_strategy = design_plan.get("trust_strategy") or [] if isinstance(design_plan, dict) else []
         content_density = _clean_text(design_plan.get("content_density") or "comfortable")
         design_notes = design_plan.get("design_notes") or {} if isinstance(design_plan, dict) else {}
         tagline = _SEGMENT_TAGLINES.get(segment_id, _SEGMENT_TAGLINES["default"])
         font_url = self._resolve_font_family(segment_id)
+
+        body_font_stack = "'Manrope', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif"
+        heading_font_stack = body_font_stack
+        hero_content_max_width = "740px"
+        hero_panel_background = "rgba(0, 0, 0, 0.28)"
+        hero_panel_blur = "4px"
+        hero_overlay = "linear-gradient(180deg, transparent 45%, color-mix(in srgb, var(--ink) 35%, transparent))"
+        hero_eyebrow_opacity = "0.92"
+        section_spacing = "clamp(48px, 8vw, 96px)"
+        service_grid_min = "220px"
+        card_padding = "20px 18px"
+        card_radius = "14px"
+        card_shadow = "0 10px 24px rgba(0, 0, 0, 0.06)"
+        gallery_grid_min = "240px"
+
+        if content_density == "compact":
+            section_spacing = "clamp(40px, 6vw, 72px)"
+            service_grid_min = "190px"
+            card_padding = "18px 16px"
+            gallery_grid_min = "220px"
+        elif content_density == "balanced":
+            section_spacing = "clamp(44px, 7vw, 84px)"
+            service_grid_min = "205px"
+
+        if visual_style == "editorial-premium":
+            heading_font_stack = "'Fraunces', 'Manrope', serif"
+            hero_content_max_width = "680px"
+            hero_panel_background = "rgba(18, 18, 18, 0.22)"
+            hero_panel_blur = "3px"
+            hero_overlay = "linear-gradient(180deg, rgba(12, 12, 12, 0.08), rgba(12, 12, 12, 0.42))"
+            hero_eyebrow_opacity = "0.84"
+            section_spacing = "clamp(56px, 9vw, 112px)"
+            card_radius = "18px"
+            card_shadow = "0 18px 36px rgba(0, 0, 0, 0.08)"
+        elif visual_style == "bold-conversion":
+            heading_font_stack = "'Space Grotesk', 'Manrope', ui-sans-serif, sans-serif"
+            hero_content_max_width = "760px"
+            hero_panel_background = "rgba(0, 0, 0, 0.38)"
+            hero_panel_blur = "2px"
+            hero_overlay = "linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.54))"
+            section_spacing = "clamp(42px, 7vw, 88px)"
+            card_radius = "12px"
+        elif visual_style == "warm-artisanal":
+            heading_font_stack = "'Fraunces', 'Manrope', serif"
+            hero_content_max_width = "700px"
+            hero_panel_background = "rgba(44, 28, 12, 0.24)"
+            hero_panel_blur = "3px"
+            hero_overlay = "linear-gradient(180deg, rgba(38, 20, 8, 0.06), rgba(38, 20, 8, 0.44))"
+            card_radius = "18px"
+            card_shadow = "0 14px 30px rgba(62, 39, 35, 0.12)"
+
+        if hero_style == "strong-contrast":
+            hero_panel_background = "rgba(0, 0, 0, 0.42)"
+            hero_overlay = "linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.6))"
+        elif hero_style == "image-dominant":
+            hero_content_max_width = "620px"
+            hero_panel_background = "rgba(20, 20, 20, 0.18)"
+            hero_eyebrow_opacity = "0.78"
 
         if visual_style == "editorial-premium":
             tagline = f"{tagline} Com presença mais refinada, calma e objetiva."
@@ -1052,7 +1148,7 @@ class BuilderAgent:
             cta_href = "#contato"
             cta_label = primary_cta
 
-        visual_prompts = self._resolve_visual_prompts(
+        visual_prompts = resolve_visual_prompts(
             visual_plan=job.spec.get("visual_plan") or summary.get("visual_plan") or {},
             business_name=business_name,
             segment=segment,
@@ -1060,12 +1156,15 @@ class BuilderAgent:
             target_audience=summary.get("target_audience") or "",
             services=service_labels,
         )
-        image_assets, generated_images = self._materialize_image_assets(
+        visual_prompts = enrich_visual_prompts_with_link_content(visual_prompts, job.spec.get("link_content"))
+        image_assets, image_generation = self._image_pipeline.materialize(
             site_dir=site_dir,
             image_prompts=visual_prompts,
             fallback_segment=segment,
             fallback_services=service_labels,
         )
+        generated_images = int(image_generation.get("count") or 0)
+        image_slot_stats = image_generation.get("slots") or {}
         hero_asset = image_assets[0]
         supporting_assets = image_assets[1:]
         planned_images = len(visual_prompts)
@@ -1143,6 +1242,17 @@ class BuilderAgent:
 
         if "social-proof-early" in trust_strategy:
             section_intro_about = "A página prioriza sinais de confiança e consistência logo após a apresentação principal."
+
+        if visual_style == "editorial-premium":
+            section_intro_about = "A composição privilegia clareza, autoridade calma e leitura mais respirada."
+            cta_copy = "Fale com a equipe e receba um retorno claro, objetivo e alinhado ao seu contexto."
+        elif visual_style == "bold-conversion":
+            section_intro_services = "Os blocos foram organizados para destacar o que importa e acelerar a decisão."
+            cta_copy = "Fale agora e avance para o próximo passo sem complicação."
+        elif visual_style == "friendly-accessible":
+            section_intro_services = "Os destaques aparecem de forma simples para facilitar leitura, comparação e contato."
+        elif visual_style == "warm-artisanal":
+            section_intro_gallery = "As imagens reforçam proximidade, atmosfera real e a sensação certa para quem chega até o negócio."
 
         available_sections = {
             "services": f"""
@@ -1282,7 +1392,7 @@ class BuilderAgent:
     * {{ box-sizing: border-box; }}
     body {{
       margin: 0;
-      font-family: 'Manrope', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      font-family: {body_font_stack};
       line-height: 1.55;
       color: var(--ink);
       background: var(--paper);
@@ -1344,17 +1454,17 @@ class BuilderAgent:
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, transparent 45%, color-mix(in srgb, var(--ink) 35%, transparent));
+      background: {hero_overlay};
       z-index: -1;
     }}
     .hero-content {{
-      width: min(740px, 92vw);
+      width: min({hero_content_max_width}, 92vw);
       margin: 0 auto clamp(32px, 8vh, 72px);
       padding: clamp(18px, 4vw, 32px);
       border-radius: 18px;
       border: 1px solid rgba(255, 255, 255, 0.18);
-      background: rgba(0, 0, 0, 0.28);
-      backdrop-filter: blur(4px);
+      background: {hero_panel_background};
+      backdrop-filter: blur({hero_panel_blur});
       color: white;
     }}
     .hero-eyebrow {{
@@ -1363,10 +1473,11 @@ class BuilderAgent:
       text-transform: uppercase;
       letter-spacing: 0.12em;
       font-weight: 700;
-      opacity: 0.92;
+      opacity: {hero_eyebrow_opacity};
     }}
     h1 {{
       margin: 0;
+      font-family: {heading_font_stack};
       font-size: clamp(2.1rem, 5.5vw, 4.6rem);
       line-height: 1.04;
       letter-spacing: -0.02em;
@@ -1390,9 +1501,10 @@ class BuilderAgent:
       font-size: 0.86rem;
       color: rgba(255, 255, 255, 0.86);
     }}
-    section {{ padding: clamp(48px, 8vw, 96px) 0; }}
+    section {{ padding: {section_spacing} 0; }}
     h2 {{
       margin: 0;
+      font-family: {heading_font_stack};
       font-size: clamp(1.8rem, 3.2vw, 2.8rem);
       line-height: 1.1;
       letter-spacing: -0.01em;
@@ -1406,15 +1518,15 @@ class BuilderAgent:
     .service-grid {{
       margin-top: 26px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax({service_grid_min}, 1fr));
       gap: 14px;
     }}
     .service-card {{
-      padding: 20px 18px;
-      border-radius: 14px;
+      padding: {card_padding};
+      border-radius: {card_radius};
       border: 1px solid var(--line);
       background: var(--card);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+      box-shadow: {card_shadow};
     }}
     .service-card h3 {{ margin: 0; font-size: 1.05rem; }}
     .service-card p {{ margin: 10px 0 0; color: var(--muted); font-size: 0.94rem; }}
@@ -1480,7 +1592,7 @@ class BuilderAgent:
       margin-top: 24px;
       display: grid;
       gap: 14px;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax({gallery_grid_min}, 1fr));
     }}
     .gallery-card {{
       margin: 0;
@@ -1588,6 +1700,7 @@ class BuilderAgent:
         return page_html, {
             "images_planned": planned_images,
             "images_generated": generated_images,
+            "image_slots": image_slot_stats,
             "design_plan_version": 1,
             "layout_family": layout_family,
             "visual_style": visual_style,
@@ -1602,237 +1715,6 @@ class BuilderAgent:
         if segment_id in {"mechanic", "tech"}:
             return "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
         return "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
-
-    def _resolve_visual_prompts(
-        self,
-        visual_plan: Dict[str, Any],
-        business_name: str,
-        segment: str,
-        brand_tone: str,
-        target_audience: str,
-        services: list[str],
-    ) -> list[Dict[str, str]]:
-        prompts = visual_plan.get("image_prompts") if isinstance(visual_plan, dict) else None
-        resolved: list[Dict[str, str]] = []
-
-        if isinstance(prompts, list):
-            for item in prompts:
-                if not isinstance(item, dict):
-                    continue
-                prompt = _clean_text(item.get("prompt") or "")
-                if prompt.lower() in {"não informado", "nao informado", "não definido", "nao definido"}:
-                    continue
-                resolved.append(
-                    {
-                        "slot": str(item.get("slot") or f"image-{len(resolved) + 1}"),
-                        "prompt": prompt,
-                        "alt": _clean_text(item.get("alt") or f"Imagem de {business_name}"),
-                        "caption": _clean_text(item.get("alt") or item.get("slot") or "Imagem de apoio"),
-                    }
-                )
-
-        if len(resolved) >= 3:
-            return resolved[:3]
-
-        service_text = ", ".join(services[:3]) or "serviços locais"
-        tone_text = (
-            brand_tone
-            if brand_tone and brand_tone.lower() not in {"não informado", "nao informado", "não definido", "nao definido"}
-            else "estilo profissional"
-        )
-        audience_text = (
-            target_audience
-            if target_audience and target_audience.lower() not in {"não informado", "nao informado", "não definido", "nao definido"}
-            else "clientes da região"
-        )
-        defaults = [
-            {
-                "slot": "hero",
-                "prompt": f"Foto realista de {segment}, ambiente profissional, {tone_text}, sem texto.",
-                "alt": f"Ambiente principal de {business_name}",
-                "caption": "Visão principal",
-            },
-            {
-                "slot": "services",
-                "prompt": f"Foto editorial de {segment} com foco em {service_text}, iluminação natural.",
-                "alt": f"Serviços de {business_name}",
-                "caption": "Serviços em destaque",
-            },
-            {
-                "slot": "audience",
-                "prompt": f"Clientes reais de {segment}, público {audience_text}, atendimento próximo.",
-                "alt": f"Clientes de {business_name}",
-                "caption": "Experiência do cliente",
-            },
-        ]
-        for default in defaults:
-            if len(resolved) >= 3:
-                break
-            resolved.append(default)
-        return resolved[:3]
-
-    def _materialize_image_assets(
-        self,
-        site_dir: Path,
-        image_prompts: list[Dict[str, str]],
-        fallback_segment: str,
-        fallback_services: list[str],
-    ) -> tuple[list[Dict[str, str]], int]:
-        assets_dir = site_dir / "assets"
-        assets_dir.mkdir(parents=True, exist_ok=True)
-        asset_plan: list[Dict[str, str]] = []
-
-        for idx, entry in enumerate(image_prompts):
-            prompt = _clean_text(entry.get("prompt") or "")
-            alt = _clean_text(entry.get("alt") or "Imagem do negócio")
-            caption = _clean_text(entry.get("caption") or alt)
-            slot = re.sub(r"[^a-z0-9_-]+", "-", (entry.get("slot") or f"image-{idx + 1}").lower()).strip("-")
-            slot = slot or f"image-{idx + 1}"
-            asset_plan.append(
-                {
-                    "idx": idx,
-                    "slot": slot,
-                    "prompt": prompt,
-                    "alt": alt,
-                    "caption": caption,
-                    "stem": f"{idx + 1:02d}-{slot}",
-                    "optional": idx > 0,
-                }
-            )
-
-        assets_by_index: Dict[int, Dict[str, str]] = {}
-        generated_count = 0
-        hero_plan = asset_plan[:1]
-        optional_plans = asset_plan[1:]
-
-        for item in hero_plan:
-            generated_url = self._try_generate_image_asset(
-                assets_dir=assets_dir,
-                prompt=item["prompt"],
-                stem=item["stem"],
-            )
-            if generated_url:
-                generated_count += 1
-                image_url = generated_url
-            else:
-                image_url = self._fallback_image_url(
-                    prompt=item["prompt"],
-                    fallback_segment=fallback_segment,
-                    fallback_services=fallback_services,
-                )
-            assets_by_index[item["idx"]] = {
-                "slot": item["slot"],
-                "url": image_url,
-                "alt": item["alt"],
-                "caption": item["caption"],
-            }
-
-        if optional_plans:
-            started_at = time.monotonic()
-            max_workers = max(1, min(self.image_parallel_workers, len(optional_plans)))
-            futures = {}
-            with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="image-slot") as executor:
-                for item in optional_plans:
-                    elapsed = time.monotonic() - started_at
-                    if elapsed >= self.image_optional_slot_timeout_seconds:
-                        assets_by_index[item["idx"]] = {
-                            "slot": item["slot"],
-                            "url": self._fallback_image_url(
-                                prompt=item["prompt"],
-                                fallback_segment=fallback_segment,
-                                fallback_services=fallback_services,
-                            ),
-                            "alt": item["alt"],
-                            "caption": item["caption"],
-                        }
-                        continue
-                    futures[executor.submit(self._try_generate_image_asset, assets_dir, item["prompt"], item["stem"])] = item
-
-                for future in as_completed(futures):
-                    item = futures[future]
-                    generated_url = None
-                    try:
-                        generated_url = future.result()
-                    except Exception:
-                        generated_url = None
-                    if generated_url:
-                        generated_count += 1
-                        image_url = generated_url
-                    else:
-                        image_url = self._fallback_image_url(
-                            prompt=item["prompt"],
-                            fallback_segment=fallback_segment,
-                            fallback_services=fallback_services,
-                        )
-                    assets_by_index[item["idx"]] = {
-                        "slot": item["slot"],
-                        "url": image_url,
-                        "alt": item["alt"],
-                        "caption": item["caption"],
-                    }
-
-        assets = [assets_by_index[idx] for idx in sorted(assets_by_index.keys())]
-        return assets, generated_count
-
-    def _try_generate_image_asset(self, assets_dir: Path, prompt: str, stem: str) -> Optional[str]:
-        if self._image_client is None or not self._image_api_key or not self._image_base_url:
-            return None
-        try:
-            payload = {
-                "model": self.image_model,
-                "prompt": prompt,
-                "n": 1,
-                "size": self.image_size,
-                "quality": self.image_quality,
-                "background": self.image_background,
-                "image_detail": self.image_detail,
-                "output_format": self.image_output_format,
-            }
-            response = requests.post(
-                f"{self._image_base_url}/images/generations",
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {self._image_api_key}",
-                },
-                json=payload,
-                timeout=self.image_timeout_seconds,
-            )
-            response.raise_for_status()
-            body = response.json()
-            items = body.get("data") if isinstance(body, dict) else None
-            if not items:
-                return None
-
-            first = items[0] if isinstance(items, list) else None
-            if not isinstance(first, dict):
-                return None
-
-            image_url = first.get("url")
-            if image_url:
-                return image_url
-
-            b64_payload = first.get("b64_json") or first.get("base64") or first.get("image_base64")
-            if not b64_payload:
-                return None
-
-            payload = re.sub(r"\s+", "", b64_payload)
-            image_bytes = base64.b64decode(payload, validate=False)
-            filename = f"{stem}.png"
-            file_path = assets_dir / filename
-            file_path.write_bytes(image_bytes)
-            return f"./assets/{filename}"
-        except Exception as error:
-            print(f"[BUILDER] image generation fallback engaged: {error}")
-            return None
-
-    def _fallback_image_url(self, prompt: str, fallback_segment: str, fallback_services: list[str]) -> str:
-        normalized = _normalize_for_match(prompt)
-        tokens = re.findall(r"[a-z0-9]+", normalized)
-        if len(tokens) < 3:
-            seed_text = f"{fallback_segment} {' '.join(fallback_services[:2])}".strip()
-            tokens = re.findall(r"[a-z0-9]+", _normalize_for_match(seed_text))
-        keywords = ",".join(tokens[:6]) if tokens else "small-business,local,service"
-        return f"https://source.unsplash.com/1600x900/?{quote_plus(keywords)}"
 
 def _clean_text(value: Any) -> str:
     text = str(value or "").strip()

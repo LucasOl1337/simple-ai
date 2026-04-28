@@ -6,6 +6,7 @@
     "dev": "vite",
     "dev:backend": "python api/server.py",
     "dev:full": "concurrently \"npm run dev:backend\" \"npm run dev\"",
+    "hyperframes:promo": "node scripts/hyperframes-promo.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },

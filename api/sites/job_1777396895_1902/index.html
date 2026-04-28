@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clínica Aura | Clínica de estética</title>
+  <meta name="description" content="Clínica Aura: clínica de estética com atendimento cuidadoso, apresentação de tratamentos e agendamento pelo WhatsApp.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1f6f8b;
+      --neutral: #f3f7f8;
+      --accent: #15333d;
+      --white: #ffffff;
+      --text: #17313a;
+      --muted: #5f737a;
+      --line: #dce8eb;
+      --radius: 28px;
+      --shadow: 0 18px 50px rgba(21, 51, 61, .10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", sans-serif;
+      color: var(--text);
+      background: var(--white);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -48px;
+      left: 16px;
+      background: var(--accent);
+      color: var(--white);
+      padding: 10px 14px;
+      border-radius: 12px;
+      z-index: 100;
+    }
+
+    .skip-link:focus {
+      top: 16px;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, .92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      font-size: 1.05rem;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--primary);
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 9px;
+      border-radius: 50%;
+      background: var(--white);
+      opacity: .95;
+    }
+
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 24px;
+      color: var(--muted);
+      font-size: .95rem;
+      font-weight: 700;
+    }
+
+    .nav-links a:hover,
+    .nav-links a:focus {
+      color: var(--primary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 20px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+      min-height: 50px;
+      font-size: .98rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+      box-shadow: 0 14px 30px rgba(31, 111, 139, .20);
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 38px rgba(31, 111, 139, .26);
+    }
+
+    .btn-soft {
+      background: var(--neutral);
+      color: var(--accent);
+      border: 1px solid var(--line);
+    }
+
+    .btn-soft:hover,
+    .btn-soft:focus {
+      background: #eaf2f4;
+      transform: translateY(-2px);
+    }
+
+    .nav-cta {
+      display: none;
+    }
+
+    .hero {
+      padding: 38px 0 64px;
+      background: linear-gradient(90deg, var(--white) 0%, var(--white) 58%, var(--neutral) 58%, var(--neutral) 100%);
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--primary);
+      background: var(--neutral);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 800;
+      font-size: .82rem;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      margin: 0 0 18px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    h1, h2, h3, p {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: clamp(2.3rem, 10vw, 4.7rem);
+      line-height: .98;
+      letter-spacing: -0.075em;
+      margin-bottom: 20px;
+      color: var(--accent);
+    }
+
+    .hero-copy {
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: var(--muted);
+      max-width: 620px;
+      margin-bottom: 26px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+      margin-bottom: 28px;
+    }
+
+    .hero-note {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 18px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      max-width: 640px;
+    }
+
+    .note-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: .95rem;
+    }
+
+    .check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--neutral);
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      font-weight: 900;
+      font-size: .82rem;
+    }
+
+    .hero-media {
+      position: relative;
+    }
+
+    .hero-card {
+      border-radius: 34px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      background: var(--white);
+    }
+
+    .hero-card img {
+      width: 100%;
+      aspect-ratio: 16 / 11;
+      object-fit: cover;
+    }
+
+    .media-label {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      background: rgba(255, 255, 255, .94);
+      color: var(--accent);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 12px 14px;
+      box-shadow: 0 12px 30px rgba(21, 51, 61, .12);
+      font-weight: 800;
+      max-width: calc(100% - 36px);
+      font-size: .92rem;
+    }
+
+    section {
+      padding: 64px 0;
+    }
+
+    .section-head {
+      max-width: 760px;
+      margin-bottom: 28px;
+    }
+
+    .section-kicker {
+      color: var(--primary);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-size: .82rem;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      line-height: 1.05;
+      letter-spacing: -0.055em;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.06rem;
+      max-width: 720px;
+    }
+
+    .services-wrap {
+      display: grid;
+      gap: 22px;
+    }
+
+    .service-image {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .service-image img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }
+
+    .services-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .service-row {
+      background: var(--neutral);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .service-number {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: var(--white);
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      border: 1px solid var(--line);
+    }
+
+    .service-row h3 {
+      color: var(--accent);
+      margin-bottom: 4px;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+
+    .service-row p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: .96rem;
+    }
+
+    .proof {
+      background: var(--neutral);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .proof-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .proof-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .proof-card strong {
+      display: block;
+      color: var(--accent);
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .proof-card p {
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+
+    .process-grid {
+      display: grid;
+      gap: 14px;
+      counter-reset: step;
+    }
+
+    .step {
+      counter-increment: step;
+      border-left: 3px solid var(--primary);
+      padding: 18px 18px 18px 22px;
+      background: var(--white);
+      border-radius: 0 22px 22px 0;
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+
+    .step::before {
+      content: "Passo " counter(step);
+      display: inline-block;
+      color: var(--primary);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-size: .78rem;
+      margin-bottom: 8px;
+    }
+
+    .step h3 {
+      margin-bottom: 4px;
+      color: var(--accent);
+      font-size: 1.12rem;
+    }
+
+    .step p {
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    .about {
+      background: var(--white);
+    }
+
+    .about-grid {
+      display: grid;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .about-media {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .about-media img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }
+
+    .about-panel {
+      background: var(--neutral);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 26px;
+    }
+
+    .about-panel p {
+      color: var(--muted);
+      font-size: 1.03rem;
+    }
+
+    .about-panel p:last-child {
+      margin-bottom: 0;
+    }
+
+    .contact {
+      padding-bottom: 80px;
+    }
+
+    .contact-box {
+      background: var(--accent);
+      color: var(--white);
+      border-radius: 34px;
+      padding: 30px;
+      display: grid;
+      gap: 22px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .contact-box::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      right: -90px;
+      top: -90px;
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .contact-box h2 {
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+
+    .contact-box p {
+      color: rgba(255, 255, 255, .82);
+      margin-bottom: 0;
+      max-width: 660px;
+    }
+
+    .contact-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+      position: relative;
+      z-index: 1;
+    }
+
+    .contact-box .btn-primary {
+      background: var(--white);
+      color: var(--accent);
+      box-shadow: none;
+    }
+
+    .contact-box .btn-soft {
+      background: transparent;
+      color: var(--white);
+      border-color: rgba(255, 255, 255, .28);
+    }
+
+    .contact-detail {
+      border-top: 1px solid rgba(255, 255, 255, .16);
+      padding-top: 18px;
+      color: rgba(255, 255, 255, .78);
+      font-size: .95rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .instagram-strip {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .insta-card {
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 20px;
+      padding: 16px;
+      color: rgba(255, 255, 255, .86);
+      font-weight: 700;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 28px 0;
+      color: var(--muted);
+      background: var(--white);
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-inner strong {
+      color: var(--accent);
+    }
+
+    .whatsapp-float {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--white);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 16px 36px rgba(31, 111, 139, .32);
+      z-index: 30;
+      font-weight: 900;
+      border: 2px solid var(--white);
+      transition: transform .2s ease;
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+
+    .whatsapp-float:hover,
+    .whatsapp-float:focus {
+      transform: translateY(-3px);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (min-width: 680px) {
+      .hero-actions,
+      .contact-actions {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .btn {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+
+      .hero-note {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .proof-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .instagram-strip {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .footer-inner {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+
+    @media (min-width: 900px) {
+      body {
+        font-size: 17px;
+      }
+
+      .nav-links,
+      .nav-cta {
+        display: inline-flex;
+      }
+
+      .hero {
+        padding: 70px 0 86px;
+      }
+
+      .hero-grid {
+        grid-template-columns: .92fr 1.08fr;
+        gap: 48px;
+      }
+
+      .hero-media {
+        transform: translateX(14px);
+      }
+
+      section {
+        padding: 88px 0;
+      }
+
+      .services-wrap {
+        grid-template-columns: .9fr 1.1fr;
+        align-items: center;
+        gap: 42px;
+      }
+
+      .process-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+      }
+
+      .step {
+        border-left: 0;
+        border-top: 3px solid var(--primary);
+        border-radius: 0 0 22px 22px;
+        min-height: 210px;
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 44px;
+      }
+
+      .contact-box {
+        grid-template-columns: 1.1fr .9fr;
+        padding: 48px;
+      }
+
+      .contact-detail {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topbar" aria-label="Cabeçalho do site">
+    <div class="container nav">
+      <a class="brand" href="#" aria-label="Página inicial da Clínica Aura">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Clínica Aura</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Navegação principal">
+        <a href="#atendimentos">Tratamentos</a>
+        <a href="#confianca">Confiança</a>
+        <a href="#agendamento">Agendamento</a>
+        <a href="#contato">Contato</a>
+      </nav>
+
+      <a class="btn btn-primary nav-cta" href="#contato">Contato via WhatsApp</a>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">Clínica de estética</p>
+          <h1 id="hero-title">Clínica Aura</h1>
+          <p class="hero-copy">Tratamentos estéticos com atendimento cuidadoso, ambiente limpo e agendamento simples pelo WhatsApp.</p>
+
+          <div class="hero-actions" aria-label="Ações principais">
+            <a class="btn btn-primary" href="#contato">Contato via WhatsApp</a>
+            <a class="btn btn-soft" href="#atendimentos">Ver tratamentos</a>
+          </div>
+
+          <div class="hero-note" aria-label="Pontos de confiança">
+            <div class="note-item">
+              <span class="check" aria-hidden="true">✓</span>
+              <span>Presença ativa no Instagram para acompanhar novidades e rotina da clínica.</span>
+            </div>
+            <div class="note-item">
+              <span class="check" aria-hidden="true">✓</span>
+              <span>Avaliações no Google como referência de confiança online.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-media">
+          <div class="hero-card">
+            <img src="./assets/01-hero.png" alt="Clínica ou consultório em operação real">
+          </div>
+          <div class="media-label">Atendimento estético em um espaço pensado para acolher com calma.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="atendimentos" aria-labelledby="services-title">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-kicker">O que oferecemos</p>
+          <h2 id="services-title">Tratamentos apresentados com clareza para você escolher o próximo passo.</h2>
+          <p class="lead">A Clínica Aura organiza as informações principais dos tratamentos e facilita o contato para tirar dúvidas antes de agendar.</p>
+        </div>
+
+        <div class="services-wrap">
+          <div class="service-image">
+            <img src="./assets/02-services.png" alt="Imagem de O nome do negócio deve aparecer no site como: Clínica Aura.">
+          </div>
+
+          <div class="services-list" aria-label="Lista de atendimentos e ações">
+            <article class="service-row">
+              <span class="service-number" aria-hidden="true">01</span>
+              <div>
+                <h3>Tratamentos estéticos</h3>
+                <p>Apresentação dos procedimentos disponíveis, com orientação responsável e sem promessas exageradas.</p>
+              </div>
+            </article>
+
+            <article class="service-row">
+              <span class="service-number" aria-hidden="true">02</span>
+              <div>
+                <h3>Agendamento pelo WhatsApp</h3>
+                <p>Um caminho direto para conversar, verificar disponibilidade e combinar o melhor horário.</p>
+              </div>
+            </article>
+
+            <article class="service-row">
+              <span class="service-number" aria-hidden="true">03</span>
+              <div>
+                <h3>Contato para dúvidas</h3>
+                <p>Espaço para perguntar sobre tratamentos, cuidados prévios e próximos passos antes da visita.</p>
+              </div>
+            </article>
+
+            <article class="service-row">
+              <span class="service-number" aria-hidden="true">04</span>
+              <div>
+                <h3>Instagram como vitrine</h3>
+                <p>Conteúdo visual da clínica, rotina, novidades e referências para quem já acompanha a marca.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="confianca" class="proof" aria-labelledby="proof-title">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-kicker">Confiança desde o início</p>
+          <h2 id="proof-title">Uma experiência pensada para ser simples, segura e bem explicada.</h2>
+          <p class="lead">Em estética, confiança vem de atendimento atento, informação clara e um processo sem pressa.</p>
+        </div>
+
+        <div class="proof-grid">
+          <article class="proof-card">
+            <strong>Atendimento humano</strong>
+            <p>Conversa inicial para entender o que você busca e orientar o caminho mais adequado.</p>
+          </article>
+
+          <article class="proof-card">
+            <strong>Presença online real</strong>
+            <p>Instagram forte e avaliações no Google ajudam novos clientes a conhecerem a Clínica Aura antes do contato.</p>
+          </article>
+
+          <article class="proof-card">
+            <strong>Agendamento direto</strong>
+            <p>O WhatsApp concentra dúvidas, horários e confirmação de atendimento em um único lugar.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="agendamento" aria-labelledby="process-title">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-kicker">Como funciona</p>
+          <h2 id="process-title">Do primeiro contato ao atendimento, sem complicação.</h2>
+        </div>
+
+        <div class="process-grid">
+          <article class="step">
+            <h3>Envie uma mensagem</h3>
+            <p>Use o botão de contato para iniciar a conversa pelo WhatsApp.</p>
+          </article>
+
+          <article class="step">
+            <h3>Conte o que procura</h3>
+            <p>Explique seu objetivo, dúvida ou tratamento de interesse.</p>
+          </article>
+
+          <article class="step">
+            <h3>Receba orientação</h3>
+            <p>A equipe indica o próximo passo e informa disponibilidade de agenda.</p>
+          </article>
+
+          <article class="step">
+            <h3>Confirme o horário</h3>
+            <p>Combinado tudo, o atendimento fica alinhado de forma clara.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="about" aria-labelledby="about-title">
+      <div class="container about-grid">
+        <div class="about-panel">
+          <p class="section-kicker">Sobre</p>
+          <h2 id="about-title">Clínica Aura</h2>
+          <p>A Clínica Aura é uma clínica de estética que usa o site como uma porta de entrada clara para novos atendimentos. Aqui, os tratamentos ganham organização, o contato fica fácil e a pessoa interessada sabe exatamente como iniciar a conversa.</p>
+          <p>A proposta é unir beleza, cuidado e confiança em uma navegação leve, com apoio do WhatsApp, do Instagram e das avaliações já existentes no Google.</p>
+        </div>
+
+        <div class="about-media">
+          <img src="./assets/03-audience.png" alt="Clientes de Clínica ou consultório">
+        </div>
+      </div>
+    </section>
+
+    <section id="contato" class="contact" aria-labelledby="contact-title">
+      <div class="container">
+        <div class="contact-box">
+          <div>
+            <p class="section-kicker" style="color: rgba(255,255,255,.74);">Contato / CTA final</p>
+            <h2 id="contact-title">Quer agendar ou tirar uma dúvida?</h2>
+            <p>Fale com a Clínica Aura pelo WhatsApp para combinar atendimento. O número será confirmado pela equipe no canal oficial da clínica.</p>
+          </div>
+
+          <div class="contact-actions">
+            <a class="btn btn-primary" href="#contato" aria-label="Solicitar contato via WhatsApp da Clínica Aura">Contato via WhatsApp</a>
+            <a class="btn btn-soft" href="#atendimentos">Rever tratamentos</a>
+          </div>
+
+          <div class="contact-detail">
+            <strong>WhatsApp:</strong> contato a confirmar. Use esta área como ponto principal para direcionar clientes ao canal oficial.
+            <div class="instagram-strip" aria-label="Feed do Instagram">
+              <div class="insta-card">Instagram da Clínica Aura</div>
+              <div class="insta-card">Novidades e rotina da clínica</div>
+              <div class="insta-card">Referências visuais dos atendimentos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <a class="whatsapp-float" href="#contato" aria-label="Ir para contato via WhatsApp">
+    <span aria-hidden="true">☎</span>
+    <span class="sr-only">Contato via WhatsApp</span>
+  </a>
+
+  <footer>
+    <div class="container footer-inner">
+      <strong>Clínica Aura</strong>
+      <span>© <span id="year">2026</span> Clínica Aura. Todos os direitos reservados.</span>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

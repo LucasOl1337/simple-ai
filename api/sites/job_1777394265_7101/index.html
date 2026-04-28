@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moda Viva | Loja de roupas</title>
+  <meta name="description" content="Moda Viva: loja de roupas com catálogo organizado, novidades selecionadas e pedidos pelo WhatsApp.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #123d32;
+      --neutral: #f4f1ea;
+      --accent: #c79b5b;
+      --graphite: #202321;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Nunito Sans", sans-serif;
+      color: var(--graphite);
+      background: var(--neutral);
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: 1rem;
+      background: var(--primary);
+      color: var(--neutral);
+      padding: .75rem 1rem;
+      border-radius: 999px;
+      z-index: 20;
+    }
+
+    .skip-link:focus {
+      left: 1rem;
+    }
+
+    .page {
+      overflow: hidden;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 2rem));
+      margin-inline: auto;
+    }
+
+    .header {
+      position: absolute;
+      inset: 0 0 auto 0;
+      z-index: 10;
+      padding: 1rem 0;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: rgba(244, 241, 234, .9);
+      border: 1px solid rgba(18, 61, 50, .14);
+      border-radius: 999px;
+      padding: .6rem .65rem .6rem 1rem;
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      font-weight: 900;
+      letter-spacing: -.03em;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 1.15rem;
+      white-space: nowrap;
+    }
+
+    .nav-links {
+      display: none;
+    }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: .7rem 1rem;
+      border-radius: 999px;
+      background: var(--primary);
+      color: var(--neutral);
+      text-decoration: none;
+      font-weight: 800;
+      font-size: .92rem;
+      transition: transform .2s ease, background .2s ease;
+    }
+
+    .nav-cta:hover,
+    .nav-cta:focus-visible {
+      transform: translateY(-2px);
+      background: #0d3027;
+      outline: none;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      align-items: end;
+      padding: 6.5rem 0 2rem;
+      background: var(--primary);
+      color: var(--neutral);
+    }
+
+    .hero-media {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .hero-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .62;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(18,61,50,.35) 0%, rgba(18,61,50,.72) 55%, rgba(18,61,50,.96) 100%),
+        linear-gradient(90deg, rgba(18,61,50,.9) 0%, rgba(18,61,50,.45) 58%, rgba(18,61,50,.2) 100%);
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 1.5rem;
+      padding-top: 4rem;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: .5rem;
+      color: var(--neutral);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+      font-size: .78rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 2.25rem;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 9ch;
+      font-size: clamp(3rem, 13vw, 6.7rem);
+      line-height: .87;
+      letter-spacing: -.075em;
+      font-weight: 900;
+    }
+
+    .hero-text {
+      max-width: 39rem;
+      margin: 0;
+      font-size: clamp(1.12rem, 2.6vw, 1.45rem);
+      line-height: 1.45;
+      color: rgba(244, 241, 234, .92);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: .8rem;
+      align-items: stretch;
+      margin-top: .4rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: .95rem 1.25rem;
+      border-radius: 999px;
+      border: 0;
+      text-decoration: none;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .button-primary {
+      background: var(--accent);
+      color: #1f1b13;
+    }
+
+    .button-primary:hover,
+    .button-primary:focus-visible {
+      transform: translateY(-2px);
+      background: #d3aa70;
+      outline: none;
+    }
+
+    .button-secondary {
+      background: rgba(244, 241, 234, .1);
+      color: var(--neutral);
+      border: 1px solid rgba(244, 241, 234, .42);
+    }
+
+    .button-secondary:hover,
+    .button-secondary:focus-visible {
+      transform: translateY(-2px);
+      border-color: var(--neutral);
+      outline: none;
+    }
+
+    .hero-note {
+      margin: 1rem 0 0;
+      max-width: 18rem;
+      font-size: .95rem;
+      color: rgba(244, 241, 234, .8);
+    }
+
+    section {
+      padding: 4rem 0;
+    }
+
+    .section-kicker {
+      margin: 0 0 .7rem;
+      color: var(--primary);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .78rem;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 4rem);
+      line-height: .98;
+      letter-spacing: -.055em;
+      color: var(--primary);
+      font-weight: 900;
+    }
+
+    .section-lead {
+      margin: 1rem 0 0;
+      max-width: 42rem;
+      color: rgba(32, 35, 33, .78);
+      font-size: 1.08rem;
+    }
+
+    .catalog {
+      background: var(--neutral);
+    }
+
+    .catalog-layout {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .catalog-image {
+      position: relative;
+      border-radius: 2rem;
+      overflow: hidden;
+      background: #ddd4c4;
+      min-height: 300px;
+    }
+
+    .catalog-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      aspect-ratio: 4 / 5;
+    }
+
+    .caption {
+      position: absolute;
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+      padding: .8rem 1rem;
+      border-radius: 1rem;
+      background: rgba(244, 241, 234, .9);
+      color: var(--primary);
+      font-weight: 800;
+      font-size: .94rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .offer-list {
+      display: grid;
+      gap: .85rem;
+      margin-top: 2rem;
+    }
+
+    .offer-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1rem;
+      align-items: start;
+      padding: 1rem;
+      border: 1px solid rgba(18, 61, 50, .14);
+      border-radius: 1.3rem;
+      background: rgba(255, 255, 255, .42);
+    }
+
+    .offer-number {
+      display: grid;
+      place-items: center;
+      width: 2.3rem;
+      height: 2.3rem;
+      border-radius: 999px;
+      background: var(--primary);
+      color: var(--neutral);
+      font-weight: 900;
+      font-size: .88rem;
+    }
+
+    .offer-card h3 {
+      margin: 0 0 .2rem;
+      color: var(--primary);
+      font-size: 1.08rem;
+      line-height: 1.2;
+    }
+
+    .offer-card p {
+      margin: 0;
+      color: rgba(32, 35, 33, .76);
+      font-size: .98rem;
+    }
+
+    .news {
+      background: var(--primary);
+      color: var(--neutral);
+      position: relative;
+    }
+
+    .news .section-kicker,
+    .news .section-title {
+      color: var(--neutral);
+    }
+
+    .news .section-lead {
+      color: rgba(244, 241, 234, .78);
+    }
+
+    .news-grid {
+      display: grid;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .news-panel {
+      border: 1px solid rgba(244, 241, 234, .18);
+      border-radius: 1.6rem;
+      padding: 1.35rem;
+      background: rgba(244, 241, 234, .07);
+    }
+
+    .news-panel strong {
+      display: block;
+      margin-bottom: .35rem;
+      color: var(--accent);
+      font-size: 1.02rem;
+    }
+
+    .news-panel p {
+      margin: 0;
+      color: rgba(244, 241, 234, .78);
+    }
+
+    .about-layout {
+      display: grid;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .about-copy {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .about-copy p {
+      margin: 0;
+      color: rgba(32, 35, 33, .78);
+      font-size: 1.08rem;
+    }
+
+    .about-image {
+      position: relative;
+      overflow: hidden;
+      border-radius: 2rem;
+      background: #ddd4c4;
+    }
+
+    .about-image img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }
+
+    .contact {
+      padding-bottom: 3rem;
+    }
+
+    .contact-card {
+      display: grid;
+      gap: 1.6rem;
+      padding: 1.35rem;
+      border-radius: 2rem;
+      background: var(--graphite);
+      color: var(--neutral);
+    }
+
+    .contact-card .section-kicker,
+    .contact-card .section-title {
+      color: var(--neutral);
+    }
+
+    .contact-card .section-lead {
+      color: rgba(244, 241, 234, .78);
+    }
+
+    .contact-actions {
+      display: grid;
+      gap: .85rem;
+    }
+
+    .contact-info {
+      margin: 0;
+      color: rgba(244, 241, 234, .75);
+      font-size: .98rem;
+    }
+
+    .contact-info strong {
+      color: var(--accent);
+    }
+
+    .footer {
+      padding: 1.5rem 0 2rem;
+      color: rgba(32, 35, 33, .68);
+      font-size: .95rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+      border-top: 1px solid rgba(18, 61, 50, .14);
+      padding-top: 1.25rem;
+    }
+
+    .footer strong {
+      color: var(--primary);
+    }
+
+    @media (min-width: 720px) {
+      .nav {
+        padding-left: 1.25rem;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        color: rgba(32, 35, 33, .78);
+        font-weight: 800;
+        font-size: .94rem;
+      }
+
+      .nav-links a:hover,
+      .nav-links a:focus-visible {
+        color: var(--primary);
+        outline: none;
+      }
+
+      .hero-actions {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .button {
+        width: fit-content;
+      }
+
+      section {
+        padding: 5.5rem 0;
+      }
+
+      .catalog-layout {
+        grid-template-columns: .88fr 1.12fr;
+        align-items: center;
+        gap: 4rem;
+      }
+
+      .catalog-image {
+        min-height: 540px;
+      }
+
+      .offer-list {
+        gap: 1rem;
+      }
+
+      .offer-card {
+        padding: 1.25rem;
+      }
+
+      .news-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .about-layout {
+        grid-template-columns: 1.05fr .95fr;
+        gap: 4rem;
+      }
+
+      .contact-card {
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        padding: 2.5rem;
+      }
+
+      .footer-inner {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+
+    @media (min-width: 1040px) {
+      .hero {
+        min-height: 760px;
+        padding-bottom: 4rem;
+      }
+
+      .hero-content {
+        max-width: 760px;
+      }
+
+      .contact-card {
+        padding: 3.2rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <div class="page">
+    <header class="header" aria-label="Cabeçalho">
+      <div class="container">
+        <nav class="nav" aria-label="Navegação principal">
+          <a class="brand" href="#topo" aria-label="Moda Viva, início">Moda Viva</a>
+          <div class="nav-links" aria-label="Links da página">
+            <a href="#catalogo">Catálogo</a>
+            <a href="#novidades">Novidades</a>
+            <a href="#sobre">Sobre</a>
+          </div>
+          <a class="nav-cta" href="#contato">Pedir pelo WhatsApp</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section class="hero" id="topo" aria-label="Apresentação da Moda Viva">
+        <div class="hero-media" aria-hidden="true">
+          <img src="./assets/01-hero.png" alt="Interior elegante da loja Moda Viva">
+        </div>
+        <div class="container hero-content">
+          <span class="eyebrow">Loja de roupas</span>
+          <h1>Moda Viva</h1>
+          <p class="hero-text">Catálogo organizado, novidades selecionadas e atendimento direto para escolher suas peças com calma.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#contato">Pedir pelo WhatsApp</a>
+            <a class="button button-secondary" href="#catalogo">Ver catálogo</a>
+          </div>
+          <p class="hero-note">Moda organizada para escolher com calma.</p>
+        </div>
+      </section>
+
+      <section class="catalog" id="catalogo" aria-labelledby="catalogo-titulo">
+        <div class="container catalog-layout">
+          <div class="catalog-image">
+            <img src="./assets/02-services.png" alt="Catálogo de roupas da Moda Viva">
+            <span class="caption">Peças selecionadas e novidades</span>
+          </div>
+
+          <div>
+            <p class="section-kicker">O que oferecemos</p>
+            <h2 class="section-title" id="catalogo-titulo">Um jeito simples de ver, escolher e pedir.</h2>
+            <p class="section-lead">A Moda Viva reúne as principais opções da loja em uma experiência clara para quem compra online ou visita o espaço físico.</p>
+
+            <div class="offer-list" aria-label="Ações disponíveis na Moda Viva">
+              <article class="offer-card">
+                <span class="offer-number" aria-hidden="true">01</span>
+                <div>
+                  <h3>Catálogo de roupas</h3>
+                  <p>Peças apresentadas de forma organizada para facilitar a escolha.</p>
+                </div>
+              </article>
+
+              <article class="offer-card">
+                <span class="offer-number" aria-hidden="true">02</span>
+                <div>
+                  <h3>Novidades da loja</h3>
+                  <p>Destaques recentes para acompanhar o que acabou de chegar.</p>
+                </div>
+              </article>
+
+              <article class="offer-card">
+                <span class="offer-number" aria-hidden="true">03</span>
+                <div>
+                  <h3>Pedidos pelo WhatsApp</h3>
+                  <p>Contato direto para tirar dúvidas, confirmar disponibilidade e combinar o pedido.</p>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="news" id="novidades" aria-labelledby="novidades-titulo">
+        <div class="container">
+          <p class="section-kicker">Novidades</p>
+          <h2 class="section-title" id="novidades-titulo">Peças novas, escolha mais leve.</h2>
+          <p class="section-lead">A loja destaca novidades para que você encontre opções atuais sem precisar procurar em excesso.</p>
+
+          <div class="news-grid">
+            <article class="news-panel">
+              <strong>Seleção da loja</strong>
+              <p>Curadoria de peças para montar combinações práticas no dia a dia.</p>
+            </article>
+
+            <article class="news-panel">
+              <strong>Catálogo claro</strong>
+              <p>Informações reunidas para visualizar estilos e conversar sobre disponibilidade.</p>
+            </article>
+
+            <article class="news-panel">
+              <strong>Atendimento direto</strong>
+              <p>Pedido e dúvidas encaminhados pelo WhatsApp, com retorno da equipe da Moda Viva.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="about" id="sobre" aria-labelledby="sobre-titulo">
+        <div class="container about-layout">
+          <div class="about-copy">
+            <p class="section-kicker">Sobre</p>
+            <h2 class="section-title" id="sobre-titulo">Moda com atendimento próximo.</h2>
+            <p>A Moda Viva é uma loja de roupas pensada para quem gosta de escolher com tranquilidade. O foco é mostrar o catálogo, destacar as novidades e manter um canal simples para pedidos pelo WhatsApp.</p>
+            <p>O atendimento funciona como uma ponte entre a loja física e a compra online: você vê as peças, tira dúvidas e combina os próximos passos diretamente.</p>
+          </div>
+
+          <div class="about-image">
+            <img src="./assets/01-hero.png" alt="Cliente escolhendo roupas na Moda Viva">
+            <span class="caption">Atendimento próximo pelo WhatsApp e na loja</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="contact" id="contato" aria-labelledby="contato-titulo">
+        <div class="container">
+          <div class="contact-card">
+            <div>
+              <p class="section-kicker">Contato</p>
+              <h2 class="section-title" id="contato-titulo">Quer pedir uma peça?</h2>
+              <p class="section-lead">Entre em contato com a Moda Viva para confirmar o WhatsApp da loja, tirar dúvidas sobre o catálogo e combinar seu pedido.</p>
+            </div>
+
+            <div class="contact-actions">
+              <a class="button button-primary" href="#contato" aria-label="WhatsApp da Moda Viva a confirmar">Pedir pelo WhatsApp</a>
+              <p class="contact-info"><strong>WhatsApp:</strong> número a confirmar pela Moda Viva.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" aria-label="Rodapé">
+      <div class="container footer-inner">
+        <strong>Moda Viva</strong>
+        <span>© 2026 Moda Viva. Todos os direitos reservados.</span>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

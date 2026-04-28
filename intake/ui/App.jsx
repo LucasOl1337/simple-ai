@@ -4,6 +4,7 @@ import { buildSummary, createDefaultTestSession, createSession, getCurrentQuesti
 import { getSiteBuildStatus, queueSiteBuild } from "../../builder/client";
 import { filterIntakeMessage } from "./intakeFilterClient";
 import { createIntakeTurnReply } from "./firstInteractionClient";
+import { extractUrls, inspectLinkContent } from "./linkContentClient";
 import {
   buildAutoTestAnswer,
   createChatSessionRecord,
@@ -29,6 +30,85 @@ import ThemeToggle from "./components/ThemeToggle";
 import SessionRail from "./components/SessionRail";
 import TranscriptMessage from "./components/TranscriptMessage";
 import WhiteboardCanvas from "./components/WhiteboardCanvas";
+
+function applyScenarioBuildMinimum(session, scenario) {
+  if (!session || scenario?.id !== "napassarela") return session;
+  const notepad = {
+    ...session.notepad,
+    business_type: {
+      ...session.notepad.business_type,
+      value: "Loja de roupas e moda feminina",
+      confidence: Math.max(session.notepad.business_type?.confidence || 0, 0.9),
+      source: "quick-test:napassarela",
+    },
+    brand_name: {
+      ...session.notepad.brand_name,
+      value: "Napassarela",
+      confidence: Math.max(session.notepad.brand_name?.confidence || 0, 0.95),
+      source: "quick-test:napassarela",
+    },
+    primary_cta: {
+      ...session.notepad.primary_cta,
+      value: "Pedir informações para comprar",
+      confidence: Math.max(session.notepad.primary_cta?.confidence || 0, 0.9),
+      source: "quick-test:napassarela",
+    },
+    current_channels: {
+      ...session.notepad.current_channels,
+      value: ["Instagram", "WhatsApp", "telefone"],
+      confidence: Math.max(session.notepad.current_channels?.confidence || 0, 0.85),
+      source: "quick-test:napassarela",
+    },
+    existing_presence: {
+      ...session.notepad.existing_presence,
+      value: scenario.referenceLink,
+      confidence: Math.max(session.notepad.existing_presence?.confidence || 0, 0.9),
+      source: "quick-test:napassarela",
+    },
+    offerings: {
+      ...session.notepad.offerings,
+      value: ["Moda feminina", "Moda masculina", "Moda infantil", "Moda juvenil", "Roupas para toda família"],
+      confidence: Math.max(session.notepad.offerings?.confidence || 0, 0.85),
+      source: "quick-test:napassarela",
+    },
+    target_audience: {
+      ...session.notepad.target_audience,
+      value: "Mulheres e famílias de Penápolis e região que acompanham moda pelo Instagram",
+      confidence: Math.max(session.notepad.target_audience?.confidence || 0, 0.8),
+      source: "quick-test:napassarela",
+    },
+    brand_tone: {
+      ...session.notepad.brand_tone,
+      value: "elegante, comercial, familiar e inspirado no Instagram da loja",
+      confidence: Math.max(session.notepad.brand_tone?.confidence || 0, 0.8),
+      source: "quick-test:napassarela",
+    },
+  };
+  return {
+    ...session,
+    notepad,
+    answers: {
+      ...session.answers,
+      business_type: "Loja de roupas e moda feminina",
+      brand_name: "Napassarela",
+      primary_action: "Pedir informações para comprar",
+      current_channels: scenario.channels,
+      existing_presence: scenario.presence,
+      offerings: notepad.offerings.value,
+    },
+    detected: {
+      ...session.detected,
+      business_type: { id: "fashion", label: "Loja de roupas e moda feminina" },
+      content_volume: "medium",
+      pricing_strategy: "on_request",
+      has_media: true,
+    },
+    usefulMessagesCount: Math.max(session.usefulMessagesCount || 0, 3),
+    messagesCount: Math.max(session.messagesCount || 0, 3),
+    readyToBuild: true,
+    buildProposed: true,
+  };
+}
 
 export default function App() {
   const storedWorkspace = useMemo(() => readStoredChatWorkspace(), []);
@@ -293,6 +373,20 @@ export default function App() {
     throw new Error("Agente-filtro retornou resposta sem filtered_message. O chat nao vai continuar sem filtro.");
   }, []);
 
+  const inspectLinksForSession = useCallback(async (rawInput, candidateSession = null) => {
+    const urls = extractUrls(rawInput);
+    if (!urls.length) return null;
+    const effectiveSession = candidateSession ?? sessionRef.current ?? createSession();
+    const data = await inspectLinkContent({
+      urls,
+      user_message: rawInput,
+      transcript: (effectiveSession.transcript || []).slice(-8),
+      notepad: getNotepadState(effectiveSession),
+      session_id: activeChatSessionIdRef.current,
+    });
+    return data;
+  }, []);
+
   const handleConversationSubmit = useCallback((rawInput) => {
     const run = async () => {
       const trimmed = rawInput.trim();
@@ -307,6 +401,12 @@ export default function App() {
       ]);
       const currentSession = sessionRef.current;
       const effectiveSession = currentSession ?? createSession();
+      let linkContentData = null;
+      try {
+        linkContentData = await inspectLinksForSession(trimmed, effectiveSession);
+      } catch (error) {
+        console.warn("ConverteLinkEmConteudo falhou:", error);
+      }
       let filteredInput;
       try {
         filteredInput = await applyIntakeFilter(trimmed, effectiveSession);
@@ -346,6 +446,17 @@ export default function App() {
       if (turnReply.action === "build_with_defaults") {
         nextSession = createDefaultTestSession(filteredInput);
       }
+      if (linkContentData?.sources?.length) {
+        nextSession = {
+          ...nextSession,
+          linkContent: {
+            sources: [
+              ...((effectiveSession.linkContent?.sources || [])),
+              ...linkContentData.sources,
+            ],
+          },
+        };
+      }
       nextSession = {
         ...nextSession,
         transcript: [
@@ -362,7 +473,7 @@ export default function App() {
       }
     };
     run();
-  }, [applyIntakeFilter, clearAttachment, commitActiveChatSession]);
+  }, [applyIntakeFilter, clearAttachment, commitActiveChatSession, inspectLinksForSession]);
 
   const startBuildForSession = useCallback(async (currentSession = sessionRef.current) => {
     if (!currentSession) return;
@@ -384,6 +495,7 @@ export default function App() {
         raw_quotes: userQuotes,
         design_plan: summary.design_plan || null,
         visual_plan: summary.visual_plan || null,
+        link_content: currentSession.linkContent || null,
         agent_profile: summary.design_plan?.agent_profile || null,
         summary,
       };
@@ -419,6 +531,43 @@ export default function App() {
     setComposer("");
     clearAttachment();
     let workingSession = createSession();
+    if (scenario.id === "napassarela") {
+      workingSession = submitAnswer(workingSession, scenario.opening);
+      workingSession = applyScenarioBuildMinimum(workingSession, scenario);
+      setSession(workingSession);
+      commitChatSessionById(nextRecord.id, { session: workingSession, buildState: null });
+      setAutoTestState({ running: true, scenario, step: 1, message: "Inspecionando Instagram da Napassarela..." });
+      if (scenario.referenceLink) {
+        try {
+          const linkContentData = await inspectLinkContent({
+            urls: [scenario.referenceLink],
+            user_message: scenario.opening,
+            transcript: workingSession.transcript || [],
+            notepad: getNotepadState(workingSession),
+            session_id: nextRecord.id,
+          });
+          if (linkContentData?.sources?.length) {
+            workingSession = {
+              ...workingSession,
+              linkContent: {
+                sources: [
+                  ...((workingSession.linkContent?.sources || [])),
+                  ...linkContentData.sources,
+                ],
+              },
+            };
+          }
+        } catch (error) {
+          console.warn("ConverteLinkEmConteudo falhou no teste rápido:", error);
+        }
+      }
+      if (autoTestRunRef.current.cancelled || autoTestRunRef.current.runId !== runId) return;
+      setSession(workingSession);
+      commitChatSessionById(nextRecord.id, { session: workingSession, buildState: buildStateRef.current });
+      setAutoTestState({ running: false, scenario, step: 1, message: "Napassarela pronta. Iniciando a geração do site..." });
+      await startBuildForSession(workingSession);
+      return;
+    }
     setSession(workingSession);
     commitChatSessionById(nextRecord.id, { session: workingSession, buildState: null });
     setAutoTestState({ running: true, scenario, step: 0, message: "Preparando cenário de teste..." });
@@ -447,6 +596,35 @@ export default function App() {
       await wait(650);
     }
     if (autoTestRunRef.current.cancelled || autoTestRunRef.current.runId !== runId) return;
+    if (scenario.referenceLink) {
+      try {
+        const linkContentData = await inspectLinkContent({
+          urls: [scenario.referenceLink],
+          user_message: scenario.opening,
+          transcript: workingSession.transcript || [],
+          notepad: getNotepadState(workingSession),
+          session_id: nextRecord.id,
+        });
+        if (linkContentData?.sources?.length) {
+          workingSession = {
+            ...workingSession,
+            linkContent: {
+              sources: [
+                ...((workingSession.linkContent?.sources || [])),
+                ...linkContentData.sources,
+              ],
+            },
+          };
+          setSession(workingSession);
+          commitChatSessionById(nextRecord.id, { session: workingSession, buildState: buildStateRef.current });
+        }
+      } catch (error) {
+        console.warn("ConverteLinkEmConteudo falhou no teste rápido:", error);
+      }
+    }
+    if (autoTestRunRef.current.cancelled || autoTestRunRef.current.runId !== runId) return;
+    workingSession = applyScenarioBuildMinimum(workingSession, scenario);
+    setSession(workingSession);
     commitChatSessionById(nextRecord.id, { session: workingSession, buildState: buildStateRef.current });
     const readyToBuild = workingSession.readyToBuild || getNotepadState(workingSession).readyToBuild;
     const summary = buildSummary(workingSession);

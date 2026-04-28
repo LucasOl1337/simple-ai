@@ -1,0 +1,54 @@
+{
+  "id": "local-trust-clear",
+  "version": 1,
+  "intent_signals": {
+    "primary_cta_types": ["whatsapp", "call", "quote", "schedule"],
+    "content_volume": ["low", "medium"],
+    "image_dependence": ["low", "medium"],
+    "trust_need": ["high"]
+  },
+  "best_for": [
+    "servicos locais e negocios que dependem de confianca rapida",
+    "paginas com contato direto e decisao objetiva",
+    "casos em que processo e prova precisam aparecer cedo"
+  ],
+  "avoid": [
+    "hero ornamental demais",
+    "excesso de narrativa antes da acao",
+    "densidade de cards sem necessidade"
+  ],
+  "section_blueprint": [
+    "hero-clarity",
+    "services-or-offer",
+    "process-or-proof",
+    "contact-cta"
+  ],
+  "hero": {
+    "composition": "hero direto com quem e, o que faz e como agir agora",
+    "aspect_ratio": "free",
+    "mobile_strategy": "clareza absoluta acima da dobra",
+    "tone": "trust-first"
+  },
+  "image_policy": {
+    "hero_slot": {
+      "allow_object_fit_cover": true,
+      "recommended_object_position": "center"
+    },
+    "hard_rules": [
+      "a imagem nao pode confundir o tipo de negocio",
+      "se a imagem falhar, a pagina ainda precisa funcionar so com estrutura e copy",
+      "nao inventar prova visual inexistente"
+    ]
+  },
+  "copy_rules": [
+    "linguagem proxima e objetiva",
+    "mostrar acao principal cedo",
+    "priorizar processo, retorno e atendimento"
+  ],
+  "qa_focus": [
+    "quem e, o que faz e proximo passo estao claros",
+    "o CTA principal continua dominante",
+    "a pagina transmite confianca sem parecer fria",
+    "nao ha excesso de decoracao"
+  ]
+}

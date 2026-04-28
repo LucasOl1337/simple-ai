@@ -15,6 +15,8 @@ export function wait(ms) {
 }
 
 export function pickAutoTestScenario(previousId = null) {
+  const official = AUTO_TEST_SCENARIOS.find((scenario) => scenario.id === "napassarela");
+  if (official) return official;
   const pool = AUTO_TEST_SCENARIOS.filter((scenario) => scenario.id !== previousId);
   return pool[Math.floor(Math.random() * pool.length)] ?? AUTO_TEST_SCENARIOS[0];
 }

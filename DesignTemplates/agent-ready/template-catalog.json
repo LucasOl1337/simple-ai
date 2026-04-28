@@ -1,0 +1,32 @@
+[
+  {
+    "template_id": "conversion-editorial",
+    "priority": 100,
+    "signals": {
+      "primary_cta_types": ["contact", "whatsapp", "schedule", "quote"],
+      "content_volume": ["low", "medium"],
+      "image_dependence": ["medium", "high"],
+      "trust_need": ["medium", "high"]
+    }
+  },
+  {
+    "template_id": "catalog-showcase",
+    "priority": 95,
+    "signals": {
+      "primary_cta_types": ["buy", "whatsapp", "contact"],
+      "content_volume": ["medium", "high"],
+      "image_dependence": ["medium", "high"],
+      "trust_need": ["medium"]
+    }
+  },
+  {
+    "template_id": "local-trust-clear",
+    "priority": 90,
+    "signals": {
+      "primary_cta_types": ["whatsapp", "call", "quote", "schedule"],
+      "content_volume": ["low", "medium"],
+      "image_dependence": ["low", "medium"],
+      "trust_need": ["high"]
+    }
+  }
+]

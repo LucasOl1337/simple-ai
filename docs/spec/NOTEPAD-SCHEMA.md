@@ -54,6 +54,7 @@ Detectados automaticamente — só perguntados se houver sinais no texto do usu�
 | `brand_tone` | string | — | Tom visual desejado ("moderno", "acolhedor", "premium", etc.) |
 | `visual_reference` | string | — | Referências de estilo ou marcas que admira |
 | `brand_assets` | string | — | O que já tem (logo, cores, fotos) |
+| `external_references` | object[] | `[]` | Links enviados pelo usuário e convertidos em sinais de conteúdo/visual pelo agente ConverteLinkEmConteudo |
 
 ---
 

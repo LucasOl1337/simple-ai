@@ -1,0 +1,58 @@
+{
+  "id": "catalog-showcase",
+  "version": 1,
+  "intent_signals": {
+    "primary_cta_types": ["buy", "whatsapp", "contact"],
+    "content_volume": ["medium", "high"],
+    "image_dependence": ["medium", "high"],
+    "trust_need": ["medium"]
+  },
+  "best_for": [
+    "negocios com categorias, variedade ou colecoes",
+    "casos em que escaneabilidade importa mais que narrativa longa",
+    "vitrine, catalogo leve e descoberta visual"
+  ],
+  "avoid": [
+    "pagina institucional pura sem categorias claras",
+    "processo longo ocupando mais espaco que a oferta",
+    "cards identicos com pouco contraste hierarquico"
+  ],
+  "section_blueprint": [
+    "hero-simple-strong",
+    "category-rail",
+    "showcase-grid",
+    "contact-cta"
+  ],
+  "hero": {
+    "composition": "hero mais direto, com CTA e ponte imediata para categorias",
+    "aspect_ratio": "free",
+    "mobile_strategy": "mostrar CTA e entrada para categorias sem depender de scroll longo",
+    "tone": "clear showcase"
+  },
+  "image_policy": {
+    "hero_slot": {
+      "allow_object_fit_cover": true,
+      "recommended_object_position": "center top"
+    },
+    "gallery_slot": {
+      "allow_object_fit_cover": true,
+      "recommended_object_position": "center"
+    },
+    "hard_rules": [
+      "as imagens precisam ajudar a comparar ou descobrir a oferta",
+      "nao usar placeholders visuais sem relacao com categorias",
+      "nao sacrificar legibilidade dos itens"
+    ]
+  },
+  "copy_rules": [
+    "usar categorias, grupos ou colecoes quando houver",
+    "evitar linguagem vaga demais",
+    "repetir CTA de forma previsivel"
+  ],
+  "qa_focus": [
+    "a oferta esta organizada em grupos claros",
+    "a vitrine parece escaneavel",
+    "o CTA ainda e visivel no fluxo",
+    "o layout nao parece um SaaS disfarcado"
+  ]
+}

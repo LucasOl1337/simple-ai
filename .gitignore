@@ -36,6 +36,7 @@ Thumbs.db
 
 # temporary files and runtime output
 tmp/
+hyperframes-promos/
 
 # codex / vite process output (no extension or .err/.out)
 .codex-*

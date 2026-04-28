@@ -1,0 +1,77 @@
+{
+  "inspection_id": "link_example-com_327c3fda87",
+  "source_url": "https://example.com",
+  "source_type": "website",
+  "status": "ok",
+  "captured_at": 1777397513,
+  "core_info": {
+    "business_name": "Example Domain",
+    "business_type": "oficina mecânica",
+    "bio": "Domínio de exemplo usado para documentação e exemplos.",
+    "location": "",
+    "contacts": [],
+    "social_handles": []
+  },
+  "content_signals": {
+    "offerings": [],
+    "tone": "informativo e neutro",
+    "target_audience": "pessoas que precisam de um domínio ilustrativo para documentação ou exemplos",
+    "frequent_words": [
+      "example",
+      "domain",
+      "documentation",
+      "use"
+    ],
+    "cta_patterns": [
+      "Learn more"
+    ]
+  },
+  "visual_signals": {
+    "colors": [
+      "#eeeeee",
+      "#334488"
+    ],
+    "style": "minimalista e utilitário",
+    "image_mood": [
+      "oficina real",
+      "ferramentas",
+      "contraste industrial",
+      "serviço em andamento"
+    ],
+    "composition_notes": [
+      "layout simples com muito espaço em branco",
+      "tipografia sans-serif de sistema",
+      "bloco de conteúdo centralizado",
+      "hierarquia visual básica com título e texto curto"
+    ]
+  },
+  "reference_images": [],
+  "builder_hints": {
+    "content_strategy": "Não usar este link como base de negócio real. O conteúdo indica apenas uma página demonstrativa, sem sinais de oferta comercial, serviços, público comprador ou proposta de valor aplicável a uma landing page.",
+    "layout_suggestion": "Se a intenção for apenas aproveitar a estética, usar uma estrutura extremamente simples: título principal, texto curto de apoio e um link de ação discreto.",
+    "image_prompt_additions": [
+      "visual minimalista",
+      "atmosfera neutra e funcional",
+      "interface limpa com bastante respiro",
+      "paleta suave em cinza claro com azul discreto"
+    ],
+    "do_not_invent": [
+      "não inventar nome comercial além de 'Example Domain'",
+      "não inventar produtos ou serviços",
+      "não inventar localização",
+      "não inventar contatos",
+      "não inventar provas sociais ou diferenciais competitivos"
+    ]
+  },
+  "summary": "O link aponta para uma página padrão de demonstração chamada 'Example Domain'. Não representa um negócio real e não traz informações úteis sobre oferta, público, contatos ou identidade de marca, servindo apenas como referência de layout extremamente simples e neutro.",
+  "warnings": [
+    "O link analisado é uma página de exemplo, não um site comercial real.",
+    "Não há dados suficientes para identificar negócio, oferta, canais de contato ou posicionamento.",
+    "Os sinais visuais extraídos são limitados e baseados apenas na estrutura básica e nas cores visíveis no texto bruto."
+  ],
+  "raw_extract": {
+    "title": "Example Domain",
+    "description": "",
+    "text_sample": "body{background:#eee;width:60vw;margin:15vh auto;font-family:system-ui,sans-serif}h1{font-size:1.5em}div{opacity:0.8}a:link,a:visited{color:#348} Example Domain This domain is for use in documentation examples without needing permission. Avoid use in operations. Learn more"
+  }
+}

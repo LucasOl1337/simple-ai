@@ -17,6 +17,7 @@ Se o perfil solicitado não existir, o build falha com erro explícito.
 ## Perfis incluídos
 
 - `site-builder-core.md` - perfil geral (default)
+- `site-builder-hyperframes-inspired.md` - perfil visual com principios de composicao e acabamento inspirados no HyperFrames
 - `landing-direta.md` - foco conversão e CTA
 - `catalogo-moderno.md` - foco catálogo e escaneabilidade
 - `servico-local-confianca.md` - foco confiança local e contato

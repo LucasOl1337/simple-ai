@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Padaria Aurora | Padaria de bairro</title>
+  <meta name="description" content="Padaria Aurora: produtos frescos e encomendas pelo WhatsApp para o seu dia a dia.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,750&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6b351d;
+      --neutral: #fff8ec;
+      --accent: #d88a36;
+      --ink: #2b1a12;
+      --muted: #7a5a47;
+      --card: #fffdf7;
+      --line: rgba(107, 53, 29, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Fraunces", Georgia, serif;
+      color: var(--ink);
+      background: var(--neutral);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.28;
+      background-image:
+        radial-gradient(circle at 20% 10%, rgba(216, 138, 54, 0.14), transparent 28%),
+        radial-gradient(circle at 90% 15%, rgba(107, 53, 29, 0.10), transparent 22%),
+        linear-gradient(90deg, rgba(107, 53, 29, 0.035) 1px, transparent 1px),
+        linear-gradient(rgba(107, 53, 29, 0.025) 1px, transparent 1px);
+      background-size: auto, auto, 42px 42px, 42px 42px;
+      z-index: -1;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 2rem));
+      margin: 0 auto;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 1rem;
+      top: 1rem;
+      padding: 0.75rem 1rem;
+      background: var(--primary);
+      color: var(--neutral);
+      border-radius: 999px;
+      transform: translateY(-140%);
+      transition: transform 180ms ease;
+      z-index: 20;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .topbar {
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 248, 236, 0.84);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-weight: 750;
+      color: var(--primary);
+      letter-spacing: -0.03em;
+      font-size: 1.08rem;
+    }
+
+    .brand-mark {
+      width: 2.1rem;
+      height: 2.1rem;
+      border-radius: 50%;
+      background: var(--accent);
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      font-weight: 750;
+      box-shadow: inset 0 0 0 2px rgba(107, 53, 29, 0.18);
+    }
+
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 1.25rem;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .nav-links a:hover,
+    .nav-links a:focus {
+      color: var(--primary);
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 3rem;
+      padding: 0.9rem 1.25rem;
+      border-radius: 999px;
+      background: var(--primary);
+      color: var(--neutral);
+      font-weight: 750;
+      border: 2px solid var(--primary);
+      cursor: pointer;
+      transition: transform 180ms ease, background-color 180ms ease, color 180ms ease;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .button:hover,
+    .button:focus {
+      transform: translateY(-2px);
+      background: var(--ink);
+      border-color: var(--ink);
+      outline: none;
+    }
+
+    .button.secondary {
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .button.secondary:hover,
+    .button.secondary:focus {
+      background: rgba(107, 53, 29, 0.08);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .hero {
+      padding: 2rem 0 4.5rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary);
+      background: rgba(216, 138, 54, 0.16);
+      border: 1px solid rgba(107, 53, 29, 0.14);
+      border-radius: 999px;
+      padding: 0.45rem 0.75rem;
+      font-size: 0.88rem;
+      font-weight: 650;
+      margin-bottom: 1rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 0.48rem;
+      height: 0.48rem;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: clamp(2.35rem, 12vw, 4.65rem);
+      line-height: 0.95;
+      letter-spacing: -0.07em;
+      color: var(--primary);
+      margin-bottom: 1.15rem;
+      max-width: 9ch;
+    }
+
+    .hero-copy {
+      font-size: clamp(1.08rem, 4vw, 1.35rem);
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      max-width: 34rem;
+    }
+
+    .hero-actions {
+      display: grid;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-note {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0;
+      border-left: 3px solid var(--accent);
+      padding-left: 0.85rem;
+    }
+
+    .hero-image-wrap {
+      position: relative;
+      border-radius: 1.6rem;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: var(--card);
+      box-shadow: 0 18px 50px rgba(107, 53, 29, 0.12);
+    }
+
+    .hero-image-wrap img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }
+
+    .image-label {
+      position: absolute;
+      left: 1rem;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(255, 248, 236, 0.92);
+      border: 1px solid rgba(107, 53, 29, 0.16);
+      color: var(--primary);
+      padding: 0.85rem 1rem;
+      border-radius: 1rem;
+      font-weight: 650;
+      backdrop-filter: blur(8px);
+    }
+
+    section {
+      padding: 4rem 0;
+    }
+
+    .section-head {
+      display: grid;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .section-kicker {
+      color: var(--accent);
+      font-weight: 750;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 7vw, 3.35rem);
+      line-height: 1;
+      letter-spacing: -0.055em;
+      color: var(--primary);
+      margin-bottom: 0;
+      max-width: 11ch;
+    }
+
+    .section-text {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 42rem;
+      margin: 0;
+    }
+
+    .offerings {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .offering-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 1.35rem;
+      padding: 1.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .offering-card::after {
+      content: "";
+      position: absolute;
+      width: 6rem;
+      height: 6rem;
+      border-radius: 50%;
+      background: rgba(216, 138, 54, 0.13);
+      right: -2.5rem;
+      top: -2.5rem;
+    }
+
+    .offering-number {
+      display: inline-grid;
+      place-items: center;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      background: rgba(107, 53, 29, 0.09);
+      color: var(--primary);
+      font-weight: 750;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      color: var(--primary);
+      font-size: 1.35rem;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.7rem;
+    }
+
+    .offering-card p {
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+
+    .feature-strip {
+      margin-top: 1rem;
+      display: grid;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .feature-image {
+      border-radius: 1.35rem;
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+
+    .feature-image img {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+    }
+
+    .feature-note {
+      background: var(--primary);
+      color: var(--neutral);
+      border-radius: 1.35rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 13rem;
+    }
+
+    .feature-note p {
+      margin: 0;
+      font-size: 1.3rem;
+      line-height: 1.18;
+      letter-spacing: -0.04em;
+    }
+
+    .about {
+      background: rgba(107, 53, 29, 0.055);
+      border-block: 1px solid var(--line);
+    }
+
+    .about-grid {
+      display: grid;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .about-image {
+      border-radius: 1.6rem;
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+
+    .about-image img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }
+
+    .about-copy p {
+      color: var(--muted);
+      font-size: 1.08rem;
+      margin-bottom: 1rem;
+    }
+
+    .about-list {
+      list-style: none;
+      padding: 0;
+      margin: 1.25rem 0 0;
+      display: grid;
+      gap: 0.75rem;
+      color: var(--primary);
+      font-weight: 650;
+    }
+
+    .about-list li {
+      display: flex;
+      gap: 0.65rem;
+      align-items: flex-start;
+    }
+
+    .about-list li::before {
+      content: "•";
+      color: var(--accent);
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    .contact-panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 1.6rem;
+      padding: 1.5rem;
+      display: grid;
+      gap: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contact-panel::before {
+      content: "";
+      position: absolute;
+      inset: auto -4rem -5rem auto;
+      width: 14rem;
+      height: 14rem;
+      border-radius: 50%;
+      background: rgba(216, 138, 54, 0.16);
+      pointer-events: none;
+    }
+
+    .contact-panel > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .contact-panel h2 {
+      max-width: 12ch;
+    }
+
+    .contact-panel p {
+      color: var(--muted);
+      font-size: 1.08rem;
+      margin-bottom: 0;
+      max-width: 42rem;
+    }
+
+    .contact-actions {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    footer {
+      padding: 2rem 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .footer-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    @media (min-width: 640px) {
+      .hero-actions,
+      .contact-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .button {
+        width: auto;
+      }
+
+      .offerings {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .contact-panel {
+        padding: 2rem;
+      }
+    }
+
+    @media (min-width: 860px) {
+      .nav-links {
+        display: flex;
+      }
+
+      .hero {
+        padding: 4rem 0 6rem;
+      }
+
+      .hero-grid {
+        grid-template-columns: 0.92fr 1.08fr;
+        gap: 3rem;
+      }
+
+      .hero-image-wrap {
+        transform: rotate(1deg);
+      }
+
+      .hero-image-wrap img {
+        aspect-ratio: 5 / 4;
+      }
+
+      section {
+        padding: 5.5rem 0;
+      }
+
+      .section-head {
+        grid-template-columns: 0.8fr 1.2fr;
+        align-items: end;
+        margin-bottom: 2.5rem;
+      }
+
+      .section-text {
+        font-size: 1.12rem;
+      }
+
+      .feature-strip {
+        grid-template-columns: 1.4fr 0.8fr;
+        margin-top: 1.25rem;
+      }
+
+      .about-grid {
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 3.5rem;
+      }
+
+      .contact-panel {
+        grid-template-columns: 1.1fr 0.9fr;
+        align-items: end;
+        padding: 3rem;
+      }
+
+      .contact-actions {
+        justify-content: flex-end;
+      }
+
+      .footer-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+      }
+
+      .button:hover,
+      .button:focus {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topbar" aria-label="Topo do site">
+    <div class="container nav">
+      <a class="brand" href="#topo" aria-label="Página inicial da Padaria Aurora">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span>Padaria Aurora</span>
+      </a>
+      <nav class="nav-links" aria-label="Navegação principal">
+        <a href="#produtos">Produtos</a>
+        <a href="#sobre">Sobre</a>
+        <a href="#contato">Contato</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    <section class="hero" id="topo" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow">Padaria de bairro</span>
+          <h1 id="hero-title">Padaria Aurora</h1>
+          <p class="hero-copy">Produtos frescos para o dia a dia, com encomendas e atendimento direto pelo WhatsApp.</p>
+          <div class="hero-actions" aria-label="Ações principais">
+            <a class="button" href="https://wa.me/" target="_blank" rel="noopener">Pedir pelo WhatsApp</a>
+            <a class="button secondary" href="#produtos">Ver produtos</a>
+          </div>
+          <p class="hero-note">Pães, itens de padaria e encomendas em um contato simples, sem complicação.</p>
+        </div>
+
+        <div class="hero-image-wrap">
+          <img src="https://source.unsplash.com/1600x900/?foto%2Crealista%2Cde%2Cpadaria%2Cambiente%2Cespaco" alt="Ambiente principal de Padaria Aurora">
+          <div class="image-label">Cheiro de pão fresco e atendimento de bairro.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="produtos" aria-labelledby="produtos-title">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">O que oferecemos</span>
+            <h2 id="produtos-title">Fresco, simples e perto.</h2>
+          </div>
+          <p class="section-text">A Padaria Aurora ajuda você a escolher produtos frescos e também recebe encomendas pelo WhatsApp para facilitar a rotina.</p>
+        </div>
+
+        <div class="offerings">
+          <article class="offering-card">
+            <span class="offering-number" aria-hidden="true">01</span>
+            <h3>Produtos frescos</h3>
+            <p>Itens de padaria preparados para quem passa cedo, no intervalo do dia ou quer levar algo gostoso para casa.</p>
+          </article>
+
+          <article class="offering-card">
+            <span class="offering-number" aria-hidden="true">02</span>
+            <h3>Encomendas pelo WhatsApp</h3>
+            <p>Fale com a Padaria Aurora pelo WhatsApp para consultar opções, combinar detalhes e fazer sua encomenda.</p>
+          </article>
+        </div>
+
+        <div class="feature-strip" aria-label="Destaques da padaria">
+          <div class="feature-image">
+            <img src="https://source.unsplash.com/1600x900/?foto%2Ceditorial%2Cde%2Cpadaria%2Cservico%2Ctrabalho" alt="Serviços de Padaria Aurora">
+          </div>
+          <div class="feature-note">
+            <p>Uma padaria feita para resolver o café, o lanche e as encomendas do bairro.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="about" id="sobre" aria-labelledby="sobre-title">
+      <div class="container about-grid">
+        <div class="about-image">
+          <img src="https://source.unsplash.com/1600x900/?clientes%2Creais%2Cde%2Cpadaria%2Cpessoa%2Ccliente" alt="Clientes de Padaria Aurora">
+        </div>
+
+        <div class="about-copy">
+          <span class="section-kicker">Sobre</span>
+          <h2 id="sobre-title">Padaria de bairro, com atendimento direto.</h2>
+          <p>A Padaria Aurora nasceu para estar presente na rotina de quem valoriza produtos frescos e um contato fácil. O site reúne as informações principais para mostrar os produtos, receber encomendas e abrir conversa pelo WhatsApp.</p>
+          <p>A proposta é simples: você vê o que a padaria oferece e chama quando precisar combinar um pedido.</p>
+          <ul class="about-list">
+            <li>Produtos frescos para o dia a dia.</li>
+            <li>Encomendas tratadas por WhatsApp.</li>
+            <li>Atendimento próximo, com linguagem simples.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="contato" aria-labelledby="contato-title">
+      <div class="container">
+        <div class="contact-panel">
+          <div>
+            <span class="section-kicker">Contato</span>
+            <h2 id="contato-title">Faça seu pedido com a Padaria Aurora.</h2>
+            <p>Use o WhatsApp para pedir informações sobre produtos frescos ou combinar uma encomenda. Se preferir, salve o contato e chame quando precisar.</p>
+          </div>
+          <div class="contact-actions">
+            <a class="button" href="https://wa.me/" target="_blank" rel="noopener">Pedir pelo WhatsApp</a>
+            <a class="button secondary" href="tel:+5500000000000">(00) 00000-0000</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-row">
+      <strong>Padaria Aurora</strong>
+      <span>© 2026. Todos os direitos reservados.</span>
+    </div>
+  </footer>
+</body>
+</html>

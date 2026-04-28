@@ -74,6 +74,7 @@ Sem configuração: usa fallback determinístico local com temas por segmento.
 
 - Default global: `BUILDER_AGENT_PROFILE` em `api/.env.local`
 - Override por build: `agent_profile` no payload de `/v2/build`
+- Perfil recomendado para mais acabamento visual: `site-builder-hyperframes-inspired`
 
 Exemplo:
 
@@ -87,6 +88,36 @@ Exemplo:
 ```
 
 Se o perfil não existir em `AgentesProfiles/`, o build falha explicitamente.
+
+### API local OpenAI-compatible
+
+Para usar o endpoint local do 9router/copycat em `http://localhost:20128/v1`, configure:
+
+```env
+AGENT_LLM_PROVIDER=openai-compatible
+AGENT_LLM_BASE_URL=http://localhost:20128/v1
+AGENT_LLM_API_KEY=
+AGENT_LLM_MODEL=cx/gpt-5.5
+BUILDER_AGENT_PROFILE=site-builder-hyperframes-inspired
+```
+
+Esse perfil usa principios de composicao do HyperFrames para orientar a qualidade visual do HTML final sem adicionar o runtime do HyperFrames ao site publicado.
+
+### Video promocional opcional com HyperFrames
+
+Depois que um site existir em `api/sites/{job_id}/index.html`, gere um projeto HyperFrames promocional com:
+
+```bash
+npm run hyperframes:promo -- job_1777341425_4595
+npx hyperframes lint tmp/hyperframes-promos/promo-job_1777341425_4595
+npx hyperframes preview tmp/hyperframes-promos/promo-job_1777341425_4595
+```
+
+Renderize para MP4 apenas quando quiser material final:
+
+```bash
+npx hyperframes render tmp/hyperframes-promos/promo-job_1777341425_4595 -o tmp/hyperframes-promos/promo-job_1777341425_4595/promo.mp4
+```
 
 ### Biblioteca de design (novo)
 

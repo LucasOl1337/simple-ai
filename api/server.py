@@ -43,6 +43,15 @@ except ImportError as error:  # pragma: no cover
 else:
     FIRST_INTERACTION_IMPORT_ERROR = None
 
+try:
+    from agents.link_content_agent import LinkContentAgent, extract_urls
+except ImportError as error:  # pragma: no cover
+    LinkContentAgent = None
+    extract_urls = None
+    LINK_CONTENT_IMPORT_ERROR = error
+else:
+    LINK_CONTENT_IMPORT_ERROR = None
+
 from builder.agent.builder_agent import BuilderAgent
 
 
@@ -62,6 +71,7 @@ def to_http_error(exc: Exception) -> HTTPException:
 
 
 SITES_DIR = Path(BASE_DIR) / "sites"
+LINK_ASSETS_DIR = Path(BASE_DIR) / "link-assets"
 try:
     builder = BuilderAgent(sites_dir=SITES_DIR)
 except RuntimeError as error:
@@ -91,6 +101,17 @@ try:
 except Exception as error:  # noqa: BLE001
     print(f"Warning: failed to initialize first interaction agent: {error}")
     first_interaction_agent = None
+
+try:
+    if LinkContentAgent is None:
+        raise RuntimeError(f"LinkContentAgent import failed: {LINK_CONTENT_IMPORT_ERROR}")
+    link_content_agent: Optional[LinkContentAgent] = LinkContentAgent(
+        project_root=Path(_ROOT_DIR),
+        storage_dir=LINK_ASSETS_DIR,
+    )
+except Exception as error:  # noqa: BLE001
+    print(f"Warning: failed to initialize ConverteLinkEmConteudo: {error}")
+    link_content_agent = None
 
 
 app = FastAPI(
@@ -144,6 +165,7 @@ class BuildRequest(BaseModel):
     raw_quotes: Optional[List[str]] = None
     design_plan: Optional[Dict[str, Any]] = None
     visual_plan: Optional[Dict[str, Any]] = None
+    link_content: Optional[Dict[str, Any]] = None
     summary: Optional[Dict[str, Any]] = None
     agent_profile: Optional[str] = None
 
@@ -168,6 +190,15 @@ class FirstInteractionRequest(BaseModel):
     transcript: Optional[List[Dict[str, Any]]] = None
     session_id: Optional[str] = None
     is_first_turn: bool = False
+
+
+class LinkContentInspectRequest(BaseModel):
+    url: Optional[str] = None
+    user_message: Optional[str] = None
+    urls: Optional[List[str]] = None
+    session_id: Optional[str] = None
+    transcript: Optional[List[Dict[str, Any]]] = None
+    notepad: Optional[Dict[str, Any]] = None
 
 
 @router.post("/v2/build")
@@ -343,6 +374,46 @@ def intake_turn(request: FirstInteractionRequest):
     except Exception as error:
         print(f"Error: intake turn agent failed: {error}")
         raise HTTPException(status_code=502, detail=f"Agente de turno falhou: {error}")
+
+
+@router.post("/v1/link-content/inspect")
+def inspect_link_content(request: LinkContentInspectRequest):
+    if link_content_agent is None:
+        raise HTTPException(status_code=500, detail="ConverteLinkEmConteudo nao esta disponivel.")
+
+    urls: List[str] = []
+    if request.url:
+        urls.append(request.url)
+    if request.urls:
+        urls.extend(request.urls)
+    if not urls and request.user_message and extract_urls is not None:
+        urls.extend(extract_urls(request.user_message))
+    urls = list(dict.fromkeys([url for url in urls if url]))
+    if not urls:
+        raise HTTPException(status_code=400, detail="Nenhum link encontrado para inspecionar.")
+
+    try:
+        sources = [
+            link_content_agent.inspect_url(
+                url=url,
+                session_id=request.session_id,
+                user_message=request.user_message or "",
+                notepad=request.notepad,
+                transcript=request.transcript,
+            )
+            for url in urls[:3]
+        ]
+    except Exception as exc:  # noqa: BLE001
+        raise to_http_error(exc)
+
+    return {
+        "code": 0,
+        "msg": "success",
+        "data": {
+            "agent": "ConverteLinkEmConteudo",
+            "sources": sources,
+        },
+    }
 
 
 @router.get("/v1/intake/first-interaction/status")
