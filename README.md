@@ -37,6 +37,7 @@ Se voce entrou agora na branch, siga esta ordem:
 10. [src/app/App.jsx](src/app/App.jsx) - UI principal
 11. [.simpleai/voice-convo-requirements.md](.simpleai/voice-convo-requirements.md) - requisitos de integracao de voz
 12. [templates/landing-benchmarks/](templates/landing-benchmarks/) - benchmarking de landing pages
+13. [docs/planning/PRD-v3.md](docs/planning/PRD-v3.md) - PRD vivo (vision, roadmap, research backlog)
 
 ## Estado atual
 
