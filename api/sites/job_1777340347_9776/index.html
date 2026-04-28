@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moda Viva</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17211b;
+      --muted: #5d6b63;
+      --paper: #fbfaf6;
+      --line: #d8ded5;
+      --accent: #2f7d59;
+      --warm: #f3dfb6;
+      --card: rgba(255, 255, 255, 0.88);
+      --shadow: 0 24px 64px rgba(0, 0, 0, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Manrope', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: var(--paper);
+    }
+    .container { width: min(1120px, 92vw); margin-inline: auto; }
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+      background: color-mix(in srgb, var(--paper) 86%, white 14%);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+    }
+    .brand {
+      font-size: 1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      border: 0;
+    }
+    .hero {
+      position: relative;
+      min-height: min(82vh, 760px);
+      display: grid;
+      place-items: end start;
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(112deg, color-mix(in srgb, var(--ink) 86%, transparent), color-mix(in srgb, var(--ink) 28%, transparent)),
+        url('https://source.unsplash.com/1600x900/?foto%2Crealista%2Cclara%2Csimpatica%2Cacolhedora%2Ce') center / cover no-repeat;
+      z-index: -2;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 45%, color-mix(in srgb, var(--ink) 35%, transparent));
+      z-index: -1;
+    }
+    .hero-content {
+      width: min(740px, 92vw);
+      margin: 0 auto clamp(32px, 8vh, 72px);
+      padding: clamp(18px, 4vw, 32px);
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(4px);
+      color: white;
+    }
+    .hero-eyebrow {
+      margin: 0 0 8px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      opacity: 0.92;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 5.5vw, 4.6rem);
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      max-width: 17ch;
+    }
+    .hero-sub {
+      margin: 14px 0 0;
+      max-width: 60ch;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .hero-actions {
+      margin-top: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .hero-note {
+      margin: 0;
+      font-size: 0.86rem;
+      color: rgba(255, 255, 255, 0.86);
+    }
+    section { padding: clamp(48px, 8vw, 96px) 0; }
+    h2 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+    .section-sub {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 1.03rem;
+      max-width: 68ch;
+    }
+    .service-grid {
+      margin-top: 26px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .service-card {
+      padding: 20px 18px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    }
+    .service-card h3 { margin: 0; font-size: 1.05rem; }
+    .service-card p { margin: 10px 0 0; color: var(--muted); font-size: 0.94rem; }
+    .about-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+      gap: clamp(18px, 4vw, 42px);
+      margin-top: 24px;
+      align-items: start;
+    }
+    .about-panel {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+    .about-panel p { margin: 0; color: var(--muted); font-size: 1rem; line-height: 1.65; }
+    .list-panel {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+    .list-panel li {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.5);
+      display: flex;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 0.94rem;
+    }
+    .list-panel li::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 0.42rem;
+      flex-shrink: 0;
+    }
+    .client-voice {
+      margin: 18px 0 0;
+      padding: 18px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--warm) 76%, white 24%);
+    }
+    .client-voice p { margin: 0; color: var(--ink); }
+    .client-voice span {
+      margin-top: 8px;
+      display: inline-block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .gallery-grid {
+      margin-top: 24px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    .gallery-card {
+      margin: 0;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: white;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.08);
+    }
+    .gallery-card img {
+      width: 100%;
+      display: block;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }
+    .gallery-card figcaption {
+      padding: 11px 12px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+    .cta-strip {
+      margin: clamp(30px, 6vw, 70px) auto clamp(24px, 5vw, 56px);
+      padding: clamp(24px, 5vw, 42px);
+      border-radius: 22px;
+      background: var(--ink);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .cta-strip h2 {
+      color: white;
+      font-size: clamp(1.6rem, 3.6vw, 2.4rem);
+    }
+    .cta-strip p { margin: 10px 0 0; color: rgba(255, 255, 255, 0.8); }
+    .pill-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 0 24px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 800;
+      background: white;
+      color: var(--accent);
+    }
+    footer {
+      padding: 22px 0 34px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.86rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 900px) {
+      .about-shell { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 740px) {
+      .hero-content { margin-bottom: 24px; padding: 18px; }
+      .cta-strip { border-radius: 16px; }
+      .pill, .pill-ghost { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container nav-inner">
+      <span class="brand">Moda Viva</span>
+      <a class="pill" href="#contato">Receber pedidos</a>
+    </div>
+  </nav>
+
+  <header class="hero" role="banner">
+    <div class="hero-content">
+      <p class="hero-eyebrow">Loja ou comércio</p>
+      <h1>Moda Viva</h1>
+      <p class="hero-sub">Produtos selecionados para o seu dia a dia.</p>
+      <div class="hero-actions">
+        <a class="pill" href="#contato">Receber pedidos</a>
+        <span class="hero-note">Atendo tanto online quanto em loja física.</span>
+      </div>
+      
+      
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="servicos">
+      <h2>O que oferecemos</h2>
+      <p class="section-sub">Selecionamos os pontos principais para facilitar sua decisão e acelerar o contato.</p>
+      <div class="service-grid">
+        <article class="service-card"><h3>Qualidade no atendimento</h3><p>Atendimento direto, organizado e com foco em resultado.</p></article>
+          <article class="service-card"><h3>Experiência e dedicação</h3><p>Atendimento direto, organizado e com foco em resultado.</p></article>
+          <article class="service-card"><h3>Contato rápido</h3><p>Atendimento direto, organizado e com foco em resultado.</p></article>
+      </div>
+    </section>
+
+    <section id="sobre">
+      <h2>Como funciona</h2>
+      <p class="section-sub">Seu atendimento é organizado com foco em clareza, velocidade e confiança.</p>
+      <div class="about-shell">
+        <article class="about-panel">
+          <p>Produtos selecionados para o seu dia a dia.</p>
+          <blockquote class="client-voice"><p>Tenho uma loja de roupas e preciso de um site para mostrar o catálogo, destacar as novidades e receber pedidos.</p><span>Mensagem do cliente</span></blockquote>
+        </article>
+        <aside class="about-panel">
+          <h3 style="margin:0;font-size:1rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Prioridades</h3>
+          <ul class="list-panel">
+            <li>Qualidade no atendimento</li>
+            <li>Experiência e dedicação</li>
+            <li>Contato rápido</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="galeria">
+      <h2>Ambiente e experiência</h2>
+      <p class="section-sub">Referências visuais alinhadas com o estilo do negócio e o que seu público espera.</p>
+      <div class="gallery-grid">
+        <figure class="gallery-card"><img src="https://source.unsplash.com/1600x900/?foto%2Crealista%2Cclara%2Csimpatica%2Cacolhedora%2Ce" alt="Botao flutuante WhatsApp, Feed do Instagram" /><figcaption>Botao flutuante WhatsApp, Feed do Instagram</figcaption></figure>
+          <figure class="gallery-card"><img src="https://source.unsplash.com/1600x900/?foto%2Crealista%2Cclara%2Csimpatica%2Cacolhedora%2Ce" alt="Clientes de Loja ou comércio" /><figcaption>Clientes de Loja ou comércio</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="cta-strip" id="contato">
+      <div>
+        <h2>Vamos começar?</h2>
+        <p>Fale com a equipe e receba o próximo passo com rapidez.</p>
+      </div>
+      <a class="pill-ghost" href="#contato">Receber pedidos</a>
+    </section>
+
+    <footer>
+      <span>Moda Viva · Loja ou comércio</span>
+      <span>© 2026</span>
+    </footer>
+  </main>
+</body>
+</html>
