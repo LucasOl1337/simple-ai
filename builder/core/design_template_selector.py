@@ -180,5 +180,5 @@ def selected_template_to_prompt_block(selected: SelectedDesignTemplate | None) -
         f"- section_blueprint: {section_blueprint}\n"
         f"- avoid: {avoid}\n"
         f"- qa_focus: {qa_focus}\n"
-        "- instrucao: siga este template como blueprint primario e evite cair na estrutura generica padrao quando houver conflito."
+        "- instrucao: use este template apenas como referencia curatorial. Aproveite sinais de hierarquia, ritmo, hero, secoes e anti-padroes, mas adapte livremente a estrutura ao briefing, aos assets disponiveis e a uma composicao propria."
     )

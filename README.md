@@ -91,18 +91,23 @@ npm run dev:full     # roda frontend + backend em paralelo
 
 ---
 
-## Configuração do LLM (Agente 02)
+## Configuração dos Modelos do Builder
 
-O Agente 02 aceita qualquer provedor OpenAI-compatible. Configure em `api/.env.local`:
+O Agente 02 separa o modelo que gera imagens do modelo que escreve o HTML final. Configure em `api/.env.local`:
 
 ```env
-# Escolha um provedor:
-AGENT_LLM_PROVIDER=anthropic        # anthropic | openai-compatible | nvidia | zai | openrouter
-AGENT_LLM_API_KEY=sk-...
-AGENT_LLM_MODEL=claude-opus-4-7     # opcional — tem defaults por provedor
+# Texto: constrói o index.html final com os assets prontos.
+AGENT_LLM_PROVIDER=openai-compatible
+AGENT_LLM_BASE_URL=http://localhost:20128/v1
+AGENT_LLM_MODEL=cx/gpt-5.5
+
+# Imagem: materializa assets visuais antes do HTML.
+AGENT_IMAGE_ENABLED=1
+AGENT_IMAGE_BASE_URL=http://localhost:20128/v1
+AGENT_IMAGE_MODEL=cx/gpt-5.4-image
 ```
 
-Sem configuração, o sistema usa um fallback determinístico local (site HTML limpo baseado no briefing).
+Referencia completa: [`builder/README.md`](./builder/README.md#configuracao-dos-modelos). Sem configuração textual, o sistema usa um fallback determinístico local baseado no briefing.
 
 ## Contrato Operacional do Builder
 

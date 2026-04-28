@@ -53,6 +53,12 @@ from builder.core.design_template_selector import (
     selected_template_to_prompt_block,
 )
 
+try:
+    from runtime_logs import add_runtime_log
+except ImportError:  # pragma: no cover
+    def add_runtime_log(*args: Any, **kwargs: Any) -> None:
+        return None
+
 
 HTML_FENCE_PATTERN = re.compile(
     r"^```(?:html)?\s*\n(.*?)\n```\s*$",
@@ -505,8 +511,21 @@ class BuilderAgent:
             site_dir = self.sites_dir / job.job_id
             site_dir.mkdir(parents=True, exist_ok=True)
             local_usage: Dict[str, int] = {}
+            add_runtime_log(
+                "builder",
+                "info",
+                "Build iniciado",
+                job_id=job.job_id,
+                stage="building",
+                details={
+                    "builder_model": job.spec.get("builder_model") or self.model,
+                    "provider": self.provider or "local-fallback",
+                    "asset_first": bool(_ENABLE_PREGENERATED_ASSETS),
+                },
+            )
 
             if self.use_local_fallback:
+                add_runtime_log("builder", "warn", "Usando fallback local para HTML", job_id=job.job_id, stage="html")
                 generated_html, local_usage = self._build_local_html_v2(job, site_dir)
             else:
                 # Asset-first: materialize images before the LLM generates HTML
@@ -532,16 +551,45 @@ class BuilderAgent:
                         job.spec["_materialized_assets"] = image_assets
                         with self._lock:
                             job.usage = {**job.usage, **image_generation, "asset_first_generation": 1}
+                        add_runtime_log(
+                            "builder",
+                            "info",
+                            "Assets materializados",
+                            job_id=job.job_id,
+                            stage="assets",
+                            details={
+                                "generated": image_generation.get("count", 0),
+                                "planned": len(visual_prompts),
+                                "slots": image_generation.get("slots", {}),
+                            },
+                        )
                         print(
                             f"[BUILDER] job={job.job_id} assets-first llm: "
                             f"generated={image_generation.get('count', 0)}/{len(visual_prompts)}"
                         )
                     except Exception as exc:
                         print(f"[BUILDER] job={job.job_id} asset pre-generation skipped: {exc}")
+                        add_runtime_log(
+                            "builder",
+                            "warn",
+                            "Pre-geracao de assets pulada",
+                            job_id=job.job_id,
+                            stage="assets",
+                            details={"error": str(exc)},
+                        )
                 else:
                     print(f"[BUILDER] job={job.job_id} asset-first disabled by BUILDER_ASSET_FIRST_ENABLED=0")
+                    add_runtime_log("builder", "warn", "Asset-first desabilitado", job_id=job.job_id, stage="assets")
 
                 try:
+                    add_runtime_log(
+                        "builder",
+                        "info",
+                        "Chamando modelo para gerar HTML final",
+                        job_id=job.job_id,
+                        stage="html",
+                        details={"builder_model": job.spec.get("builder_model") or self.model},
+                    )
                     if self.provider == "anthropic":
                         generated_html = _strip_html_fence(self._call_claude(job))
                     else:
@@ -551,6 +599,14 @@ class BuilderAgent:
                     if not _should_runtime_fallback(exc):
                         raise
                     print(f"[BUILDER] provider runtime failed, using local fallback: {exc}")
+                    add_runtime_log(
+                        "builder",
+                        "warn",
+                        "Provider textual falhou; usando fallback local",
+                        job_id=job.job_id,
+                        stage="html",
+                        details={"error": str(exc)},
+                    )
                     generated_html, local_usage = self._build_local_html_v2(job, site_dir)
                     with self._lock:
                         job.usage = {
@@ -572,7 +628,23 @@ class BuilderAgent:
             with self._lock:
                 job.usage = {**job.usage, "html_qa": qa_result.usage_payload()}
             if not qa_result.passed:
+                add_runtime_log(
+                    "builder",
+                    "error",
+                    "HTML QA falhou",
+                    job_id=job.job_id,
+                    stage="qa",
+                    details=qa_result.usage_payload(),
+                )
                 raise RuntimeError(f"HTML QA failed: {qa_result.usage_payload()}")
+            add_runtime_log(
+                "builder",
+                "info",
+                "HTML QA aprovado",
+                job_id=job.job_id,
+                stage="qa",
+                details=qa_result.usage_payload(),
+            )
 
             site_path = site_dir / "index.html"
             site_path.write_text(generated_html, encoding="utf-8")
@@ -587,9 +659,25 @@ class BuilderAgent:
                     job.usage = {**job.usage, **local_usage}
 
             print(f"[BUILDER] job={job.job_id} done chars={len(generated_html)} url={job.site_url}")
+            add_runtime_log(
+                "builder",
+                "info",
+                "Build concluido",
+                job_id=job.job_id,
+                stage="done",
+                details={"site_url": job.site_url, "chars": len(generated_html)},
+            )
 
         except Exception as exc:
             print(f"[BUILDER] job={job.job_id} error: {exc}")
+            add_runtime_log(
+                "builder",
+                "error",
+                "Build falhou",
+                job_id=job.job_id,
+                stage="error",
+                details={"error": str(exc)},
+            )
             with self._lock:
                 job.status = "error"
                 job.error = str(exc)
@@ -600,10 +688,11 @@ class BuilderAgent:
 
         messages = build_messages(job.spec)
         system_prompt = self._build_system_prompt_for_job(job)
+        model = self._resolve_text_model_for_job(job)
 
         chunks: list[str] = []
         with self.client.messages.stream(
-            model=self.model,
+            model=model,
             max_tokens=32000,
             system=[
                 {
@@ -626,6 +715,7 @@ class BuilderAgent:
             job.usage = {
                 "input_tokens": final_message.usage.input_tokens,
                 "output_tokens": final_message.usage.output_tokens,
+                "builder_model": model,
                 "cache_read_input_tokens": getattr(
                     final_message.usage, "cache_read_input_tokens", 0
                 ) or 0,
@@ -642,13 +732,14 @@ class BuilderAgent:
 
         user_messages = build_messages(job.spec)
         system_prompt = self._build_system_prompt_for_job(job)
+        model = self._resolve_text_model_for_job(job)
         openai_messages = [
             {"role": "system", "content": system_prompt},
             *user_messages,
         ]
 
         response = self._openai_client.chat.completions.create(
-            model=self.model,
+            model=model,
             messages=openai_messages,
             max_tokens=32000,
         )
@@ -658,9 +749,16 @@ class BuilderAgent:
             job.usage = {
                 "input_tokens": usage.prompt_tokens if usage else 0,
                 "output_tokens": usage.completion_tokens if usage else 0,
+                "builder_model": model,
             }
 
         return response.choices[0].message.content or ""
+
+    def _resolve_text_model_for_job(self, job: BuildJob) -> str:
+        requested = str(job.spec.get("builder_model") or "").strip()
+        if not requested:
+            return self.model
+        return requested
 
     def _build_local_html(self, job: BuildJob) -> str:
         """

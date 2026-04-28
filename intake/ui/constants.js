@@ -4,6 +4,18 @@ export const NOTE_LAYOUT_STORAGE_KEY = "simple-ai-note-layout-v2";
 export const CHAT_SESSIONS_STORAGE_KEY = "simple-ai-chat-sessions-v1";
 export const ACTIVE_CHAT_SESSION_STORAGE_KEY = "simple-ai-active-chat-session-v1";
 export const THEME_STORAGE_KEY = "simple-ai-theme-v1";
+export const BUILDER_MODEL_STORAGE_KEY = "simple-ai-builder-model-v1";
+
+export const BUILDER_MODEL_OPTIONS = [
+  { id: "cx/gpt-5.5", label: "GPT 5.5", note: "default atual" },
+  { id: "cx/gpt-5.4", label: "GPT 5.4", note: "equilibrado" },
+  { id: "cx/gpt-5.4-mini", label: "GPT 5.4 Mini", note: "mais rapido" },
+  { id: "glm/glm-5.1", label: "GLM 5.1", note: "Z AI" },
+  { id: "glm/glm-5", label: "GLM 5", note: "Z AI" },
+  { id: "google/gemini-3.1-pro", label: "Gemini 3.1 Pro", note: "Antigravity" },
+];
+
+export const DEFAULT_BUILDER_MODEL = BUILDER_MODEL_OPTIONS[0].id;
 
 export const OPENING_MESSAGE = "Oi. Me conta com calma o que você faz e o que você gostaria que o site ajudasse a resolver.";
 

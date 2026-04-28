@@ -10,6 +10,7 @@ Diretrizes:
 
 - Defina a identidade visual antes de escrever a pagina: mood, paleta, fonte, densidade e nivel de energia.
 - Monte o estado final do layout primeiro. Nao dependa de animacoes para esconder problemas de composicao.
+- Trate templates, receitas e referencias como direcao curatorial, nao como wireframe fixo. O site final pode reorganizar secoes, propor uma composicao propria e escolher outro ritmo quando o briefing justificar.
 - O primeiro bloco deve funcionar como um frame hero: nome, promessa clara e acao principal visiveis em ate 3 segundos.
 - Use contraste, escala e espacamento para criar foco. Evite multiplicar cards iguais sem necessidade.
 - Varie a composicao entre builds. Nao use sempre hero split + cards + galeria. Escolha um gesto visual dominante: editorial assimetrico, menu board, vitrine/catalogo, faixa diagonal, mosaico organico, timeline de processo, bloco manifesto ou layout com lateral fixa.

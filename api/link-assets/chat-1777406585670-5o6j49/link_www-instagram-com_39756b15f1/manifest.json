@@ -1,0 +1,105 @@
+{
+  "inspection_id": "link_www-instagram-com_39756b15f1",
+  "source_url": "https://www.instagram.com/napassarela_penapolis/",
+  "source_type": "instagram_profile",
+  "status": "ok",
+  "captured_at": 1777406607,
+  "core_info": {
+    "business_name": "Napassarela",
+    "business_type": "Loja de roupas e moda para toda família",
+    "bio": "Moda para toda família desde 2002. Feminino, masculino, infantil e juvenil.",
+    "location": "A. Bento da Cruz, 770, Penápolis, SP",
+    "contacts": [
+      "(18) 3653-7475",
+      "(18) 99815-3196"
+    ],
+    "social_handles": [
+      "@napassarela_penapolis"
+    ]
+  },
+  "content_signals": {
+    "offerings": [
+      "Moda feminina",
+      "Moda masculina",
+      "Moda infantil",
+      "Moda juvenil",
+      "Roupas para toda família"
+    ],
+    "tone": "comercial, familiar, acessível e voltado a moda",
+    "target_audience": "Famílias e consumidores de Penápolis e região que buscam roupas femininas, masculinas, infantis e juvenis",
+    "frequent_words": [
+      "moda",
+      "família",
+      "feminino",
+      "masculino",
+      "infantil",
+      "juvenil",
+      "Penápolis"
+    ],
+    "cta_patterns": [
+      "Entrar em contato por telefone",
+      "Entrar em contato por WhatsApp",
+      "Pedir informações sobre produtos",
+      "Usar o Instagram como canal de descoberta e contato"
+    ]
+  },
+  "visual_signals": {
+    "colors": [
+      "preto",
+      "branco"
+    ],
+    "style": "varejo de moda com presença de Instagram, foco comercial e visual possivelmente editorial/popular",
+    "image_mood": [
+      "fashion",
+      "comercial",
+      "cotidiano",
+      "familiar"
+    ],
+    "composition_notes": [
+      "Usar fotos de produtos e looks como base principal",
+      "Priorizar imagens de pessoas usando roupas da loja",
+      "Misturar vitrines, peças em destaque e composições de looks",
+      "Layout pode remeter a feed de Instagram com blocos visuais"
+    ]
+  },
+  "reference_images": [
+    {
+      "source": "instagram_profile",
+      "original_url": "https://scontent.cdninstagram.com/v/t51.82787-19/657199381_18573137488065089_6714638845366792538_n.jpg?stp=dst-jpg_s100x100_tt6&_nc_cat=100&ccb=7-5&_nc_sid=bf7eb4&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDI0LkMzIn0%3D&_nc_ohc=rf82WNf9fZQQ7kNvwFzVoqD&_nc_oc=AdpS9coxgZ6CHKELRk7ysVszbfnlVGG9E6QOQLFu1iDw2mJz509OdNIlcVIOCdByXkTg1TMpANEDQA9uH3kUftxH&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&_nc_gid=ZHB51DBPNAeRMirp_dAv2w&_nc_ss=7960f&oh=00_Af374mEjAQZzcwFCGzJP15wPVR6P8WFKHEc8Z4lUMpSQCQ&oe=69F6DB84",
+      "local_path": "C:/Users/user/Desktop/simple-ai/api/link-assets/chat-1777406585670-5o6j49/link_www-instagram-com_39756b15f1/image-01.jpg",
+      "alt": "Imagem de referência 1",
+      "usage": "reference_or_reprocess"
+    }
+  ],
+  "builder_hints": {
+    "content_strategy": "Criar um site com foco em apresentar a loja Napassarela como referência local em moda para toda família desde 2002, destacando categorias feminino, masculino, infantil e juvenil, além de facilitar contato rápido por WhatsApp e telefone.",
+    "layout_suggestion": "Homepage com hero forte, prova de tradição desde 2002, seção de categorias para toda família, galeria inspirada no Instagram, bloco de contato com telefones e endereço, e CTA recorrente para pedir informações.",
+    "image_prompt_additions": [
+      "moda para toda família",
+      "atmosfera comercial e acolhedora",
+      "loja de roupas local com apelo fashion",
+      "looks femininos, masculinos e infantis",
+      "visual limpo com contraste entre preto e branco",
+      "estética inspirada em feed de Instagram"
+    ],
+    "do_not_invent": [
+      "Não inventar preços ou promoções",
+      "Não inventar marcas vendidas pela loja",
+      "Não inventar formas de pagamento",
+      "Não inventar horário de funcionamento",
+      "Não inventar depoimentos ou números de clientes",
+      "Não inventar serviços adicionais além da venda de roupas"
+    ]
+  },
+  "summary": "A Napassarela é uma loja de moda em Penápolis, SP, com posicionamento voltado a toda família desde 2002. O Instagram indica atuação em feminino, masculino, infantil e juvenil, com foco comercial e contato direto por telefone e WhatsApp. Para o site, vale reforçar tradição, variedade de categorias e facilidade de atendimento, mantendo uma estética inspirada em Instagram e varejo de moda.",
+  "warnings": [
+    "Os sinais visuais estão limitados porque o conteúdo extraído não inclui análise completa das fotos do feed.",
+    "As cores da marca não estão claramente definidas no material disponível; preto e branco foram inferidos apenas da apresentação básica do perfil.",
+    "Não foi possível confirmar horário de funcionamento, catálogo, preços ou marcas específicas."
+  ],
+  "raw_extract": {
+    "title": "Napassarela (@napassarela_penapolis) • Instagram photos and videos",
+    "description": "14K Followers, 3,752 Following, 7,907 Posts - Napassarela (@napassarela_penapolis) on Instagram: \"Moda para toda família desde 2002!✨\nFeminino- Masculino- Infantil- Juvenil \n📞(18)36537475\n📱(18)998153196\nA.Bento da Cruz, 770 Penápolis SP\"",
+    "text_sample": ":root, .__ig-light-mode:root, .__ig-light-mode {--fds-black:#000000;--fds-black-alpha-05:rgba(0, 0, 0, 0.05);--fds-black-alpha-10:rgba(0, 0, 0, 0.1);--fds-black-alpha-15:rgba(0, 0, 0, 0.15);--fds-black-alpha-20:rgba(0, 0, 0, 0.2);--fds-black-alpha-30:rgba(0, 0, 0, 0.3);--fds-black-alpha-40:rgba(0, 0, 0, 0.4);--fds-black-alpha-50:rgba(0, 0, 0, 0.5);--fds-black-alpha-60:rgba(0, 0, 0, 0.6);--fds-black-alpha-80:rgba(0, 0, 0, 0.8);--fds-blue-05:#ECF3FF;--fds-blue-30:#AAC9FF;--fds-blue-40:#77A7FF;--fds-blue-60:#1877F2;--fds-blue-70:#2851A3;--fds-blue-80:#1D3C78;--fds-button-text:#444950;--fds-comment-background:#F2F3F5;--fds-dark-mode-gray-35:#CCCCCC;--fds-dark-mode-gray-50:#828282;--fds-dark-mode-gray-70:#4A4A4A;--fds-dark-mode-gray-80:#373737;--fds-dark-mode-gray-90:#282828;--fds-dark-mode-gray-100:#1C1C1C;--fds-gray-00:#F5F6F7;--fds-gray-05:#F2F3F5;--fds-gray-10:#EBEDF0;--fds-gray-20:#DADDE1;--fds-gray-25:#CCD0D5;--fds-gray-30:#BEC3C9;--fds-gray-45:#8D949E;--fds-gray-70:#606770;--fds-gray-80:#444950;--fds-gray-90:#303338;--fds-gray-100:#1C1E21;--fds-green-55:#00A400;--fds-green-60:#31A73B;--fds-green-65:#51CE70;--fds-highlight:#3578E5;--fds-highlight-cell-background:#ECF3FF;--fds-prim"
+  }
+}

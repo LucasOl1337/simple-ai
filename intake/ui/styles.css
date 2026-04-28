@@ -106,6 +106,193 @@ article:focus-visible {
   outline-offset: 3px;
 }
 
+.logs-shell {
+  background: radial-gradient(circle at top left, rgba(0, 255, 157, 0.1), transparent 34%), var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: clamp(20px, 4vw, 48px);
+}
+
+.logs-hero,
+.logs-toolbar,
+.logs-list {
+  margin: 0 auto;
+  max-width: 1120px;
+}
+
+.logs-hero {
+  align-items: flex-start;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.logs-kicker,
+.logs-hero p,
+.logs-status,
+.logs-stats,
+.log-event-head em,
+.log-event-meta,
+.log-details,
+.log-raw summary {
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.logs-kicker {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
+.logs-hero h1 {
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  line-height: 0.9;
+  margin: 0 0 14px;
+}
+
+.logs-hero p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 680px;
+}
+
+.logs-back,
+.logs-filters button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 11px 14px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.logs-toolbar {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding: 14px;
+}
+
+.logs-status,
+.logs-stats,
+.logs-filters {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.logs-stats strong {
+  color: var(--text);
+}
+
+.logs-filters button.is-active {
+  border-color: rgba(0, 255, 157, 0.48);
+  color: var(--accent);
+}
+
+.logs-list {
+  display: grid;
+  gap: 12px;
+}
+
+.log-event {
+  background: rgba(10, 14, 20, 0.84);
+  border: 1px solid var(--border);
+  border-left: 4px solid rgba(0, 255, 157, 0.3);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.log-event.level-error {
+  border-left-color: #ff5b6e;
+}
+
+.log-event.level-warn {
+  border-left-color: #ffbd42;
+}
+
+.log-event.is-empty {
+  border-left-color: var(--accent);
+}
+
+.log-event-head {
+  align-items: baseline;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 82px minmax(0, 1fr) auto;
+}
+
+.log-event-head span,
+.log-event-head em,
+.log-event-meta,
+.log-details,
+.log-raw summary {
+  font-size: 0.7rem;
+}
+
+.log-event-head strong {
+  font-size: 1rem;
+}
+
+.log-event-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.log-event-meta span,
+.log-level {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+
+.log-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.log-details li {
+  background: rgba(0, 255, 157, 0.06);
+  border: 1px solid rgba(0, 255, 157, 0.14);
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.log-raw {
+  margin-top: 12px;
+}
+
+.log-raw pre {
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 0.72rem;
+  overflow: auto;
+  padding: 12px;
+}
+
 ::-webkit-scrollbar {
   height: 4px;
   width: 4px;
@@ -398,6 +585,44 @@ article:focus-visible {
   gap: 10px;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.builder-model-picker {
+  align-items: flex-end;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.builder-model-picker span {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.builder-model-picker select {
+  appearance: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 800;
+  max-width: min(42vw, 260px);
+  min-height: 38px;
+  outline: none;
+  padding: 0 30px 0 12px;
+}
+
+.builder-model-picker select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .topbar-test-button {

@@ -12,12 +12,15 @@ import {
   getSessionTitle,
   isFilled,
   pickAutoTestScenario,
+  readStoredBuilderModel,
   readStoredChatWorkspace,
   readStoredTheme,
   wait,
 } from "./utils";
 import {
   ACTIVE_CHAT_SESSION_STORAGE_KEY,
+  BUILDER_MODEL_OPTIONS,
+  BUILDER_MODEL_STORAGE_KEY,
   BUILD_STORAGE_KEY,
   CHAT_SESSIONS_STORAGE_KEY,
   OPENING_MESSAGE,
@@ -113,6 +116,7 @@ function applyScenarioBuildMinimum(session, scenario) {
 export default function App() {
   const storedWorkspace = useMemo(() => readStoredChatWorkspace(), []);
   const storedTheme = useMemo(() => readStoredTheme(), []);
+  const storedBuilderModel = useMemo(() => readStoredBuilderModel(), []);
   const [chatSessions, setChatSessions] = useState(storedWorkspace.sessions);
   const [activeChatSessionId, setActiveChatSessionId] = useState(storedWorkspace.activeId);
   const activeChatSession = useMemo(
@@ -125,6 +129,7 @@ export default function App() {
   const [attachment, setAttachment] = useState(null);
   const [optimisticMessages, setOptimisticMessages] = useState([]);
   const [theme, setTheme] = useState(storedTheme);
+  const [builderModel, setBuilderModel] = useState(storedBuilderModel);
   const [autoTestState, setAutoTestState] = useState({
     running: false,
     scenario: null,
@@ -184,6 +189,11 @@ export default function App() {
     document.documentElement.dataset.theme = theme;
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(BUILDER_MODEL_STORAGE_KEY, builderModel);
+  }, [builderModel]);
 
   useEffect(() => {
     if (!buildState?.job_id) return;
@@ -497,14 +507,15 @@ export default function App() {
         visual_plan: summary.visual_plan || null,
         link_content: currentSession.linkContent || null,
         agent_profile: summary.design_plan?.agent_profile || null,
+        builder_model: builderModel,
         summary,
       };
       const result = await queueSiteBuild(payload);
-      setBuildState({ status: "building", job_id: result?.job_id, message: result?.message, started_at: Date.now() });
+      setBuildState({ status: "building", job_id: result?.job_id, message: result?.message, builder_model: builderModel, started_at: Date.now() });
     } catch (error) {
       setBuildState({ status: "error", error: error.message || "Falha ao iniciar a construção.", started_at: Date.now() });
     }
-  }, []);
+  }, [builderModel]);
 
   const handleStartBuild = useCallback(() => { startBuildForSession(sessionRef.current); }, [startBuildForSession]);
   const handleResetBuild = useCallback(() => { setBuildState(null); }, []);
@@ -688,6 +699,21 @@ export default function App() {
         <header className="whiteboard-topbar">
           <img alt="Simple AI" className="brand-logo" src={logoUrl} />
           <div className="topbar-actions">
+            <label className="builder-model-picker">
+              <span>motor builder</span>
+              <select
+                aria-label="Motor do builder do site"
+                disabled={autoTestState.running || ["starting", "building"].includes(buildState?.status)}
+                onChange={(event) => setBuilderModel(event.target.value)}
+                value={builderModel}
+              >
+                {BUILDER_MODEL_OPTIONS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label} · {option.note}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button
               className={`topbar-test-button ${autoTestState.running ? "is-running" : ""}`}
               onClick={autoTestState.running ? handleStopAutoTest : handleStartAutoTest}

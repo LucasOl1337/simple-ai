@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Napassarela | Loja de roupas em Penápolis e região</title>
+  <meta name="description" content="Napassarela é uma loja de roupas com moda feminina, masculina, infantil e juvenil para famílias e clientes de Penápolis e região.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4a2f24;
+      --neutral: #fbf5ec;
+      --accent: #b8653b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Fraunces", Georgia, serif;
+      background: var(--neutral);
+      color: var(--primary);
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 1rem;
+      top: -3rem;
+      background: var(--primary);
+      color: var(--neutral);
+      padding: .75rem 1rem;
+      z-index: 20;
+      border-radius: 999px;
+      transition: top .2s ease;
+    }
+
+    .skip-link:focus {
+      top: 1rem;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(251, 245, 236, .92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(74, 47, 36, .14);
+    }
+
+    .nav {
+      width: min(1120px, calc(100% - 2rem));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .85rem 0;
+    }
+
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 1.35rem;
+      font-size: .95rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      opacity: .86;
+    }
+
+    .nav-links a:hover,
+    .nav-links a:focus {
+      opacity: 1;
+      text-decoration: underline;
+      text-underline-offset: .3rem;
+    }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: .72rem 1rem;
+      border: 1px solid var(--primary);
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .92rem;
+      background: var(--primary);
+      color: var(--neutral);
+      transition: transform .2s ease, background .2s ease;
+      white-space: nowrap;
+    }
+
+    .nav-cta:hover,
+    .nav-cta:focus {
+      transform: translateY(-2px);
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    main {
+      overflow: hidden;
+    }
+
+    .section {
+      padding: 4rem 0;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 2rem));
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 3rem 0 4.5rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      gap: 2.25rem;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      margin: 0 0 1rem;
+      font-size: .92rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 2rem;
+      height: 1px;
+      background: var(--accent);
+      display: inline-block;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.45rem, 13vw, 4.7rem);
+      line-height: .92;
+      letter-spacing: -.055em;
+      max-width: 8ch;
+    }
+
+    .hero-copy {
+      margin: 1.25rem 0 0;
+      font-size: clamp(1.08rem, 3vw, 1.35rem);
+      max-width: 34rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+      margin-top: 1.75rem;
+      align-items: stretch;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: .95rem 1.2rem;
+      border-radius: 999px;
+      border: 1px solid var(--primary);
+      text-decoration: none;
+      font-weight: 700;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+      text-align: center;
+    }
+
+    .button.primary {
+      background: var(--primary);
+      color: var(--neutral);
+    }
+
+    .button.secondary {
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .button:hover,
+    .button:focus {
+      transform: translateY(-2px);
+    }
+
+    .button.primary:hover,
+    .button.primary:focus {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .button.secondary:hover,
+    .button.secondary:focus {
+      background: rgba(74, 47, 36, .08);
+    }
+
+    .trust-strip {
+      margin-top: 2rem;
+      display: grid;
+      gap: .75rem;
+      font-size: .98rem;
+    }
+
+    .trust-strip span {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .trust-strip span::before {
+      content: "";
+      width: .48rem;
+      height: .48rem;
+      border-radius: 50%;
+      background: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .editorial-window {
+      position: relative;
+      min-height: 28rem;
+      border: 1px solid rgba(74, 47, 36, .18);
+      border-radius: 2rem;
+      background:
+        linear-gradient(90deg, rgba(74, 47, 36, .08) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(74, 47, 36, .08) 1px, transparent 1px);
+      background-size: 42px 42px;
+      padding: 1rem;
+    }
+
+    .look-card {
+      position: absolute;
+      border-radius: 1.4rem;
+      border: 1px solid rgba(74, 47, 36, .18);
+      background: var(--neutral);
+      overflow: hidden;
+    }
+
+    .look-card.large {
+      inset: 1rem 1rem auto auto;
+      width: 68%;
+      height: 63%;
+      background:
+        radial-gradient(circle at 25% 20%, rgba(184, 101, 59, .32), transparent 28%),
+        linear-gradient(135deg, rgba(74, 47, 36, .16), rgba(184, 101, 59, .12));
+    }
+
+    .look-card.small {
+      left: 1rem;
+      bottom: 1rem;
+      width: 48%;
+      height: 45%;
+      background:
+        linear-gradient(135deg, rgba(184, 101, 59, .78), rgba(74, 47, 36, .84));
+    }
+
+    .look-card.label {
+      right: 1.2rem;
+      bottom: 1.4rem;
+      width: 46%;
+      min-height: 7.5rem;
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: none;
+    }
+
+    .look-card.label strong {
+      font-size: 1.25rem;
+      line-height: 1.1;
+    }
+
+    .look-card.label small {
+      font-size: .88rem;
+      opacity: .82;
+    }
+
+    .section-heading {
+      display: grid;
+      gap: .75rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 3.3rem);
+      line-height: 1;
+      letter-spacing: -.045em;
+    }
+
+    .section-heading p {
+      margin: 0;
+      max-width: 42rem;
+      font-size: 1.05rem;
+    }
+
+    .category-rail {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .category {
+      min-height: 12rem;
+      border: 1px solid rgba(74, 47, 36, .18);
+      border-radius: 1.6rem;
+      padding: 1.3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: rgba(255,255,255,.26);
+      transition: transform .2s ease, background .2s ease;
+    }
+
+    .category:hover {
+      transform: translateY(-3px);
+      background: rgba(184, 101, 59, .08);
+    }
+
+    .category .number {
+      color: var(--accent);
+      font-size: .95rem;
+      font-weight: 700;
+    }
+
+    .category h3 {
+      margin: 2rem 0 .35rem;
+      font-size: 1.65rem;
+      letter-spacing: -.03em;
+      line-height: 1.05;
+    }
+
+    .category p {
+      margin: 0;
+      font-size: .98rem;
+      opacity: .86;
+    }
+
+    .split-band {
+      background: var(--primary);
+      color: var(--neutral);
+      padding: 4rem 0;
+    }
+
+    .services-grid {
+      display: grid;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .services-grid h2 {
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 3.2rem);
+      line-height: 1;
+      letter-spacing: -.045em;
+    }
+
+    .steps {
+      display: grid;
+      gap: .9rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .steps li {
+      border-top: 1px solid rgba(251, 245, 236, .24);
+      padding: 1rem 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .steps b {
+      color: var(--accent);
+      font-size: 1.05rem;
+    }
+
+    .steps strong {
+      display: block;
+      font-size: 1.15rem;
+      margin-bottom: .2rem;
+    }
+
+    .steps span {
+      opacity: .86;
+    }
+
+    .gallery-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .gallery-tile {
+      min-height: 14rem;
+      border-radius: 1.6rem;
+      border: 1px solid rgba(74, 47, 36, .18);
+      padding: 1.2rem;
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+      position: relative;
+      background: rgba(255,255,255,.28);
+    }
+
+    .gallery-tile::before {
+      content: "";
+      position: absolute;
+      inset: 1rem;
+      border-radius: 1.1rem;
+      background:
+        repeating-linear-gradient(90deg, rgba(74,47,36,.16) 0 1px, transparent 1px 18px),
+        linear-gradient(135deg, rgba(184,101,59,.16), rgba(74,47,36,.08));
+      transform: rotate(-2deg);
+    }
+
+    .gallery-tile:nth-child(2)::before {
+      background:
+        radial-gradient(circle at 70% 25%, rgba(184,101,59,.32), transparent 30%),
+        linear-gradient(135deg, rgba(74,47,36,.12), rgba(184,101,59,.12));
+      transform: rotate(2deg);
+    }
+
+    .gallery-tile:nth-child(3)::before {
+      background:
+        repeating-linear-gradient(135deg, rgba(74,47,36,.14) 0 2px, transparent 2px 20px),
+        rgba(184,101,59,.12);
+      transform: rotate(1deg);
+    }
+
+    .gallery-tile strong {
+      position: relative;
+      z-index: 1;
+      font-size: 1.25rem;
+      line-height: 1.1;
+      background: var(--neutral);
+      padding: .75rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(74, 47, 36, .15);
+    }
+
+    .about-card {
+      border: 1px solid rgba(74, 47, 36, .18);
+      border-radius: 2rem;
+      padding: 1.4rem;
+      background: rgba(255,255,255,.3);
+      display: grid;
+      gap: 1.3rem;
+    }
+
+    .about-card p {
+      margin: 0;
+      font-size: 1.08rem;
+      max-width: 62rem;
+    }
+
+    .quote {
+      border-left: 3px solid var(--accent);
+      padding-left: 1rem;
+      font-size: 1.25rem;
+      line-height: 1.25;
+      margin: 0;
+    }
+
+    .contact-panel {
+      border-radius: 2rem;
+      background: var(--accent);
+      color: var(--neutral);
+      padding: 2rem 1.2rem;
+      display: grid;
+      gap: 1.3rem;
+    }
+
+    .contact-panel h2 {
+      margin: 0;
+      font-size: clamp(2rem, 8vw, 3.6rem);
+      line-height: 1;
+      letter-spacing: -.045em;
+    }
+
+    .contact-panel p {
+      margin: 0;
+      font-size: 1.05rem;
+      max-width: 40rem;
+    }
+
+    .contact-actions {
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+      align-items: stretch;
+    }
+
+    .contact-actions .button.primary {
+      background: var(--neutral);
+      color: var(--primary);
+      border-color: var(--neutral);
+    }
+
+    .contact-actions .button.secondary {
+      color: var(--neutral);
+      border-color: rgba(251, 245, 236, .75);
+    }
+
+    .contact-note {
+      font-size: .95rem;
+      opacity: .9;
+    }
+
+    footer {
+      padding: 2rem 0;
+      border-top: 1px solid rgba(74, 47, 36, .14);
+    }
+
+    .footer-inner {
+      width: min(1120px, calc(100% - 2rem));
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      font-size: .95rem;
+    }
+
+    @media (min-width: 720px) {
+      .nav-links {
+        display: flex;
+      }
+
+      .hero-actions,
+      .contact-actions {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .trust-strip {
+        grid-template-columns: repeat(2, max-content);
+      }
+
+      .category-rail {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .category:nth-child(1),
+      .category:nth-child(4) {
+        transform: translateY(1.2rem);
+      }
+
+      .services-grid {
+        grid-template-columns: .9fr 1.1fr;
+      }
+
+      .gallery-grid {
+        grid-template-columns: 1.2fr .8fr;
+        grid-auto-rows: 13rem;
+      }
+
+      .gallery-tile {
+        min-height: auto;
+      }
+
+      .gallery-tile:first-child {
+        grid-row: span 2;
+      }
+
+      .about-card {
+        grid-template-columns: 1.2fr .8fr;
+        padding: 2rem;
+      }
+
+      .contact-panel {
+        padding: 3rem;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+      }
+
+      .footer-inner {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+    }
+
+    @media (min-width: 920px) {
+      .section {
+        padding: 5.5rem 0;
+      }
+
+      .hero {
+        padding: 4.2rem 0 6rem;
+      }
+
+      .hero-grid {
+        grid-template-columns: .95fr 1.05fr;
+      }
+
+      .editorial-window {
+        min-height: 35rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topbar" aria-label="Topo do site">
+    <nav class="nav">
+      <a class="brand" href="#conteudo" aria-label="Napassarela, início">Napassarela</a>
+      <div class="nav-links" aria-label="Navegação principal">
+        <a href="#categorias">Categorias</a>
+        <a href="#como-pedir">Como pedir</a>
+        <a href="#contato">Contato</a>
+      </div>
+      <a class="nav-cta" href="#contato">Consultar peças</a>
+    </nav>
+  </header>
+
+  <main id="conteudo">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">Loja de roupas</p>
+          <h1>Napassarela</h1>
+          <p class="hero-copy">Moda feminina, masculina, infantil e juvenil para famílias e clientes de Penápolis e região.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#contato">Consultar peças no WhatsApp</a>
+            <a class="button secondary" href="#categorias">Ver categorias</a>
+          </div>
+          <div class="trust-strip" aria-label="Informações rápidas">
+            <span>Atendimento próximo</span>
+            <span>Novidades pelo Instagram</span>
+          </div>
+        </div>
+
+        <div class="editorial-window" aria-label="Composição visual de vitrine de roupas">
+          <div class="look-card large"></div>
+          <div class="look-card small"></div>
+          <div class="look-card label">
+            <strong>Vitrine para toda a família</strong>
+            <small>Escolha a categoria e consulte disponibilidade de peças, tamanhos e cores.</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="categorias">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">O que oferecemos</p>
+          <h2>Categorias para escolher com calma.</h2>
+          <p>A Napassarela organiza o atendimento por tipo de público para facilitar sua busca por peças do dia a dia, looks para sair e novidades da loja.</p>
+        </div>
+
+        <div class="category-rail" aria-label="Categorias de roupas">
+          <article class="category">
+            <span class="number">01</span>
+            <div>
+              <h3>Moda feminina</h3>
+              <p>Peças femininas para montar combinações com praticidade.</p>
+            </div>
+          </article>
+
+          <article class="category">
+            <span class="number">02</span>
+            <div>
+              <h3>Moda masculina</h3>
+              <p>Opções masculinas para diferentes momentos da rotina.</p>
+            </div>
+          </article>
+
+          <article class="category">
+            <span class="number">03</span>
+            <div>
+              <h3>Moda infantil</h3>
+              <p>Roupas para crianças, com consulta de tamanho e disponibilidade.</p>
+            </div>
+          </article>
+
+          <article class="category">
+            <span class="number">04</span>
+            <div>
+              <h3>Moda juvenil</h3>
+              <p>Peças juvenis para quem procura estilo e conforto.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="split-band" id="como-pedir">
+      <div class="container services-grid">
+        <div>
+          <p class="eyebrow">Como pedir</p>
+          <h2>Um atendimento simples, direto e próximo.</h2>
+        </div>
+
+        <ol class="steps">
+          <li>
+            <b>1</b>
+            <div>
+              <strong>Escolha a categoria</strong>
+              <span>Feminina, masculina, infantil ou juvenil. Isso ajuda a direcionar melhor a conversa.</span>
+            </div>
+          </li>
+          <li>
+            <b>2</b>
+            <div>
+              <strong>Consulte peças, tamanhos e cores</strong>
+              <span>Fale qual tipo de roupa procura e confirme o que está disponível no momento.</span>
+            </div>
+          </li>
+          <li>
+            <b>3</b>
+            <div>
+              <strong>Acompanhe as novidades</strong>
+              <span>A loja também compartilha novidades pelo Instagram para quem gosta de ver as peças chegando.</span>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="galeria-titulo">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Galeria</p>
+          <h2 id="galeria-titulo">Um catálogo pensado para descoberta.</h2>
+          <p>Sem preços ou peças fixas informados aqui: a ideia é consultar a disponibilidade atual com a Napassarela e receber orientação no atendimento.</p>
+        </div>
+
+        <div class="gallery-grid">
+          <div class="gallery-tile"><strong>Looks do dia a dia</strong></div>
+          <div class="gallery-tile"><strong>Peças para sair</strong></div>
+          <div class="gallery-tile"><strong>Novidades da loja</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="sobre-titulo">
+      <div class="container">
+        <div class="about-card">
+          <div>
+            <p class="eyebrow">Sobre</p>
+            <h2 id="sobre-titulo" style="margin:0 0 1rem;font-size:clamp(2rem,7vw,3.2rem);line-height:1;letter-spacing:-.045em;">Moda para Penápolis e região.</h2>
+            <p>A Napassarela é uma loja de roupas com variedade para diferentes idades e estilos. O atendimento é próximo, com foco em ajudar cada cliente a encontrar peças adequadas para sua rotina, tamanho e preferência.</p>
+          </div>
+          <blockquote class="quote">“Atendimento próximo e novidades pelo Instagram.”</blockquote>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="contato">
+      <div class="container">
+        <div class="contact-panel">
+          <div>
+            <p class="eyebrow">Contato</p>
+            <h2>Quer consultar uma peça?</h2>
+            <p>O WhatsApp da Napassarela ainda precisa ser confirmado neste site. Use esta área como ponto de contato e peça as informações de atendimento da loja.</p>
+            <p class="contact-note">Atendimento para Penápolis e região.</p>
+          </div>
+          <div class="contact-actions">
+            <a class="button primary" href="mailto:?subject=Consulta%20de%20pe%C3%A7as%20-%20Napassarela&body=Ol%C3%A1%2C%20gostaria%20de%20consultar%20pe%C3%A7as%20da%20Napassarela.">Pedir informações</a>
+            <a class="button secondary" href="#categorias">Rever categorias</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <strong>Napassarela</strong>
+      <span>© 2026. Todos os direitos reservados.</span>
+    </div>
+  </footer>
+</body>
+</html>

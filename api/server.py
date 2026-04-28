@@ -13,6 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from runtime_logs import add_runtime_log, list_runtime_logs
+
 # Add project root to sys.path so builder.* modules can be imported
 _API_DIR = os.path.dirname(os.path.abspath(__file__))
 _ROOT_DIR = os.path.dirname(_API_DIR)
@@ -74,8 +76,10 @@ SITES_DIR = Path(BASE_DIR) / "sites"
 LINK_ASSETS_DIR = Path(BASE_DIR) / "link-assets"
 try:
     builder = BuilderAgent(sites_dir=SITES_DIR)
+    add_runtime_log("api", "info", "BuilderAgent inicializado", stage="startup")
 except RuntimeError as error:
     print(f"Warning: failed to initialize Agente 02 builder: {error}")
+    add_runtime_log("api", "error", "Falha ao inicializar BuilderAgent", stage="startup", details={"error": str(error)})
     builder = None
 
 try:
@@ -168,6 +172,7 @@ class BuildRequest(BaseModel):
     link_content: Optional[Dict[str, Any]] = None
     summary: Optional[Dict[str, Any]] = None
     agent_profile: Optional[str] = None
+    builder_model: Optional[str] = None
 
     class Config:
         extra = "allow"
@@ -204,6 +209,7 @@ class LinkContentInspectRequest(BaseModel):
 @router.post("/v2/build")
 def build(request: BuildRequest):
     if builder is None:
+        add_runtime_log("api", "error", "Build rejeitado: BuilderAgent indisponivel", stage="queue")
         raise HTTPException(
             status_code=500,
             detail=(
@@ -217,6 +223,19 @@ def build(request: BuildRequest):
     spec_dump = request.dict()
     print(f"[BUILD] queued job_id={job_id}")
     print(f"[BUILD] spec={json.dumps(spec_dump, ensure_ascii=False, default=str)}")
+    add_runtime_log(
+        "api",
+        "info",
+        "Build enfileirado",
+        job_id=job_id,
+        stage="queue",
+        details={
+            "business_name": spec_dump.get("business_name"),
+            "segment": spec_dump.get("segment"),
+            "builder_model": spec_dump.get("builder_model"),
+            "agent_profile": spec_dump.get("agent_profile"),
+        },
+    )
 
     builder.enqueue(job_id, spec_dump)
 
@@ -241,6 +260,11 @@ def build_status(job_id: str):
         raise HTTPException(status_code=404, detail=f"Job {job_id} nao encontrado.")
 
     return {"code": 0, "msg": "success", "data": job.snapshot()}
+
+
+@router.get("/v1/logs")
+def logs(limit: int = 120, level: Optional[str] = None):
+    return {"code": 0, "msg": "success", "data": {"events": list_runtime_logs(limit=limit, level=level)}}
 
 
 @router.post("/v3/oci-agent/chat")

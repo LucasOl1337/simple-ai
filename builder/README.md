@@ -57,18 +57,82 @@ O status é consultável via GET `/api/v2/build/{job_id}`.
 
 ---
 
-## Configuração do LLM
+## Configuração dos Modelos
 
-O BuilderAgent resolve o provider via variáveis de ambiente (lidas de `api/.env.local`):
+O Builder usa dois modelos diferentes no fluxo principal. Ambos sao configurados em `api/.env.local`; `api/.env.example` e o contrato versionado para novos ambientes.
+
+| Responsabilidade | Variavel principal | Runtime | Saida |
+|------------------|--------------------|---------|-------|
+| Gerar assets visuais | `AGENT_IMAGE_MODEL` | `builder/core/image_pipeline.py` | imagens em `api/sites/{job_id}/assets/` ou fallback por slot |
+| Construir o HTML final | `AGENT_LLM_MODEL` | `builder/agent/builder_agent.py` | `api/sites/{job_id}/index.html` |
+
+Fluxo simplificado:
+
+```txt
+AGENT_IMAGE_MODEL
+→ materializa assets visuais
+→ injeta assets em job.spec["_materialized_assets"]
+→ AGENT_LLM_MODEL recebe esses assets no prompt
+→ gera o index.html final
+```
+
+### Modelo textual do Builder
+
+O `BuilderAgent` resolve o provider textual via variáveis de ambiente:
 
 | Variável | Descrição |
 |----------|-----------|
 | `AGENT_LLM_PROVIDER` | `anthropic` \| `openai-compatible` \| `nvidia` \| `zai` \| `openrouter` |
 | `AGENT_LLM_API_KEY` | Chave do provedor escolhido |
 | `AGENT_LLM_BASE_URL` | (opcional) URL base para provedores custom |
-| `AGENT_LLM_MODEL` | (opcional) modelo a usar — tem defaults por provedor |
+| `AGENT_LLM_MODEL` | Modelo que escreve o HTML final |
+| `BUILDER_LLM_MODEL` | Fallback legado se `AGENT_LLM_MODEL` estiver vazio |
 
-Sem configuração: usa fallback determinístico local com temas por segmento.
+Se `AGENT_LLM_PROVIDER` ou chave nao estiverem configurados, o builder usa fallback deterministico local com temas por segmento.
+
+### Modelo de imagem do Builder
+
+O `ImagePipeline` resolve a geracao de imagens via endpoint OpenAI-compatible de imagens:
+
+| Variável | Descrição |
+|----------|-----------|
+| `AGENT_IMAGE_ENABLED` | Liga/desliga a tentativa de gerar imagens (`1` por default) |
+| `AGENT_IMAGE_API_KEY` | Chave especifica de imagem; se vazia, tenta reutilizar outras chaves configuradas |
+| `AGENT_IMAGE_BASE_URL` | Base URL do endpoint de imagens, default `http://localhost:20128/v1` |
+| `AGENT_IMAGE_MODEL` | Modelo que processa os prompts visuais e gera imagens |
+| `AGENT_IMAGE_SIZE` | Tamanho enviado ao endpoint, default `auto` |
+| `AGENT_IMAGE_QUALITY` | Qualidade enviada ao endpoint, default `auto` |
+| `AGENT_IMAGE_BACKGROUND` | Background enviado ao endpoint, default `auto` |
+| `AGENT_IMAGE_DETAIL` | Detalhe enviado ao endpoint, default `high` |
+| `AGENT_IMAGE_OUTPUT_FORMAT` | Formato salvo/esperado, default `png` |
+| `AGENT_IMAGE_TIMEOUT_SECONDS` | Timeout geral de imagem |
+| `AGENT_IMAGE_HERO_TIMEOUT_SECONDS` | Timeout do slot principal/hero |
+| `AGENT_IMAGE_OPTIONAL_SLOT_TIMEOUT_SECONDS` | Timeout dos slots secundarios |
+| `AGENT_IMAGE_PARALLEL_WORKERS` | Concorrencia dos slots secundarios |
+
+Se imagem estiver desabilitada, sem chave, ou um slot falhar, o builder usa fallback para aquele slot sem impedir a geracao do site.
+
+### Exemplo recomendado local
+
+```env
+# Texto: gera o HTML final.
+AGENT_LLM_PROVIDER=openai-compatible
+AGENT_LLM_BASE_URL=http://localhost:20128/v1
+AGENT_LLM_API_KEY=
+AGENT_LLM_MODEL=cx/gpt-5.5
+BUILDER_AGENT_PROFILE=site-builder-hyperframes-inspired
+
+# Imagem: gera os assets antes do HTML.
+AGENT_IMAGE_ENABLED=1
+AGENT_IMAGE_BASE_URL=http://localhost:20128/v1
+AGENT_IMAGE_API_KEY=
+AGENT_IMAGE_MODEL=cx/gpt-5.4-image
+AGENT_IMAGE_SIZE=auto
+AGENT_IMAGE_QUALITY=auto
+AGENT_IMAGE_BACKGROUND=auto
+AGENT_IMAGE_DETAIL=high
+AGENT_IMAGE_OUTPUT_FORMAT=png
+```
 
 ### Perfil de agente (novo)
 
