@@ -106,8 +106,9 @@ simple-ai/
         │
         ▼
 6. BuilderAgent (builder/agent/builder_agent.py)
-   → chama LLM (anthropic | openai-compatible | nvidia | zai | openrouter)
-   → gera HTML completo
+   → recebe briefing consolidado + design_plan
+   → processa e materializa os assets visuais da V1
+   → só depois monta o HTML final já apontando para os assets prontos
    → salva em api/sites/{job_id}/
         │
         ▼
@@ -128,6 +129,26 @@ O backend suporta múltiplos providers via variável `AGENT_LLM_PROVIDER`:
 | `nvidia` | `openai` | `NVIDIA_API_KEY` |
 | `zai` | `openai` | `ZAI_API_KEY`, `ZAI_BASE_URL` |
 | `openrouter` | `openai` | `OPENROUTER_API_KEY` |
+
+---
+
+## Contrato Operacional da V1
+
+O fluxo oficial entre os agentes é este:
+
+1. O Agente 01 coleta contexto, atualiza o notepad e decide sozinho quando `ready_to_build = true`.
+2. Nesse momento, ele envia para o Agente 02 apenas o briefing consolidado da primeira V1 de website.
+3. O Agente 02 não deve publicar o site antes de resolver a camada de assets dessa V1.
+4. A ordem interna do builder deve ser:
+   - decidir layout/estilo/slots visuais
+   - gerar ou materializar os assets necessários
+   - montar o `index.html` final com esses assets já embutidos
+5. Se algum asset secundário falhar ou ultrapassar o orçamento de tempo, o builder pode degradar esse slot individualmente, sem quebrar a V1 toda.
+
+Esse contrato existe para evitar duas classes de erro:
+
+- HTML final apontando para assets que ainda não existem
+- experiência de preview inconsistente entre a geração visual e a página publicada
 
 ---
 

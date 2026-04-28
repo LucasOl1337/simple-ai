@@ -21,6 +21,7 @@ import time
 import threading
 import unicodedata
 import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -278,6 +279,7 @@ class BuilderAgent:
         self.image_output_format = os.getenv("AGENT_IMAGE_OUTPUT_FORMAT", "png").strip() or "png"
         self.image_timeout_seconds = int(os.getenv("AGENT_IMAGE_TIMEOUT_SECONDS", "45").strip() or "45")
         self.image_optional_slot_timeout_seconds = int(os.getenv("AGENT_IMAGE_OPTIONAL_SLOT_TIMEOUT_SECONDS", "12").strip() or "12")
+        self.image_parallel_workers = int(os.getenv("AGENT_IMAGE_PARALLEL_WORKERS", "3").strip() or "3")
         self.image_enabled = os.getenv("AGENT_IMAGE_ENABLED", "1").strip().lower() not in {
             "0",
             "false",
@@ -974,7 +976,8 @@ class BuilderAgent:
     def _build_local_html_v2(self, job: BuildJob, site_dir: Path) -> tuple[str, Dict[str, int]]:
         """
         Deterministic fallback when no LLM is configured.
-        Produces a polished site using briefing data plus visual prompts.
+        Asset-first flow: resolve the V1 visual plan, materialize image assets,
+        then assemble the final HTML already pointing at the resolved assets.
         """
         import datetime
 
@@ -1140,6 +1143,119 @@ class BuilderAgent:
 
         if "social-proof-early" in trust_strategy:
             section_intro_about = "A página prioriza sinais de confiança e consistência logo após a apresentação principal."
+
+        available_sections = {
+            "services": f"""
+    <section id=\"servicos\">
+      <h2>O que oferecemos</h2>
+      <p class=\"section-sub\">{section_intro_services}</p>
+      <div class=\"service-grid\">
+        {service_cards_html}
+      </div>
+    </section>""",
+            "about": f"""
+    <section id=\"sobre\">
+      <h2>Como funciona</h2>
+      <p class=\"section-sub\">{section_intro_about}</p>
+      <div class=\"about-shell\">
+        <article class=\"about-panel\">
+          <p>{html.escape(tagline)}</p>
+          {quote_block}
+        </article>
+        <aside class=\"about-panel\">
+          <h3 style=\"margin:0;font-size:1rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);\">Prioridades</h3>
+          <ul class=\"list-panel\">
+            {priorities_html}
+          </ul>
+        </aside>
+      </div>
+    </section>""",
+            "proof": f"""
+    <section id=\"prova\">
+      <h2>Sinais de confiança</h2>
+      <p class=\"section-sub\">{section_intro_about}</p>
+      <div class=\"about-shell\">
+        <article class=\"about-panel\">
+          <p>{html.escape(tagline)}</p>
+          {quote_block}
+        </article>
+        <aside class=\"about-panel\">
+          <h3 style=\"margin:0;font-size:1rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);\">Prioridades</h3>
+          <ul class=\"list-panel\">
+            {priorities_html}
+          </ul>
+        </aside>
+      </div>
+    </section>""",
+            "gallery": f"""
+    <section id=\"galeria\">
+      <h2>Ambiente e experiência</h2>
+      <p class=\"section-sub\">{section_intro_gallery}</p>
+      <div class=\"gallery-grid\">
+        {gallery_html}
+      </div>
+    </section>""",
+            "categories": f"""
+    <section id=\"categorias\">
+      <h2>Principais destaques</h2>
+      <p class=\"section-sub\">Organizamos a navegação por blocos claros para facilitar comparação e leitura rápida.</p>
+      <div class=\"service-grid\">
+        {service_cards_html}
+      </div>
+    </section>""",
+            "benefits": f"""
+    <section id=\"beneficios\">
+      <h2>Por que essa primeira versão funciona</h2>
+      <p class=\"section-sub\">Clareza, foco no próximo passo e uma apresentação que ajuda o cliente a confiar mais rápido.</p>
+      <div class=\"about-panel\">
+        <ul class=\"list-panel\">
+          {priorities_html}
+        </ul>
+      </div>
+    </section>""",
+            "process": f"""
+    <section id=\"processo\">
+      <h2>Como o atendimento acontece</h2>
+      <p class=\"section-sub\">Mostramos o caminho de forma simples para reduzir dúvida e acelerar o contato.</p>
+      <div class=\"about-panel\">
+        <ul class=\"list-panel\">
+          {priorities_html}
+        </ul>
+      </div>
+    </section>""",
+            "faq": f"""
+    <section id=\"faq\">
+      <h2>Dúvidas comuns</h2>
+      <p class=\"section-sub\">Esta primeira versão já antecipa objeções e deixa o contato mais direto.</p>
+      <div class=\"about-panel\">
+        <ul class=\"list-panel\">
+          {priorities_html}
+        </ul>
+      </div>
+    </section>""",
+            "contact": f"""
+    <section class=\"cta-strip\" id=\"contato\">
+      <div>
+        <h2>{cta_title}</h2>
+        <p>{cta_copy}</p>
+      </div>
+      <a class=\"pill-ghost\" href=\"{cta_href}\">{html.escape(cta_label)}</a>
+    </section>""",
+        }
+        default_section_order = {
+            "conversion-landing": ["benefits", "services", "contact"],
+            "local-trust": ["services", "proof", "process", "gallery", "contact"],
+            "catalog-grid": ["categories", "services", "gallery", "contact"],
+            "image-led": ["about", "services", "gallery", "contact"],
+            "editorial-onepage": ["about", "proof", "services", "contact"],
+        }
+        ordered_section_keys = [
+            key for key in (section_order or default_section_order.get(layout_family, ["services", "about", "gallery", "contact"]))
+            if key in available_sections
+        ]
+        if not ordered_section_keys:
+            ordered_section_keys = ["services", "about", "gallery", "contact"]
+        body_sections_html = "\n".join(available_sections[key] for key in ordered_section_keys)
         year = datetime.datetime.now().year
 
         page_html = f"""<!doctype html>
@@ -1458,46 +1574,7 @@ class BuilderAgent:
   </header>
 
   <main class="container">
-    <section id="servicos">
-      <h2>O que oferecemos</h2>
-      <p class="section-sub">{section_intro_services}</p>
-      <div class="service-grid">
-        {service_cards_html}
-      </div>
-    </section>
-
-    <section id="sobre">
-      <h2>Como funciona</h2>
-      <p class="section-sub">{section_intro_about}</p>
-      <div class="about-shell">
-        <article class="about-panel">
-          <p>{html.escape(tagline)}</p>
-          {quote_block}
-        </article>
-        <aside class="about-panel">
-          <h3 style="margin:0;font-size:1rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Prioridades</h3>
-          <ul class="list-panel">
-            {priorities_html}
-          </ul>
-        </aside>
-      </div>
-    </section>
-
-    <section id="galeria">
-      <h2>Ambiente e experiência</h2>
-      <p class="section-sub">{section_intro_gallery}</p>
-      <div class="gallery-grid">
-        {gallery_html}
-      </div>
-    </section>
-
-    <section class="cta-strip" id="contato">
-      <div>
-        <h2>{cta_title}</h2>
-        <p>{cta_copy}</p>
-      </div>
-      <a class="pill-ghost" href="{cta_href}">{html.escape(cta_label)}</a>
-    </section>
+    {body_sections_html}
 
     <footer>
       <span>{html.escape(business_name)} · {html.escape(segment)}</span>
@@ -1516,6 +1593,7 @@ class BuilderAgent:
             "visual_style": visual_style,
             "content_density": content_density,
             "section_count": len(section_order) if isinstance(section_order, list) else 0,
+            "asset_first_generation": 1,
         }
 
     def _resolve_font_family(self, segment_id: str) -> str:
@@ -1602,9 +1680,7 @@ class BuilderAgent:
     ) -> tuple[list[Dict[str, str]], int]:
         assets_dir = site_dir / "assets"
         assets_dir.mkdir(parents=True, exist_ok=True)
-        generated_count = 0
-        assets: list[Dict[str, str]] = []
-        started_at = time.monotonic()
+        asset_plan: list[Dict[str, str]] = []
 
         for idx, entry in enumerate(image_prompts):
             prompt = _clean_text(entry.get("prompt") or "")
@@ -1612,33 +1688,90 @@ class BuilderAgent:
             caption = _clean_text(entry.get("caption") or alt)
             slot = re.sub(r"[^a-z0-9_-]+", "-", (entry.get("slot") or f"image-{idx + 1}").lower()).strip("-")
             slot = slot or f"image-{idx + 1}"
-            is_optional_slot = idx > 0
-            elapsed = time.monotonic() - started_at
-            generated_url = None
-            if not is_optional_slot or elapsed < self.image_optional_slot_timeout_seconds:
-                generated_url = self._try_generate_image_asset(
-                    assets_dir=assets_dir,
-                    prompt=prompt,
-                    stem=f"{idx + 1:02d}-{slot}",
-                )
+            asset_plan.append(
+                {
+                    "idx": idx,
+                    "slot": slot,
+                    "prompt": prompt,
+                    "alt": alt,
+                    "caption": caption,
+                    "stem": f"{idx + 1:02d}-{slot}",
+                    "optional": idx > 0,
+                }
+            )
+
+        assets_by_index: Dict[int, Dict[str, str]] = {}
+        generated_count = 0
+        hero_plan = asset_plan[:1]
+        optional_plans = asset_plan[1:]
+
+        for item in hero_plan:
+            generated_url = self._try_generate_image_asset(
+                assets_dir=assets_dir,
+                prompt=item["prompt"],
+                stem=item["stem"],
+            )
             if generated_url:
                 generated_count += 1
                 image_url = generated_url
             else:
                 image_url = self._fallback_image_url(
-                    prompt=prompt,
+                    prompt=item["prompt"],
                     fallback_segment=fallback_segment,
                     fallback_services=fallback_services,
                 )
-            assets.append(
-                {
-                    "slot": slot,
-                    "url": image_url,
-                    "alt": alt,
-                    "caption": caption,
-                }
-            )
+            assets_by_index[item["idx"]] = {
+                "slot": item["slot"],
+                "url": image_url,
+                "alt": item["alt"],
+                "caption": item["caption"],
+            }
 
+        if optional_plans:
+            started_at = time.monotonic()
+            max_workers = max(1, min(self.image_parallel_workers, len(optional_plans)))
+            futures = {}
+            with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="image-slot") as executor:
+                for item in optional_plans:
+                    elapsed = time.monotonic() - started_at
+                    if elapsed >= self.image_optional_slot_timeout_seconds:
+                        assets_by_index[item["idx"]] = {
+                            "slot": item["slot"],
+                            "url": self._fallback_image_url(
+                                prompt=item["prompt"],
+                                fallback_segment=fallback_segment,
+                                fallback_services=fallback_services,
+                            ),
+                            "alt": item["alt"],
+                            "caption": item["caption"],
+                        }
+                        continue
+                    futures[executor.submit(self._try_generate_image_asset, assets_dir, item["prompt"], item["stem"])] = item
+
+                for future in as_completed(futures):
+                    item = futures[future]
+                    generated_url = None
+                    try:
+                        generated_url = future.result()
+                    except Exception:
+                        generated_url = None
+                    if generated_url:
+                        generated_count += 1
+                        image_url = generated_url
+                    else:
+                        image_url = self._fallback_image_url(
+                            prompt=item["prompt"],
+                            fallback_segment=fallback_segment,
+                            fallback_services=fallback_services,
+                        )
+                    assets_by_index[item["idx"]] = {
+                        "slot": item["slot"],
+                        "url": image_url,
+                        "alt": item["alt"],
+                        "caption": item["caption"],
+                    }
+
+        assets = [assets_by_index[idx] for idx in sorted(assets_by_index.keys())]
         return assets, generated_count
 
     def _try_generate_image_asset(self, assets_dir: Path, prompt: str, stem: str) -> Optional[str]:

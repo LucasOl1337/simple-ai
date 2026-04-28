@@ -1,8 +1,8 @@
 # Módulo Builder
 
-**Responsabilidade:** Receber o briefing técnico consolidado e gerar um site HTML funcional e publicável.
+**Responsabilidade:** Receber o briefing técnico consolidado, preparar os assets da V1 e só então gerar um site HTML funcional e publicável.
 
-Este módulo é o Agente 02 do SIMPLE-AI. Ele recebe os dados estruturados do Intake, chama um LLM (ou usa fallback local) e produz um `index.html` completo e responsivo.
+Este módulo é o Agente 02 do SIMPLE-AI. Ele recebe os dados estruturados do Intake, resolve a direção visual da V1, materializa os assets necessários e produz um `index.html` completo e responsivo já embutindo esses assets.
 
 Ele também suporta perfis de agente em `.md` pela pasta `AgentesProfiles/`, permitindo estilos/estratégias diferentes de geração com o mesmo runtime.
 
@@ -50,6 +50,8 @@ DesignTemplates/
 ```
 
 **Entrega:** `index.html` em disco em `api/sites/{job_id}/index.html`
+
+Quando houver assets visuais gerados, eles também são gravados em `api/sites/{job_id}/assets/` antes da montagem final do HTML.
 
 O status é consultável via GET `/api/v2/build/{job_id}`.
 
@@ -103,7 +105,17 @@ Se a pasta `DesignTemplates/` nao existir ou algum arquivo estiver ausente, o bu
 
 ## Fallback Local
 
-Quando nenhum LLM está configurado, o `BuilderAgent._build_local_html_v2()` gera um site limpo e responsivo baseado no briefing. O site usa:
+Quando nenhum LLM está configurado, ou quando o provider textual falha em runtime e o builder cai para o modo resiliente, o `BuilderAgent._build_local_html_v2()` gera uma V1 limpa e responsiva baseada no briefing.
+
+Contrato operacional do fallback local:
+
+1. Receber `summary` + `design_plan`
+2. Resolver a estratégia visual da V1
+3. Tentar materializar os assets de imagem necessários
+4. Só depois montar o HTML final apontando para os assets gerados
+5. Se um asset secundário falhar, aplicar fallback nesse slot sem bloquear a V1 inteira
+
+O site usa:
 - Temas de cores por segmento (bakery, mechanic, clinic, beauty, etc.)
 - Imagens via Unsplash (ou geradas via API de imagem se `AGENT_IMAGE_API_KEY` configurado)
 - Google Fonts por segmento

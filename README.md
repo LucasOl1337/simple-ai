@@ -41,10 +41,10 @@ Usuário escreve em texto
         │
         │  spec do negócio
         ▼
-  [builder/agent]          Agente 02: gera HTML via LLM (ou fallback local)
+  [builder/agent]          Agente 02: prepara assets e monta o site final
   Agente 02
         │
-        │  index.html
+        │  assets + index.html
         ▼
   [api/sites/{id}/]        Site servido publicamente
         │
@@ -103,6 +103,20 @@ AGENT_LLM_MODEL=claude-opus-4-7     # opcional — tem defaults por provedor
 ```
 
 Sem configuração, o sistema usa um fallback determinístico local (site HTML limpo baseado no briefing).
+
+## Contrato Operacional do Builder
+
+Quando o Agente 01 decide que o briefing está pronto, ele entrega uma primeira V1 de website para o Agente 02.
+
+O Agente 02 deve respeitar esta ordem operacional:
+
+1. Receber o briefing consolidado e o `design_plan`.
+2. Decidir a estratégia visual e os slots de assets.
+3. Processar e gerar os assets necessários.
+4. Só depois de os assets estarem prontos, montar o `index.html` final já embutindo esses assets.
+5. Publicar o site apenas quando a versão final estiver consistente.
+
+Se algum asset secundário falhar ou exceder o orçamento de tempo, o builder pode usar fallback para esse slot sem bloquear a V1 inteira. Mas a ordem correta continua sendo: assets primeiro, HTML final depois.
 
 ---
 
