@@ -462,6 +462,15 @@ function isQuestionSolved(session, question) {
     return Boolean(session.answers.feature_simplify);
   }
 
+  // A pergunta de abertura e free-form. Uma vez que o usuario respondeu
+  // qualquer coisa nao-vazia, ela esta "resolvida" — os campos criticos
+  // (business_type, offerings, primary_cta) sao re-extraidos por perguntas
+  // dedicadas em fases posteriores. Sem essa regra o opening fica em loop
+  // quando primary_cta nao e detectavel da primeira frase.
+  if (question.id === "initial_description") {
+    return Boolean(session.answers.initial_description?.trim());
+  }
+
   const fields = Array.isArray(question.extracts) ? question.extracts : [];
   if (fields.length === 0) return false;
 
