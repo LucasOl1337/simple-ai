@@ -37,7 +37,7 @@ export function LaunchSequence() {
       style={{
         alignItems: "center",
         background: "#080808",
-        color: "#00ff9d",
+        color: "#E5A55B",
         fontFamily: "JetBrains Mono, monospace",
         justifyContent: "center",
       }}
@@ -47,7 +47,7 @@ export function LaunchSequence() {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(circle at 50% 45%, rgba(0,255,157,0.14), transparent 28%)",
+            "radial-gradient(circle at 50% 45%, rgba(229,165,91,0.14), transparent 28%)",
         }}
       />
       <p
@@ -74,9 +74,9 @@ export function LaunchSequence() {
       >
         <div
           style={{
-            background: "#00ff9d",
+            background: "#E5A55B",
             borderRadius: 1,
-            boxShadow: "0 0 20px rgba(0,255,157,0.7)",
+            boxShadow: "0 0 20px rgba(229,165,91,0.7)",
             height: "100%",
             width: `${progressWidth}%`,
           }}
@@ -90,11 +90,11 @@ export function LaunchSequence() {
       />
       <div
         style={{
-          background: "rgba(0,255,157,0.12)",
-          border: "1px solid #00ff9d",
+          background: "rgba(229,165,91,0.12)",
+          border: "1px solid #E5A55B",
           borderRadius: 8,
-          boxShadow: "0 0 42px rgba(0,255,157,0.34)",
-          color: "#00ff9d",
+          boxShadow: "0 0 42px rgba(229,165,91,0.34)",
+          color: "#E5A55B",
           fontSize: 22,
           fontWeight: 700,
           letterSpacing: "0.1em",

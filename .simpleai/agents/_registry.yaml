@@ -1,0 +1,102 @@
+# Registro central de agentes do SIMPLE-AI
+# Toda entrada nova precisa seguir esse formato.
+# O orchestrator carrega esse arquivo em runtime para conhecer os agentes disponiveis.
+
+# Schema de cada entrada:
+#   id: kebab-case unico (= nome da pasta em agents/)
+#   name: nome humano
+#   tagline: 1 frase descrevendo o que o agente faz
+#   status: stable | beta | skeleton  (skeleton = ainda em design, nao routavel)
+#   spec_path: caminho do README do agente
+#   planner_path: caminho do JS planner que implementa o flow
+#   threshold_field: nome do flag de "ready_to_X" daquele agente
+#   intent_signals_positive: lista de palavras/frases que aumentam confidence pra esse agente
+#   intent_signals_negative: lista de palavras/frases que diminuem confidence
+#   default_fallback: true | false  (so um pode ter true)
+
+agents:
+  - id: website-builder
+    name: Construtor de Site
+    tagline: Cria site ou landing page a partir de uma conversa simples.
+    status: stable
+    spec_path: .simpleai/agents/website-builder/README.md
+    planner_path: src/features/agents/website-builder/planner.js
+    threshold_field: ready_to_build
+    intent_signals_positive:
+      - site
+      - pagina
+      - landing
+      - online
+      - internet
+      - presenca digital
+      - quero um site
+      - preciso de um site
+    intent_signals_negative: []
+    default_fallback: true
+
+  - id: customer-support
+    name: Atendimento ao Cliente
+    tagline: Ajuda a responder duvidas e reclamacoes de clientes.
+    status: skeleton
+    spec_path: .simpleai/agents/customer-support/README.md
+    planner_path: src/features/agents/customer-support/planner.js
+    threshold_field: ready_to_respond
+    intent_signals_positive:
+      - responder cliente
+      - atendimento
+      - reclamacao
+      - duvida do cliente
+      - whatsapp
+      - ticket
+      - faq
+      - perguntas frequentes
+      - meu cliente perguntou
+    intent_signals_negative:
+      - criar
+      - fazer um
+    default_fallback: false
+
+  - id: content-creator
+    name: Criador de Conteudo
+    tagline: Gera ideias e textos para redes sociais e anuncios.
+    status: skeleton
+    spec_path: .simpleai/agents/content-creator/README.md
+    planner_path: src/features/agents/content-creator/planner.js
+    threshold_field: ready_to_create
+    intent_signals_positive:
+      - post
+      - instagram
+      - redes sociais
+      - legenda
+      - conteudo
+      - ideia pra postar
+      - anuncio
+      - publicar
+      - story
+      - reels
+    intent_signals_negative:
+      - construir
+      - site
+    default_fallback: false
+
+  - id: business-consultant
+    name: Consultor de Negocio
+    tagline: Ajuda a pensar publico, posicionamento, preco e proximos passos.
+    status: skeleton
+    spec_path: .simpleai/agents/business-consultant/README.md
+    planner_path: src/features/agents/business-consultant/planner.js
+    threshold_field: ready_to_advise
+    intent_signals_positive:
+      - publico
+      - preco
+      - estrategia
+      - concorrente
+      - posicionamento
+      - nao sei o que fazer
+      - duvida sobre meu negocio
+      - cobrar
+      - vender mais
+    intent_signals_negative:
+      - fazer
+      - criar
+    default_fallback: false

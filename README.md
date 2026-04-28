@@ -26,54 +26,84 @@ Estas regras sao obrigatorias para qualquer agente ou colaborador que atuar nest
 Se voce entrou agora na branch, siga esta ordem:
 
 1. **[.simpleai/README.md](.simpleai/README.md)** - COMECE AQUI (spec core obrigatorio)
-2. [.simpleai/first-interaction.md](.simpleai/first-interaction.md) - como o agente abre e conduz a primeira conversa
-3. [.simpleai/agent-flow.md](.simpleai/agent-flow.md) - fases, perguntas e decisoes silenciosas
-4. [.simpleai/flow-order.md](.simpleai/flow-order.md) - Discovery -> Producao -> Iteracao + ready_to_build
-5. [src/features/discovery/planner.js](src/features/discovery/planner.js) - engine que implementa o spec
-6. [src/app/App.jsx](src/app/App.jsx) - UI principal
-7. [.simpleai/voice-convo-requirements.md](.simpleai/voice-convo-requirements.md) - requisitos de integracao de voz
+2. [.simpleai/core/conversation-rules.md](.simpleai/core/conversation-rules.md) - regras inviolaveis R1-R10 (validas para todos os agentes)
+3. [.simpleai/core/routing.md](.simpleai/core/routing.md) - como o sistema decide silenciosamente qual agente atende
+4. [.simpleai/core/notepad.md](.simpleai/core/notepad.md) - estrutura de notepad compartilhada
+5. [.simpleai/core/thresholds.md](.simpleai/core/thresholds.md) - modelo de "ready_to_X"
+6. [.simpleai/agents/_registry.yaml](.simpleai/agents/_registry.yaml) - lista de agentes disponiveis
+7. README do agente especifico (ex: [.simpleai/agents/website-builder/README.md](.simpleai/agents/website-builder/README.md))
+8. [src/features/orchestration/](src/features/orchestration/) - router, registry e intent classifier
+9. [src/features/agents/](src/features/agents/) - planners por agente
+10. [src/app/App.jsx](src/app/App.jsx) - UI principal
+11. [.simpleai/voice-convo-requirements.md](.simpleai/voice-convo-requirements.md) - requisitos de integracao de voz
+12. [templates/landing-benchmarks/](templates/landing-benchmarks/) - benchmarking de landing pages
 
 ## Estado atual
 
-SIMPLE-AI incorpora um core de conversa em tempo real com Agora Conversational AI + RTC, mas a interface principal continua focada no fluxo mais simples possivel.
+SIMPLE-AI incorpora um core de conversa em tempo real com Agora Conversational AI + RTC. A interface principal continua focada no fluxo mais simples possivel — lousa vazia + dock de 2 botoes — mas por baixo o sistema agora suporta **multiplos agentes** orquestrados silenciosamente:
+
+- **Construtor de Site** (`website-builder`, stable) — fluxo original.
+- **Atendimento ao Cliente** (`customer-support`, skeleton).
+- **Criador de Conteudo** (`content-creator`, skeleton).
+- **Consultor de Negocio** (`business-consultant`, skeleton).
+
+A escolha do agente acontece pelo intent classifier — o usuario nunca ve menu de selecao. Detalhes em [.simpleai/core/routing.md](.simpleai/core/routing.md).
 
 ## Estrutura
 
 ```text
 .
-├── .simpleai/                          <- CORE: spec de comportamento do agente
-│   ├── README.md                       <- Indice obrigatorio (primeira leitura)
-│   ├── first-interaction.md            <- Abertura + notepad + threshold
-│   ├── agent-flow.md                   <- Fases + decisoes silenciosas
-│   ├── flow-order.md                   <- Discovery -> Producao -> Iteracao
-│   └── voice-convo-requirements.md     <- Requisitos Convo/Voice
+├── .simpleai/                                 <- CORE: spec de comportamento dos agentes
+│   ├── README.md                              <- Indice obrigatorio (primeira leitura)
+│   ├── core/                                  <- conceitos compartilhados por todos agentes
+│   │   ├── routing.md                         <- intent classifier + fallback + hand-off
+│   │   ├── notepad.md                         <- estrutura compartilhada do notepad
+│   │   ├── thresholds.md                      <- modelo de "ready_to_X"
+│   │   └── conversation-rules.md              <- regras R1-R10 inviolaveis
+│   ├── agents/                                <- um agente por subpasta
+│   │   ├── _registry.yaml                     <- registro central (machine-readable)
+│   │   ├── website-builder/                   <- stable, default fallback
+│   │   ├── customer-support/                  <- skeleton
+│   │   ├── content-creator/                   <- skeleton
+│   │   └── business-consultant/               <- skeleton
+│   └── voice-convo-requirements.md            <- requisitos Convo/Voice (vale para todos)
+├── templates/                                 <- material de benchmarking
+│   └── landing-benchmarks/                    <- referencias de landing curadas
 ├── src/
 │   ├── app/
 │   │   ├── App.jsx
-│   │   └── styles.css
+│   │   └── styles.css                         <- paleta warm-neutral amber
 │   ├── features/
-│   │   └── discovery/
-│   │       └── planner.js              <- Implementa o spec de .simpleai/
+│   │   ├── orchestration/                     <- router, registry, intent-classifier, session
+│   │   ├── agents/                            <- um planner por agente
+│   │   │   ├── website-builder/               <- reexporta de discovery/ (transicao)
+│   │   │   ├── customer-support/              <- skeleton
+│   │   │   ├── content-creator/               <- skeleton
+│   │   │   └── business-consultant/           <- skeleton
+│   │   └── discovery/                         <- planner legacy do website-builder (sera migrado)
 │   ├── integrations/
 │   │   └── agora/
 │   └── main.jsx
 ├── server-python/
-│   ├── src/agent.py                    <- Agente Convo que segue .simpleai/ specs
+│   ├── src/agent.py                           <- Agente Convo que segue .simpleai/ specs
 │   ├── src/server.py
 │   └── .env.example
-├── docs/                               <- Docs auxiliares (nao core)
+├── docs/                                      <- Docs auxiliares (nao core)
 │   └── README.md
 └── vite.config.js
 ```
 
 ## Responsabilidade por pasta
 
-- `.simpleai/`: **CORE** - especificacao de comportamento, fluxo, notepad e threshold. Fonte de verdade.
-- `src/app/`: interface principal e composicao da experiencia
-- `src/features/discovery/`: engine que implementa o spec de `.simpleai/`
-- `src/integrations/agora/`: camada de integracao com voz em tempo real
-- `server-python/`: backend local para token, agente Convo e configuracao
-- `docs/`: documentacao auxiliar e anotacoes (nao core)
+- `.simpleai/`: **CORE** - especificacao de comportamento de todos os agentes. Fonte de verdade.
+- `templates/landing-benchmarks/`: material curado de benchmarking visual.
+- `src/app/`: interface principal e composicao da experiencia.
+- `src/features/orchestration/`: roteamento silencioso de intent + registry de agentes.
+- `src/features/agents/`: planners por agente (cada um implementa sua propria spec).
+- `src/features/discovery/`: planner legacy do `website-builder` (em transicao).
+- `src/integrations/agora/`: camada de integracao com voz em tempo real.
+- `server-python/`: backend local para token, agente Convo e configuracao.
+- `docs/`: documentacao auxiliar e anotacoes (nao core).
 
 ## Setup
 

@@ -45,9 +45,9 @@ export function OnboardingLoop() {
                 key={text}
                 style={{
                   alignSelf: author === "VOCE" ? "end" : "start",
-                  background: author === "VOCE" ? "rgba(0,255,157,0.11)" : "rgba(255,255,255,0.055)",
+                  background: author === "VOCE" ? "rgba(229,165,91,0.11)" : "rgba(255,255,255,0.055)",
                   border: "1px solid rgba(255,255,255,0.09)",
-                  borderLeft: author === "VOCE" ? "3px solid #00ff9d" : "3px solid rgba(255,255,255,0.2)",
+                  borderLeft: author === "VOCE" ? "3px solid #E5A55B" : "3px solid rgba(255,255,255,0.2)",
                   borderRadius: 8,
                   maxWidth: "92%",
                   opacity,
@@ -55,7 +55,7 @@ export function OnboardingLoop() {
                   transform: `translateY(${y}px)`,
                 }}
               >
-                <div style={{ color: "#00ff9d", fontFamily: "JetBrains Mono, monospace", fontSize: 9 }}>
+                <div style={{ color: "#E5A55B", fontFamily: "JetBrains Mono, monospace", fontSize: 9 }}>
                   {author}
                 </div>
                 <div style={{ fontSize: 15, lineHeight: 1.35 }}>{text}</div>
@@ -75,12 +75,12 @@ export function OnboardingLoop() {
         >
           <div style={{ background: "rgba(255,255,255,0.06)", height: 28 }} />
           <div style={{ display: "grid", gap: 14, padding: 22 }}>
-            <div style={{ background: "#00ff9d", borderRadius: 3, height: 8, width: "28%" }} />
+            <div style={{ background: "#E5A55B", borderRadius: 3, height: 8, width: "28%" }} />
             <div style={{ background: "rgba(255,255,255,0.9)", borderRadius: 4, height: 22, width: "76%" }} />
             <div style={{ background: "rgba(255,255,255,0.18)", borderRadius: 4, height: 8, width: "88%" }} />
             <div style={{ background: "rgba(255,255,255,0.12)", borderRadius: 4, height: 8, width: "62%" }} />
             <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(2, 1fr)", marginTop: 10 }}>
-              <div style={{ background: "rgba(0,255,157,0.12)", border: "1px solid rgba(0,255,157,0.22)", borderRadius: 8, height: 62 }} />
+              <div style={{ background: "rgba(229,165,91,0.12)", border: "1px solid rgba(229,165,91,0.22)", borderRadius: 8, height: 62 }} />
               <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, height: 62 }} />
             </div>
           </div>

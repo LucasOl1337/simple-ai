@@ -1,0 +1,463 @@
+# Landing benchmarks — formato definido em SCHEMA.md
+# Coletado de https://www.awwwards.com em 2026-04-27
+# Tier 1 (chat-first) e o mais relevante para o SIMPLE-AI
+
+# ==========================================================
+# TIER 1 — chat-first / AI conversacional / voice
+# ==========================================================
+
+- slug: nisa
+  name: Nisa AI Chatbot
+  url: https://nisa.peachworlds.com
+  source: awwwards
+  category: chat-first
+  relevance_score: 10
+  visual_style: [minimalist, modern, soft]
+  hero_pattern: chat-as-hero
+  voice_first: false
+  one_page: true
+  has_dark_mode: true
+  copy_tone: friendly
+  takeaways:
+    - Landing inteira em torno de uma interface de chat
+    - Mostra o produto funcionando, nao prints estaticos
+  steal:
+    - Hero literal e a janela de chat
+    - "Comece a conversar" como unico CTA acima da dobra
+  avoid:
+    - Layouts decorativos que disputem com o chat
+  has_deep_dive: true
+
+- slug: voxr
+  name: VOXR AI
+  url: https://voxr.ai
+  source: awwwards
+  category: chat-first
+  relevance_score: 10
+  visual_style: [minimalist, audio-led]
+  hero_pattern: demo-inline
+  voice_first: true
+  one_page: true
+  has_dark_mode: true
+  copy_tone: friendly
+  takeaways:
+    - Vende voz como input primario sem precisar de screenshot
+    - Hero usa play/audio para "demonstrar" antes de explicar
+  steal:
+    - Botao de microfone com peso igual (ou maior) ao de texto
+    - Microcopy "Fale" como primeiro CTA
+  avoid:
+    - Audio auto-play sem consentimento
+  has_deep_dive: true
+
+- slug: chatspark
+  name: ChatSpark Conversational AI
+  url: https://chatspark.io
+  source: awwwards
+  category: chat-first
+  relevance_score: 9
+  visual_style: [minimalist, clean]
+  hero_pattern: chat-as-hero
+  voice_first: false
+  one_page: true
+  has_dark_mode: false
+  copy_tone: friendly
+  takeaways:
+    - Copy direto e curto, sem buzzword
+    - Estrutura de secoes minima
+  steal:
+    - Tom de copy curto e afirmativo
+  avoid: []
+  has_deep_dive: true
+
+- slug: cleo
+  name: Cleo AI
+  url: https://web.meetcleo.com
+  source: awwwards
+  category: chat-first
+  relevance_score: 9
+  visual_style: [playful, modern, gradient]
+  hero_pattern: demo-inline
+  voice_first: false
+  one_page: true
+  has_dark_mode: true
+  copy_tone: playful
+  takeaways:
+    - Tom amigavel e humanizado em assistente conversacional
+    - Mostra mensagens reais como demo in-line
+  steal:
+    - Bubbles de chat de exemplo na landing
+    - Tom humano, primeira pessoa
+  avoid:
+    - Volume de copy muito alto para o publico do SIMPLE-AI
+  has_deep_dive: true
+
+- slug: neurable
+  name: Neurable AI
+  url: https://neurable.io
+  source: awwwards
+  category: chat-first
+  relevance_score: 7
+  visual_style: [tech, sleek, dark]
+  hero_pattern: tagline-first
+  voice_first: false
+  one_page: false
+  has_dark_mode: true
+  copy_tone: technical
+  takeaways:
+    - Layout streamlined sem ruido visual
+    - Hierarquia clara entre tagline / sub / CTA
+  steal:
+    - Hierarquia tipografica da hero
+  avoid:
+    - Vocabulario muito tecnico para usuario leigo
+  has_deep_dive: false
+
+- slug: hints
+  name: Hints AI
+  url: https://hints.so
+  source: awwwards
+  category: chat-first
+  relevance_score: 8
+  visual_style: [minimalist, productivity]
+  hero_pattern: tagline-first
+  voice_first: false
+  one_page: true
+  has_dark_mode: false
+  copy_tone: friendly
+  takeaways:
+    - Copy direto vendendo produtividade conversacional
+    - Foco em "uma frase resolve"
+  steal:
+    - Promessa de simplicidade explicita no headline
+  avoid: []
+  has_deep_dive: false
+
+- slug: orbitai
+  name: OrbitAI
+  url: https://orbitaix.webflow.io
+  source: awwwards
+  category: chat-first
+  relevance_score: 7
+  visual_style: [calm, neutral, minimalist]
+  hero_pattern: typography-only
+  voice_first: false
+  one_page: true
+  has_dark_mode: false
+  copy_tone: austere
+  takeaways:
+    - Paleta neutra com 1 acento sutil
+    - Sensacao de "calmo" — ritmo lento, espaco generoso
+  steal:
+    - Paleta de cores e generosidade de espaco
+  avoid: []
+  has_deep_dive: false
+
+- slug: kontenta
+  name: kontenta AI
+  url: https://kontenta.ai
+  source: awwwards
+  category: chat-first
+  relevance_score: 6
+  visual_style: [clean, modern]
+  hero_pattern: tagline-first
+  voice_first: false
+  one_page: true
+  has_dark_mode: false
+  copy_tone: friendly
+  takeaways:
+    - Layout limpo para AI de conteudo
+  steal:
+    - Estrutura de secoes minima
+  avoid: []
+  has_deep_dive: false
+
+- slug: pulsr
+  name: Pulsr Enterprise AI
+  url: https://pulsr.io
+  source: awwwards
+  category: chat-first
+  relevance_score: 5
+  visual_style: [corporate, modern]
+  hero_pattern: product-shot
+  voice_first: false
+  one_page: false
+  has_dark_mode: true
+  copy_tone: corporate
+  takeaways:
+    - Boa hierarquia entre secoes para uma landing mais longa
+  steal:
+    - Estruturacao de secoes
+  avoid:
+    - Tom corporativo nao serve para usuario leigo
+  has_deep_dive: false
+
+- slug: ausdata
+  name: Ausdata AI
+  url: https://www.ausdata.ai
+  source: awwwards
+  category: chat-first
+  relevance_score: 6
+  visual_style: [stripped-down, professional]
+  hero_pattern: tagline-first
+  voice_first: false
+  one_page: true
+  has_dark_mode: false
+  copy_tone: corporate
+  takeaways:
+    - Interface "stripped-down" — pouca carga visual
+  steal:
+    - Reducao de elementos decorativos
+  avoid: []
+  has_deep_dive: false
+
+# ==========================================================
+# TIER 2 — minimalismo extremo (referencia de tom visual)
+# ==========================================================
+
+- slug: silent-house
+  name: Silent House
+  url: https://silent-house.com
+  source: awwwards
+  category: minimal
+  relevance_score: 8
+  visual_style: [restrained, editorial, monochrome]
+  hero_pattern: typography-only
+  voice_first: false
+  one_page: false
+  has_dark_mode: false
+  copy_tone: austere
+  takeaways:
+    - Site of the Day — restrained design referencial
+    - Tipografia carrega o peso visual
+  steal:
+    - Disciplina de "remover ate doer"
+  avoid: []
+  has_deep_dive: true
+
+- slug: ollie-wagner
+  name: Ollie Wagner
+  url: https://olliewagner.com
+  source: awwwards
+  category: minimal
+  relevance_score: 8
+  visual_style: [stark, whitespace-heavy]
+  hero_pattern: typography-only
+  voice_first: false
+  one_page: true
+  has_dark_mode: false
+  copy_tone: austere
+  takeaways:
+    - Whitespace abundante, hierarquia clara
+  steal:
+    - Densidade de elementos por tela (baixa)
+  avoid: []
+  has_deep_dive: true
+
+- slug: montone-studio
+  name: montone/studio
+  url: https://montone.studio
+  source: awwwards
+  category: minimal
+  relevance_score: 7
+  visual_style: [balanced, clean]
+  hero_pattern: typography-only
+  voice_first: false
+  one_page: true
+  has_dark_mode: false
+  copy_tone: austere
+  takeaways:
+    - Hierarquia visual balanceada com poucos elementos
+  steal:
+    - Balance entre tipografia e espaco
+  avoid: []
+  has_deep_dive: false
+
+- slug: carlos-prado
+  name: Carlos Prado
+  url: https://carlosprado.dev
+  source: awwwards
+  category: minimal
+  relevance_score: 6
+  visual_style: [balanced, contrast]
+  hero_pattern: typography-only
+  voice_first: false
+  one_page: true
+  has_dark_mode: true
+  copy_tone: austere
+  takeaways:
+    - Balance, alignment, contrast como principios
+  steal:
+    - Alignment forte sem grids visiveis
+  avoid: []
+  has_deep_dive: false
+
+- slug: dvdrod
+  name: Dvdrod
+  url: https://dvdrod.com
+  source: awwwards
+  category: minimal
+  relevance_score: 6
+  visual_style: [reductionist]
+  hero_pattern: typography-only
+  voice_first: false
+  one_page: true
+  has_dark_mode: true
+  copy_tone: austere
+  takeaways:
+    - Removeu tudo que nao era essencial
+  steal:
+    - Mentalidade de subtracao
+  avoid: []
+  has_deep_dive: false
+
+- slug: kluster
+  name: Kluster Collectif
+  url: https://klustercollectif.com
+  source: awwwards
+  category: minimal
+  relevance_score: 5
+  visual_style: [minimalist, collective]
+  hero_pattern: typography-only
+  voice_first: false
+  one_page: false
+  has_dark_mode: false
+  copy_tone: austere
+  takeaways:
+    - Aesthetics minimalistas em colecao
+  steal: []
+  avoid: []
+  has_deep_dive: false
+
+- slug: outfit
+  name: Outfit
+  url: https://outfit.hellohello.is
+  source: awwwards
+  category: minimal
+  relevance_score: 5
+  visual_style: [essentials-only]
+  hero_pattern: typography-only
+  voice_first: false
+  one_page: true
+  has_dark_mode: false
+  copy_tone: austere
+  takeaways:
+    - Apenas elementos essenciais, nada mais
+  steal: []
+  avoid: []
+  has_deep_dive: false
+
+# ==========================================================
+# TIER 3 — landings 2025 gerais (contexto amplo)
+# ==========================================================
+
+- slug: dima-soho
+  name: DIMA SOHO Landing 2025
+  url: https://dimasoho.com
+  source: awwwards
+  category: general-2025
+  relevance_score: 5
+  visual_style: [bold, contemporary]
+  hero_pattern: product-shot
+  voice_first: false
+  one_page: true
+  has_dark_mode: true
+  copy_tone: corporate
+  takeaways:
+    - Estetica contemporanea bold de 2025
+  steal:
+    - Tipografia bold sem perder legibilidade
+  avoid: []
+  has_deep_dive: false
+
+- slug: wickside
+  name: Wickside
+  url: https://wicksidelife.com
+  source: awwwards
+  category: general-2025
+  relevance_score: 5
+  visual_style: [elegant, lifestyle]
+  hero_pattern: tagline-first
+  voice_first: false
+  one_page: true
+  has_dark_mode: false
+  copy_tone: friendly
+  takeaways:
+    - Tipografia elegante carrega a marca
+  steal: []
+  avoid: []
+  has_deep_dive: false
+
+- slug: land-of-independents
+  name: Land of Independents
+  url: https://landofindependents.com
+  source: awwwards
+  category: general-2025
+  relevance_score: 6
+  visual_style: [minimalist, platform]
+  hero_pattern: tagline-first
+  voice_first: false
+  one_page: false
+  has_dark_mode: false
+  copy_tone: friendly
+  takeaways:
+    - Minimalismo de plataforma multi-creator
+  steal: []
+  avoid: []
+  has_deep_dive: false
+
+- slug: the-laend
+  name: THE LAEND
+  url: https://thelaend.de
+  source: awwwards
+  category: general-2025
+  relevance_score: 5
+  visual_style: [sophisticated, brand-led]
+  hero_pattern: typography-only
+  voice_first: false
+  one_page: false
+  has_dark_mode: false
+  copy_tone: austere
+  takeaways:
+    - Marca sofisticada com minimalismo de marca
+  steal: []
+  avoid: []
+  has_deep_dive: false
+
+- slug: wow-page
+  name: WOW-page
+  url: https://wowpage.io
+  source: awwwards
+  category: general-2025
+  relevance_score: 4
+  visual_style: [startup-template, clean]
+  hero_pattern: tagline-first
+  voice_first: false
+  one_page: true
+  has_dark_mode: false
+  copy_tone: corporate
+  takeaways:
+    - Template de startup, estrutura previsivel
+  steal: []
+  avoid:
+    - Estrutura "mais um template SaaS" — evitar
+  has_deep_dive: false
+
+- slug: barbora-design
+  name: Barbora Design
+  url: https://barbora.design
+  source: awwwards
+  category: general-2025
+  relevance_score: 6
+  visual_style: [dark, portfolio, minimalist]
+  hero_pattern: typography-only
+  voice_first: false
+  one_page: true
+  has_dark_mode: true
+  copy_tone: austere
+  takeaways:
+    - Portfolio com dark mode minimalista bem executado
+  steal:
+    - Implementacao de dark mode com contraste cuidadoso
+  avoid: []
+  has_deep_dive: false
