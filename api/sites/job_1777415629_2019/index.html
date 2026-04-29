@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Padaria da Dona Maria | Padaria artesanal no Jardim Primavera</title>
+  <meta name="description" content="Pães frescos todo dia, bolos caseiros, salgados e café da manhã na Padaria da Dona Maria, no Jardim Primavera.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #7a3f1d;
+      --neutral: #fff4df;
+      --accent: #d98b2b;
+      --ink: #2b170d;
+      --paper: #fffaf0;
+      --line: rgba(122, 63, 29, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Fraunces", Georgia, serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.22;
+      background-image:
+        radial-gradient(circle at 20% 10%, rgba(217, 139, 43, 0.18), transparent 26rem),
+        radial-gradient(circle at 90% 30%, rgba(122, 63, 29, 0.10), transparent 22rem);
+      z-index: -1;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 2rem));
+      margin-inline: auto;
+    }
+
+    .topbar {
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 250, 240, 0.88);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--primary);
+      font-size: 1.05rem;
+    }
+
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 1.25rem;
+      font-size: 0.96rem;
+      color: rgba(43, 23, 13, 0.78);
+    }
+
+    .nav-links a:hover,
+    .nav-links a:focus-visible {
+      color: var(--primary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0.85rem 1.15rem;
+      border-radius: 999px;
+      border: 2px solid var(--primary);
+      background: var(--primary);
+      color: #fffaf0;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+      text-align: center;
+    }
+
+    .btn:hover,
+    .btn:focus-visible {
+      transform: translateY(-2px);
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .btn.secondary {
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .btn.secondary:hover,
+    .btn.secondary:focus-visible {
+      background: var(--neutral);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .hero {
+      padding: 2.25rem 0 4rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+
+    .hero-copy {
+      background: var(--neutral);
+      border: 1px solid var(--line);
+      border-radius: 2rem;
+      padding: clamp(1.35rem, 5vw, 3rem);
+      position: relative;
+      overflow: hidden;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      width: 12rem;
+      height: 12rem;
+      border: 1px solid rgba(122, 63, 29, 0.18);
+      border-radius: 50%;
+      right: -4rem;
+      top: -4rem;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0 0 1rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 2.2rem;
+      height: 2px;
+      background: var(--accent);
+      display: inline-block;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.35rem, 12vw, 5.25rem);
+      line-height: 0.92;
+      letter-spacing: -0.075em;
+      color: var(--primary);
+      max-width: 8.5ch;
+    }
+
+    .lead {
+      margin: 1.25rem 0 0;
+      font-size: clamp(1.06rem, 3vw, 1.35rem);
+      color: rgba(43, 23, 13, 0.82);
+      max-width: 31rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-top: 1.7rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-note {
+      margin: 1rem 0 0;
+      font-size: 0.95rem;
+      color: rgba(43, 23, 13, 0.7);
+    }
+
+    .hero-photo {
+      border-radius: 2rem;
+      overflow: hidden;
+      min-height: 380px;
+      border: 1px solid var(--line);
+      position: relative;
+      background: var(--neutral);
+    }
+
+    .hero-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      min-height: 380px;
+    }
+
+    .photo-label {
+      position: absolute;
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+      background: rgba(255, 250, 240, 0.9);
+      border: 1px solid rgba(122, 63, 29, 0.24);
+      border-radius: 1.25rem;
+      padding: 1rem;
+      color: var(--primary);
+      font-weight: 800;
+      backdrop-filter: blur(10px);
+    }
+
+    .menu-board {
+      margin-top: 1.5rem;
+      background: var(--ink);
+      color: var(--neutral);
+      border-radius: 2rem;
+      padding: 1.35rem;
+      border: 1px solid rgba(255, 244, 223, 0.18);
+    }
+
+    .menu-board h2 {
+      margin: 0 0 1rem;
+      font-size: 1.35rem;
+      letter-spacing: -0.035em;
+      color: #fffaf0;
+    }
+
+    .board-list {
+      display: grid;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .board-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 0;
+      border-top: 1px dashed rgba(255, 244, 223, 0.25);
+      color: rgba(255, 244, 223, 0.9);
+    }
+
+    .board-list strong {
+      color: var(--accent);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    section {
+      padding: 4rem 0;
+    }
+
+    .section-head {
+      display: grid;
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 3.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+      color: var(--primary);
+      max-width: 12ch;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: rgba(43, 23, 13, 0.75);
+      font-size: 1.08rem;
+      max-width: 38rem;
+    }
+
+    .products {
+      background: var(--primary);
+      color: var(--paper);
+      border-radius: 2.25rem 2.25rem 0 0;
+      margin-top: 0;
+    }
+
+    .products .section-head h2,
+    .products .eyebrow {
+      color: var(--neutral);
+    }
+
+    .products .section-head p {
+      color: rgba(255, 244, 223, 0.78);
+    }
+
+    .product-rows {
+      display: grid;
+      border-top: 1px solid rgba(255, 244, 223, 0.26);
+    }
+
+    .product-row {
+      display: grid;
+      gap: 0.75rem;
+      padding: 1.35rem 0;
+      border-bottom: 1px solid rgba(255, 244, 223, 0.26);
+    }
+
+    .product-row span {
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 0.92rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .product-row h3 {
+      margin: 0;
+      font-size: clamp(1.45rem, 5vw, 2.35rem);
+      line-height: 1;
+      letter-spacing: -0.045em;
+    }
+
+    .product-row p {
+      margin: 0;
+      color: rgba(255, 244, 223, 0.78);
+      font-size: 1.02rem;
+    }
+
+    .daily {
+      background: var(--paper);
+    }
+
+    .daily-grid {
+      display: grid;
+      gap: 1.2rem;
+      align-items: center;
+    }
+
+    .daily-image {
+      border-radius: 2rem;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: var(--neutral);
+    }
+
+    .daily-image img {
+      width: 100%;
+      min-height: 260px;
+      object-fit: cover;
+    }
+
+    .steps {
+      display: grid;
+      gap: 1rem;
+      counter-reset: step;
+    }
+
+    .step {
+      counter-increment: step;
+      background: var(--neutral);
+      border: 1px solid var(--line);
+      border-radius: 1.5rem;
+      padding: 1.2rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .step::before {
+      content: counter(step);
+      width: 2.5rem;
+      height: 2.5rem;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .step h3 {
+      margin: 0 0 0.25rem;
+      font-size: 1.2rem;
+      color: var(--primary);
+      letter-spacing: -0.025em;
+    }
+
+    .step p {
+      margin: 0;
+      color: rgba(43, 23, 13, 0.72);
+    }
+
+    .orders {
+      padding-top: 0;
+    }
+
+    .order-card {
+      display: grid;
+      gap: 1.5rem;
+      background: var(--neutral);
+      border: 1px solid var(--line);
+      border-radius: 2rem;
+      padding: clamp(1.35rem, 5vw, 2.6rem);
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .order-card::before {
+      content: "";
+      position: absolute;
+      inset: auto -3rem -5rem auto;
+      width: 13rem;
+      height: 13rem;
+      border-radius: 50%;
+      background: rgba(217, 139, 43, 0.24);
+    }
+
+    .order-card h2 {
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 3.7rem);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+      color: var(--primary);
+      max-width: 11ch;
+    }
+
+    .order-card p {
+      margin: 1rem 0 0;
+      color: rgba(43, 23, 13, 0.76);
+      font-size: 1.08rem;
+      max-width: 34rem;
+    }
+
+    .order-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .contact {
+      background: var(--ink);
+      color: var(--neutral);
+      border-radius: 2.25rem 2.25rem 0 0;
+      padding-bottom: 3rem;
+    }
+
+    .contact-grid {
+      display: grid;
+      gap: 1.4rem;
+      align-items: start;
+    }
+
+    .contact h2 {
+      margin: 0;
+      font-size: clamp(2rem, 8vw, 4rem);
+      line-height: 0.96;
+      letter-spacing: -0.06em;
+      color: var(--neutral);
+    }
+
+    .contact p {
+      margin: 1rem 0 0;
+      color: rgba(255, 244, 223, 0.78);
+      font-size: 1.05rem;
+    }
+
+    .contact-box {
+      border: 1px solid rgba(255, 244, 223, 0.22);
+      border-radius: 1.5rem;
+      padding: 1.25rem;
+      background: rgba(255, 244, 223, 0.06);
+    }
+
+    .contact-box h3 {
+      margin: 0 0 0.75rem;
+      color: var(--accent);
+      font-size: 1.15rem;
+    }
+
+    .contact-box p {
+      margin: 0;
+    }
+
+    .contact-box a {
+      color: var(--neutral);
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
+    }
+
+    footer {
+      background: var(--ink);
+      color: rgba(255, 244, 223, 0.66);
+      padding: 1.5rem 0 2rem;
+      border-top: 1px solid rgba(255, 244, 223, 0.15);
+      font-size: 0.95rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    @media (min-width: 720px) {
+      .nav-links {
+        display: flex;
+      }
+
+      .top-cta {
+        display: inline-flex;
+      }
+
+      .hero {
+        padding-top: 3rem;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1.05fr 0.95fr;
+      }
+
+      .hero-copy {
+        min-height: 640px;
+      }
+
+      .hero-actions,
+      .order-actions {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .menu-board {
+        grid-column: 1 / -1;
+        margin-top: 0;
+        padding: 1.6rem 2rem;
+      }
+
+      .board-list {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .board-list li {
+        flex-direction: column;
+        border-top: 0;
+        border-left: 1px dashed rgba(255, 244, 223, 0.25);
+        padding: 0.2rem 1.2rem;
+      }
+
+      .board-list li:first-child {
+        border-left: 0;
+      }
+
+      section {
+        padding: 5.5rem 0;
+      }
+
+      .section-head {
+        grid-template-columns: 0.9fr 1.1fr;
+        align-items: end;
+        margin-bottom: 3rem;
+      }
+
+      .product-row {
+        grid-template-columns: 0.3fr 0.8fr 1fr;
+        align-items: baseline;
+        gap: 2rem;
+        padding: 1.7rem 0;
+      }
+
+      .daily-grid {
+        grid-template-columns: 0.92fr 1.08fr;
+        gap: 2rem;
+      }
+
+      .daily-image img {
+        min-height: 520px;
+      }
+
+      .order-card {
+        grid-template-columns: 1.1fr 0.9fr;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+
+      .footer-inner {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+    }
+
+    @media (min-width: 1040px) {
+      .hero-grid {
+        grid-template-columns: 1.15fr 0.85fr;
+      }
+
+      .hero-photo {
+        transform: translateY(2rem);
+      }
+
+      .menu-board {
+        width: min(92%, 980px);
+        margin-left: auto;
+        margin-right: auto;
+        transform: translateY(-1.5rem);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .btn {
+        transition: none;
+      }
+
+      .btn:hover,
+      .btn:focus-visible {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap nav">
+      <a class="brand" href="#top" aria-label="Início">Padaria da Dona Maria</a>
+      <nav class="nav-links" aria-label="Navegação principal">
+        <a href="#produtos">Produtos</a>
+        <a href="#encomendas">Encomendas</a>
+        <a href="#contato">Contato</a>
+      </nav>
+      <a class="btn top-cta" href="#contato">Pedir pelo WhatsApp</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <div>
+            <p class="eyebrow">Padaria artesanal no Jardim Primavera</p>
+            <h1 id="hero-title">Fornada de bairro, feita com calma.</h1>
+            <p class="lead">A Padaria da Dona Maria prepara pães frescos todo dia, bolos caseiros, salgados e café da manhã para famílias e moradores do Jardim Primavera.</p>
+          </div>
+          <div>
+            <div class="hero-actions">
+              <a class="btn" href="#contato">Pedir pelo WhatsApp</a>
+              <a class="btn secondary" href="#produtos">Ver produtos</a>
+            </div>
+            <p class="hero-note">Contato a confirmar. Use a seção de contato para combinar seu pedido.</p>
+          </div>
+        </div>
+
+        <figure class="hero-photo">
+          <img src="./assets/01-hero.png" alt="Ambiente principal de Padaria da Dona Maria">
+          <figcaption class="photo-label">Pão fresco, bolo caseiro e café de padaria.</figcaption>
+        </figure>
+
+        <aside class="menu-board" aria-label="Destaques da padaria">
+          <h2>Destaques do balcão</h2>
+          <ul class="board-list">
+            <li><span>Pães frescos</span><strong>todo dia</strong></li>
+            <li><span>Bolos caseiros</span><strong>para levar</strong></li>
+            <li><span>Salgados</span><strong>no balcão</strong></li>
+            <li><span>Café da manhã</span><strong>no bairro</strong></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="products" id="produtos" aria-labelledby="produtos-title">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Produtos principais</p>
+            <h2 id="produtos-title">O que sai da padaria.</h2>
+          </div>
+          <p>Uma seleção simples, de rotina: itens para o café da manhã, para a mesa de casa e para quem passa pelo bairro precisando de algo gostoso.</p>
+        </div>
+
+        <div class="product-rows">
+          <article class="product-row">
+            <span>01</span>
+            <h3>Pães frescos todo dia</h3>
+            <p>Fornada para acompanhar a rotina da casa: café cedo, lanche da tarde e pão quentinho quando a fome chega.</p>
+          </article>
+          <article class="product-row">
+            <span>02</span>
+            <h3>Bolos caseiros</h3>
+            <p>Bolos com cara de cozinha de família, feitos para dividir na mesa ou levar para alguém especial.</p>
+          </article>
+          <article class="product-row">
+            <span>03</span>
+            <h3>Salgados</h3>
+            <p>Opções práticas para o lanche, para receber visitas ou para resolver uma pausa rápida no dia.</p>
+          </article>
+          <article class="product-row">
+            <span>04</span>
+            <h3>Café da manhã</h3>
+            <p>Um ponto acolhedor no Jardim Primavera para começar o dia com pão, café e atendimento próximo.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="daily" aria-labelledby="rotina-title">
+      <div class="wrap daily-grid">
+        <figure class="daily-image">
+          <img src="./assets/03-audience.png" alt="Clientes de Padaria da Dona Maria">
+        </figure>
+
+        <div>
+          <div class="section-head" style="display:block;margin-bottom:1.5rem;">
+            <p class="eyebrow">Rotina simples</p>
+            <h2 id="rotina-title">Como funciona no dia a dia.</h2>
+            <p>A proposta é direta: produção diária, balcão de bairro e pedidos combinados com antecedência quando precisar reservar ou encomendar.</p>
+          </div>
+
+          <div class="steps">
+            <article class="step">
+              <div>
+                <h3>Fornada e balcão</h3>
+                <p>Os produtos principais ficam disponíveis conforme a produção do dia.</p>
+              </div>
+            </article>
+            <article class="step">
+              <div>
+                <h3>Pedido combinado</h3>
+                <p>Para bolos, salgados ou quantidades maiores, o ideal é falar antes e confirmar disponibilidade.</p>
+              </div>
+            </article>
+            <article class="step">
+              <div>
+                <h3>Atendimento no Jardim Primavera</h3>
+                <p>A padaria atende famílias e moradores do bairro, com clima familiar e artesanal.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="orders" id="encomendas" aria-labelledby="encomendas-title">
+      <div class="wrap">
+        <div class="order-card">
+          <div>
+            <p class="eyebrow">Encomendas</p>
+            <h2 id="encomendas-title">Vai receber gente em casa?</h2>
+            <p>Converse com a Padaria da Dona Maria para combinar bolos caseiros, salgados ou pães em maior quantidade. Como o contato não foi informado, o pedido pode ser alinhado pela seção de contato.</p>
+          </div>
+          <div class="order-actions">
+            <a class="btn" href="#contato">Combinar encomenda</a>
+            <a class="btn secondary" href="#produtos">Rever produtos</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="daily" aria-label="Serviços em destaque">
+      <div class="wrap daily-grid">
+        <div>
+          <div class="section-head" style="display:block;margin-bottom:1.5rem;">
+            <p class="eyebrow">Cuidado artesanal</p>
+            <h2>Padaria de rotina, com jeito de casa.</h2>
+            <p>Sem complicar: pão para o café, bolo para a família, salgado para o lanche e uma parada gostosa no caminho pelo Jardim Primavera.</p>
+          </div>
+          <a class="btn secondary" href="#contato">Falar com a padaria</a>
+        </div>
+        <figure class="daily-image">
+          <img src="./assets/01-hero.png" alt="Serviços de Padaria da Dona Maria">
+        </figure>
+      </div>
+    </section>
+
+    <section class="contact" id="contato" aria-labelledby="contato-title">
+      <div class="wrap contact-grid">
+        <div>
+          <p class="eyebrow">Contato</p>
+          <h2 id="contato-title">Peça, reserve ou tire uma dúvida.</h2>
+          <p>A Padaria da Dona Maria atende moradores do Jardim Primavera. O número de WhatsApp não foi informado nesta página, então confirme o contato diretamente com a padaria.</p>
+        </div>
+
+        <div class="contact-box">
+          <h3>Padaria da Dona Maria</h3>
+          <p><strong>Região:</strong> Jardim Primavera</p>
+          <p><strong>Produtos:</strong> pães frescos todo dia, bolos caseiros, salgados e café da manhã.</p>
+          <p style="margin-top:1rem;"><a href="#top">Voltar ao início</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>Padaria da Dona Maria</span>
+      <span>© 2026 — Jardim Primavera</span>
+    </div>
+  </footer>
+</body>
+</html>

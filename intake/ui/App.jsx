@@ -129,6 +129,7 @@ export default function App() {
   const [attachment, setAttachment] = useState(null);
   const [optimisticMessages, setOptimisticMessages] = useState([]);
   const [theme, setTheme] = useState(storedTheme);
+  const [builderModelOptions, setBuilderModelOptions] = useState(BUILDER_MODEL_OPTIONS);
   const [builderModel, setBuilderModel] = useState(storedBuilderModel);
   const [autoTestState, setAutoTestState] = useState({
     running: false,
@@ -194,6 +195,27 @@ export default function App() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(BUILDER_MODEL_STORAGE_KEY, builderModel);
   }, [builderModel]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadBuilderModels() {
+      try {
+        const response = await fetch("/api/v1/builder/models");
+        const result = await response.json().catch(() => ({}));
+        if (cancelled || !response.ok || result.code !== 0) return;
+        const models = Array.isArray(result.data?.models)
+          ? result.data.models.filter((item) => item?.id && item?.label)
+          : [];
+        if (!models.length) return;
+        setBuilderModelOptions(models);
+        setBuilderModel((current) => models.some((item) => item.id === current) ? current : models[0].id);
+      } catch {
+        /* Keep static fallback options. */
+      }
+    }
+    loadBuilderModels();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (!buildState?.job_id) return;
@@ -508,6 +530,7 @@ export default function App() {
         link_content: currentSession.linkContent || null,
         agent_profile: summary.design_plan?.agent_profile || null,
         builder_model: builderModel,
+        builder_provider: builderModelOptions.find((option) => option.id === builderModel)?.provider || "default",
         summary,
       };
       const result = await queueSiteBuild(payload);
@@ -515,7 +538,7 @@ export default function App() {
     } catch (error) {
       setBuildState({ status: "error", error: error.message || "Falha ao iniciar a construção.", started_at: Date.now() });
     }
-  }, [builderModel]);
+  }, [builderModel, builderModelOptions]);
 
   const handleStartBuild = useCallback(() => { startBuildForSession(sessionRef.current); }, [startBuildForSession]);
   const handleResetBuild = useCallback(() => { setBuildState(null); }, []);
@@ -707,7 +730,7 @@ export default function App() {
                 onChange={(event) => setBuilderModel(event.target.value)}
                 value={builderModel}
               >
-                {BUILDER_MODEL_OPTIONS.map((option) => (
+                {builderModelOptions.map((option) => (
                   <option key={option.id} value={option.id}>
                     {option.label} · {option.note}
                   </option>

@@ -1336,6 +1336,37 @@ article:focus-visible {
   white-space: nowrap;
 }
 
+.quality-bot-card {
+  background: linear-gradient(135deg, rgba(0, 255, 157, 0.13), rgba(255, 255, 255, 0.035));
+  border: 1px solid rgba(0, 255, 157, 0.24);
+  border-radius: 12px;
+  display: grid;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 14px;
+}
+
+.quality-bot-card span,
+.quality-bot-card small {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.quality-bot-card strong {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.quality-bot-card em {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 800;
+}
+
 :root[data-theme="light"] .site-url-chip {
   background: #fff;
 }

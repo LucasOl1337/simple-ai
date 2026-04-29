@@ -1,0 +1,934 @@
+# Step 01 Contexto
+
+```json
+{
+  "run_id": "job_1777419781_2100",
+  "business": {
+    "name": "Napassarela",
+    "segment": "Loja de roupas e moda feminina",
+    "primary_cta": "Pedir informações para comprar",
+    "target_audience": "Mulheres e famílias de Penápolis e região que acompanham moda pelo Instagram"
+  },
+  "content": {
+    "offerings": [
+      {
+        "id": "hero",
+        "label": "Hero section"
+      },
+      {
+        "id": "about",
+        "label": "Sobre o negócio"
+      },
+      {
+        "id": "contact",
+        "label": "Contato"
+      },
+      {
+        "id": "map",
+        "label": "Mapa de localização"
+      },
+      {
+        "id": "instagram_feed",
+        "label": "Feed do Instagram"
+      }
+    ],
+    "modules": [
+      {
+        "id": "hero",
+        "label": "Hero section"
+      },
+      {
+        "id": "about",
+        "label": "Sobre o negócio"
+      },
+      {
+        "id": "contact",
+        "label": "Contato"
+      },
+      {
+        "id": "map",
+        "label": "Mapa de localização"
+      },
+      {
+        "id": "instagram_feed",
+        "label": "Feed do Instagram"
+      }
+    ],
+    "raw_quotes": [
+      "Tenho uma loja chamada Napassarela e quero um site usando o Instagram como base: https://www.instagram.com/napassarela_penapolis/"
+    ]
+  },
+  "references": {
+    "link_content": {},
+    "design_plan": {
+      "version": "design-plan-v1",
+      "tone": "warm",
+      "palette_hint": "terracota, creme e marrom suave",
+      "layout_family": "conversion-landing",
+      "visual_style": "warm-artisanal",
+      "agent_profile": "landing-direta",
+      "content_density": "comfortable",
+      "trust_strategy": [
+        "cta-clarity",
+        "clean-hierarchy"
+      ],
+      "ui_direction": {
+        "hero_style": "editorial-clean",
+        "spacing": "airy",
+        "card_density": "comfortable",
+        "section_order": [
+          "hero",
+          "benefits",
+          "services",
+          "about",
+          "contact",
+          "footer"
+        ]
+      },
+      "cta_strategy": {
+        "type": "buy",
+        "label": "Pedir informações para comprar",
+        "placement": [
+          "hero",
+          "proof",
+          "footer"
+        ]
+      },
+      "image_strategy": {
+        "provider": "9router-preferred",
+        "mode": "generated-first",
+        "slots": [
+          "hero",
+          "services",
+          "audience"
+        ],
+        "generation": {
+          "model": "cx/gpt-5.4-image",
+          "size": "auto",
+          "quality": "auto",
+          "background": "auto",
+          "image_detail": "high",
+          "output_format": "png"
+        }
+      },
+      "design_notes": {
+        "segment_signal": "Loja de roupas e moda feminina",
+        "primary_cta_signal": "Pedir informações para comprar",
+        "layout_reason": "conversion-landing foi escolhido com base no CTA, no volume de conteúdo e no contexto de Loja de roupas e moda feminina.",
+        "style_reason": "warm-artisanal foi escolhido para evitar aparência genérica e manter leitura simples para o segmento.",
+        "must_have_sections": [
+          "hero",
+          "benefits",
+          "services",
+          "about",
+          "contact",
+          "footer"
+        ],
+        "trust_priority": "supporting",
+        "content_density": "comfortable",
+        "avoid": [
+          "cara de startup SaaS",
+          "gradientes genéricos de IA",
+          "cards repetitivos sem hierarquia",
+          "imagem artificial ou render 3D"
+        ],
+        "reference_ids": [
+          "landingfolio-home",
+          "one-page-love-gallery"
+        ]
+      },
+      "image_prompts": [
+        {
+          "slot": "hero",
+          "aspect_ratio": "16:9",
+          "goal": "transmitir confiança imediata e contexto real",
+          "alt": "Loja de roupas e moda feminina em operação real",
+          "caption": "Visão principal do negócio",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. foco em proposta clara e ação principal evidente. Foto editorial realista de Loja de roupas e moda feminina, ambiente profissional, pessoas reais quando fizer sentido, iluminação natural, foco em qualidade e confiança."
+        },
+        {
+          "slot": "services",
+          "aspect_ratio": "4:3",
+          "goal": "mostrar a oferta principal com clareza",
+          "alt": "Sobre o negócio, Mapa de localização, Feed do Instagram",
+          "caption": "Serviços ou ofertas em destaque",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Cena realista mostrando Sobre o negócio, Mapa de localização, Feed do Instagram para Loja de roupas e moda feminina, composição escaneável, detalhe verdadeiro do serviço, sem elementos fantasiosos."
+        },
+        {
+          "slot": "audience",
+          "aspect_ratio": "4:3",
+          "goal": "humanizar o atendimento e o público",
+          "alt": "Clientes de Loja de roupas e moda feminina",
+          "caption": "Experiência do cliente",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Clientes reais de Loja de roupas e moda feminina (Mulheres e famílias de Penápolis e região que acompanham moda pelo Instagram), atendimento autêntico, clima humano, imagem limpa e confiável."
+        }
+      ]
+    },
+    "visual_plan": {
+      "version": "design-plan-v1",
+      "tone": "warm",
+      "palette_hint": "terracota, creme e marrom suave",
+      "layout_family": "conversion-landing",
+      "visual_style": "warm-artisanal",
+      "agent_profile": "landing-direta",
+      "content_density": "comfortable",
+      "trust_strategy": [
+        "cta-clarity",
+        "clean-hierarchy"
+      ],
+      "ui_direction": {
+        "hero_style": "editorial-clean",
+        "spacing": "airy",
+        "card_density": "comfortable",
+        "section_order": [
+          "hero",
+          "benefits",
+          "services",
+          "about",
+          "contact",
+          "footer"
+        ]
+      },
+      "cta_strategy": {
+        "type": "buy",
+        "label": "Pedir informações para comprar",
+        "placement": [
+          "hero",
+          "proof",
+          "footer"
+        ]
+      },
+      "image_strategy": {
+        "provider": "9router-preferred",
+        "mode": "generated-first",
+        "slots": [
+          "hero",
+          "services",
+          "audience"
+        ],
+        "generation": {
+          "model": "cx/gpt-5.4-image",
+          "size": "auto",
+          "quality": "auto",
+          "background": "auto",
+          "image_detail": "high",
+          "output_format": "png"
+        }
+      },
+      "design_notes": {
+        "segment_signal": "Loja de roupas e moda feminina",
+        "primary_cta_signal": "Pedir informações para comprar",
+        "layout_reason": "conversion-landing foi escolhido com base no CTA, no volume de conteúdo e no contexto de Loja de roupas e moda feminina.",
+        "style_reason": "warm-artisanal foi escolhido para evitar aparência genérica e manter leitura simples para o segmento.",
+        "must_have_sections": [
+          "hero",
+          "benefits",
+          "services",
+          "about",
+          "contact",
+          "footer"
+        ],
+        "trust_priority": "supporting",
+        "content_density": "comfortable",
+        "avoid": [
+          "cara de startup SaaS",
+          "gradientes genéricos de IA",
+          "cards repetitivos sem hierarquia",
+          "imagem artificial ou render 3D"
+        ],
+        "reference_ids": [
+          "landingfolio-home",
+          "one-page-love-gallery"
+        ]
+      },
+      "image_prompts": [
+        {
+          "slot": "hero",
+          "aspect_ratio": "16:9",
+          "goal": "transmitir confiança imediata e contexto real",
+          "alt": "Loja de roupas e moda feminina em operação real",
+          "caption": "Visão principal do negócio",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. foco em proposta clara e ação principal evidente. Foto editorial realista de Loja de roupas e moda feminina, ambiente profissional, pessoas reais quando fizer sentido, iluminação natural, foco em qualidade e confiança."
+        },
+        {
+          "slot": "services",
+          "aspect_ratio": "4:3",
+          "goal": "mostrar a oferta principal com clareza",
+          "alt": "Sobre o negócio, Mapa de localização, Feed do Instagram",
+          "caption": "Serviços ou ofertas em destaque",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Cena realista mostrando Sobre o negócio, Mapa de localização, Feed do Instagram para Loja de roupas e moda feminina, composição escaneável, detalhe verdadeiro do serviço, sem elementos fantasiosos."
+        },
+        {
+          "slot": "audience",
+          "aspect_ratio": "4:3",
+          "goal": "humanizar o atendimento e o público",
+          "alt": "Clientes de Loja de roupas e moda feminina",
+          "caption": "Experiência do cliente",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Clientes reais de Loja de roupas e moda feminina (Mulheres e famílias de Penápolis e região que acompanham moda pelo Instagram), atendimento autêntico, clima humano, imagem limpa e confiável."
+        }
+      ]
+    }
+  },
+  "builder": {
+    "builder_model": "cx/gpt-5.5",
+    "builder_provider": "default",
+    "agent_profile": "landing-direta"
+  },
+  "original_payload": {
+    "business_name": "Napassarela",
+    "segment": "Loja de roupas e moda feminina",
+    "current_workflow": null,
+    "primary_pain": null,
+    "user_facing_actions": [
+      {
+        "id": "hero",
+        "label": "Hero section"
+      },
+      {
+        "id": "about",
+        "label": "Sobre o negócio"
+      },
+      {
+        "id": "contact",
+        "label": "Contato"
+      },
+      {
+        "id": "map",
+        "label": "Mapa de localização"
+      },
+      {
+        "id": "instagram_feed",
+        "label": "Feed do Instagram"
+      }
+    ],
+    "data_entities": [],
+    "needs_admin_panel": null,
+    "needs_notifications": null,
+    "needs_login_for_customers": null,
+    "raw_quotes": [
+      "Tenho uma loja chamada Napassarela e quero um site usando o Instagram como base: https://www.instagram.com/napassarela_penapolis/"
+    ],
+    "design_plan": {
+      "version": "design-plan-v1",
+      "tone": "warm",
+      "palette_hint": "terracota, creme e marrom suave",
+      "layout_family": "conversion-landing",
+      "visual_style": "warm-artisanal",
+      "agent_profile": "landing-direta",
+      "content_density": "comfortable",
+      "trust_strategy": [
+        "cta-clarity",
+        "clean-hierarchy"
+      ],
+      "ui_direction": {
+        "hero_style": "editorial-clean",
+        "spacing": "airy",
+        "card_density": "comfortable",
+        "section_order": [
+          "hero",
+          "benefits",
+          "services",
+          "about",
+          "contact",
+          "footer"
+        ]
+      },
+      "cta_strategy": {
+        "type": "buy",
+        "label": "Pedir informações para comprar",
+        "placement": [
+          "hero",
+          "proof",
+          "footer"
+        ]
+      },
+      "image_strategy": {
+        "provider": "9router-preferred",
+        "mode": "generated-first",
+        "slots": [
+          "hero",
+          "services",
+          "audience"
+        ],
+        "generation": {
+          "model": "cx/gpt-5.4-image",
+          "size": "auto",
+          "quality": "auto",
+          "background": "auto",
+          "image_detail": "high",
+          "output_format": "png"
+        }
+      },
+      "design_notes": {
+        "segment_signal": "Loja de roupas e moda feminina",
+        "primary_cta_signal": "Pedir informações para comprar",
+        "layout_reason": "conversion-landing foi escolhido com base no CTA, no volume de conteúdo e no contexto de Loja de roupas e moda feminina.",
+        "style_reason": "warm-artisanal foi escolhido para evitar aparência genérica e manter leitura simples para o segmento.",
+        "must_have_sections": [
+          "hero",
+          "benefits",
+          "services",
+          "about",
+          "contact",
+          "footer"
+        ],
+        "trust_priority": "supporting",
+        "content_density": "comfortable",
+        "avoid": [
+          "cara de startup SaaS",
+          "gradientes genéricos de IA",
+          "cards repetitivos sem hierarquia",
+          "imagem artificial ou render 3D"
+        ],
+        "reference_ids": [
+          "landingfolio-home",
+          "one-page-love-gallery"
+        ]
+      },
+      "image_prompts": [
+        {
+          "slot": "hero",
+          "aspect_ratio": "16:9",
+          "goal": "transmitir confiança imediata e contexto real",
+          "alt": "Loja de roupas e moda feminina em operação real",
+          "caption": "Visão principal do negócio",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. foco em proposta clara e ação principal evidente. Foto editorial realista de Loja de roupas e moda feminina, ambiente profissional, pessoas reais quando fizer sentido, iluminação natural, foco em qualidade e confiança."
+        },
+        {
+          "slot": "services",
+          "aspect_ratio": "4:3",
+          "goal": "mostrar a oferta principal com clareza",
+          "alt": "Sobre o negócio, Mapa de localização, Feed do Instagram",
+          "caption": "Serviços ou ofertas em destaque",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Cena realista mostrando Sobre o negócio, Mapa de localização, Feed do Instagram para Loja de roupas e moda feminina, composição escaneável, detalhe verdadeiro do serviço, sem elementos fantasiosos."
+        },
+        {
+          "slot": "audience",
+          "aspect_ratio": "4:3",
+          "goal": "humanizar o atendimento e o público",
+          "alt": "Clientes de Loja de roupas e moda feminina",
+          "caption": "Experiência do cliente",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Clientes reais de Loja de roupas e moda feminina (Mulheres e famílias de Penápolis e região que acompanham moda pelo Instagram), atendimento autêntico, clima humano, imagem limpa e confiável."
+        }
+      ]
+    },
+    "visual_plan": {
+      "version": "design-plan-v1",
+      "tone": "warm",
+      "palette_hint": "terracota, creme e marrom suave",
+      "layout_family": "conversion-landing",
+      "visual_style": "warm-artisanal",
+      "agent_profile": "landing-direta",
+      "content_density": "comfortable",
+      "trust_strategy": [
+        "cta-clarity",
+        "clean-hierarchy"
+      ],
+      "ui_direction": {
+        "hero_style": "editorial-clean",
+        "spacing": "airy",
+        "card_density": "comfortable",
+        "section_order": [
+          "hero",
+          "benefits",
+          "services",
+          "about",
+          "contact",
+          "footer"
+        ]
+      },
+      "cta_strategy": {
+        "type": "buy",
+        "label": "Pedir informações para comprar",
+        "placement": [
+          "hero",
+          "proof",
+          "footer"
+        ]
+      },
+      "image_strategy": {
+        "provider": "9router-preferred",
+        "mode": "generated-first",
+        "slots": [
+          "hero",
+          "services",
+          "audience"
+        ],
+        "generation": {
+          "model": "cx/gpt-5.4-image",
+          "size": "auto",
+          "quality": "auto",
+          "background": "auto",
+          "image_detail": "high",
+          "output_format": "png"
+        }
+      },
+      "design_notes": {
+        "segment_signal": "Loja de roupas e moda feminina",
+        "primary_cta_signal": "Pedir informações para comprar",
+        "layout_reason": "conversion-landing foi escolhido com base no CTA, no volume de conteúdo e no contexto de Loja de roupas e moda feminina.",
+        "style_reason": "warm-artisanal foi escolhido para evitar aparência genérica e manter leitura simples para o segmento.",
+        "must_have_sections": [
+          "hero",
+          "benefits",
+          "services",
+          "about",
+          "contact",
+          "footer"
+        ],
+        "trust_priority": "supporting",
+        "content_density": "comfortable",
+        "avoid": [
+          "cara de startup SaaS",
+          "gradientes genéricos de IA",
+          "cards repetitivos sem hierarquia",
+          "imagem artificial ou render 3D"
+        ],
+        "reference_ids": [
+          "landingfolio-home",
+          "one-page-love-gallery"
+        ]
+      },
+      "image_prompts": [
+        {
+          "slot": "hero",
+          "aspect_ratio": "16:9",
+          "goal": "transmitir confiança imediata e contexto real",
+          "alt": "Loja de roupas e moda feminina em operação real",
+          "caption": "Visão principal do negócio",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. foco em proposta clara e ação principal evidente. Foto editorial realista de Loja de roupas e moda feminina, ambiente profissional, pessoas reais quando fizer sentido, iluminação natural, foco em qualidade e confiança."
+        },
+        {
+          "slot": "services",
+          "aspect_ratio": "4:3",
+          "goal": "mostrar a oferta principal com clareza",
+          "alt": "Sobre o negócio, Mapa de localização, Feed do Instagram",
+          "caption": "Serviços ou ofertas em destaque",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Cena realista mostrando Sobre o negócio, Mapa de localização, Feed do Instagram para Loja de roupas e moda feminina, composição escaneável, detalhe verdadeiro do serviço, sem elementos fantasiosos."
+        },
+        {
+          "slot": "audience",
+          "aspect_ratio": "4:3",
+          "goal": "humanizar o atendimento e o público",
+          "alt": "Clientes de Loja de roupas e moda feminina",
+          "caption": "Experiência do cliente",
+          "negative_prompt_hints": [
+            "sem texto embutido",
+            "sem mockup de tela",
+            "sem render 3D",
+            "sem estética genérica de IA",
+            "sem excesso de filtros"
+          ],
+          "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Clientes reais de Loja de roupas e moda feminina (Mulheres e famílias de Penápolis e região que acompanham moda pelo Instagram), atendimento autêntico, clima humano, imagem limpa e confiável."
+        }
+      ]
+    },
+    "link_content": null,
+    "summary": {
+      "brand_name": "Napassarela",
+      "business_type": "Loja de roupas e moda feminina",
+      "primary_cta": "Pedir informações para comprar",
+      "target_audience": "Mulheres e famílias de Penápolis e região que acompanham moda pelo Instagram",
+      "scope": "local",
+      "content_volume": "medium",
+      "pricing_strategy": "on_request",
+      "brand_tone": "elegante, comercial, familiar e inspirado no Instagram da loja",
+      "brand_colors": "Não definido",
+      "complexity": "LOW",
+      "stack": {
+        "profile": "Site institucional simples",
+        "frontend": "HTML/CSS estatico ou React SPA",
+        "styling": "Tailwind CSS",
+        "backend": "Nenhum — conteúdo estatico",
+        "data": "JSON local",
+        "deploy": "Netlify ou Vercel",
+        "reason": "Entrega rapida, zero complexidade de manutencao."
+      },
+      "layout": {
+        "content_volume": "few",
+        "pricing": "any",
+        "layout": "single_page",
+        "pages": 1,
+        "label": "Landing page unica com scroll"
+      },
+      "modules": [
+        {
+          "id": "hero",
+          "label": "Hero section"
+        },
+        {
+          "id": "about",
+          "label": "Sobre o negócio"
+        },
+        {
+          "id": "contact",
+          "label": "Contato"
+        },
+        {
+          "id": "map",
+          "label": "Mapa de localização"
+        },
+        {
+          "id": "instagram_feed",
+          "label": "Feed do Instagram"
+        }
+      ],
+      "features": {
+        "booking": false,
+        "ecommerce": false,
+        "auth": false,
+        "forms": false,
+        "gallery": false,
+        "map": false,
+        "whatsapp": false
+      },
+      "raw_answers": {
+        "initial_description": "Tenho uma loja chamada Napassarela e quero um site usando o Instagram como base: https://www.instagram.com/napassarela_penapolis/",
+        "business_type": "Loja de roupas e moda feminina",
+        "brand_name": "Napassarela",
+        "primary_action": "Pedir informações para comprar",
+        "current_channels": "O Instagram oficial é https://www.instagram.com/napassarela_penapolis/ e deve ser usado como referência principal.",
+        "existing_presence": "Instagram oficial: https://www.instagram.com/napassarela_penapolis/",
+        "offerings": [
+          "Moda feminina",
+          "Moda masculina",
+          "Moda infantil",
+          "Moda juvenil",
+          "Roupas para toda família"
+        ]
+      },
+      "design_plan": {
+        "version": "design-plan-v1",
+        "tone": "warm",
+        "palette_hint": "terracota, creme e marrom suave",
+        "layout_family": "conversion-landing",
+        "visual_style": "warm-artisanal",
+        "agent_profile": "landing-direta",
+        "content_density": "comfortable",
+        "trust_strategy": [
+          "cta-clarity",
+          "clean-hierarchy"
+        ],
+        "ui_direction": {
+          "hero_style": "editorial-clean",
+          "spacing": "airy",
+          "card_density": "comfortable",
+          "section_order": [
+            "hero",
+            "benefits",
+            "services",
+            "about",
+            "contact",
+            "footer"
+          ]
+        },
+        "cta_strategy": {
+          "type": "buy",
+          "label": "Pedir informações para comprar",
+          "placement": [
+            "hero",
+            "proof",
+            "footer"
+          ]
+        },
+        "image_strategy": {
+          "provider": "9router-preferred",
+          "mode": "generated-first",
+          "slots": [
+            "hero",
+            "services",
+            "audience"
+          ],
+          "generation": {
+            "model": "cx/gpt-5.4-image",
+            "size": "auto",
+            "quality": "auto",
+            "background": "auto",
+            "image_detail": "high",
+            "output_format": "png"
+          }
+        },
+        "design_notes": {
+          "segment_signal": "Loja de roupas e moda feminina",
+          "primary_cta_signal": "Pedir informações para comprar",
+          "layout_reason": "conversion-landing foi escolhido com base no CTA, no volume de conteúdo e no contexto de Loja de roupas e moda feminina.",
+          "style_reason": "warm-artisanal foi escolhido para evitar aparência genérica e manter leitura simples para o segmento.",
+          "must_have_sections": [
+            "hero",
+            "benefits",
+            "services",
+            "about",
+            "contact",
+            "footer"
+          ],
+          "trust_priority": "supporting",
+          "content_density": "comfortable",
+          "avoid": [
+            "cara de startup SaaS",
+            "gradientes genéricos de IA",
+            "cards repetitivos sem hierarquia",
+            "imagem artificial ou render 3D"
+          ],
+          "reference_ids": [
+            "landingfolio-home",
+            "one-page-love-gallery"
+          ]
+        },
+        "image_prompts": [
+          {
+            "slot": "hero",
+            "aspect_ratio": "16:9",
+            "goal": "transmitir confiança imediata e contexto real",
+            "alt": "Loja de roupas e moda feminina em operação real",
+            "caption": "Visão principal do negócio",
+            "negative_prompt_hints": [
+              "sem texto embutido",
+              "sem mockup de tela",
+              "sem render 3D",
+              "sem estética genérica de IA",
+              "sem excesso de filtros"
+            ],
+            "prompt": "foto calorosa, próxima, textura humana, luz natural suave. foco em proposta clara e ação principal evidente. Foto editorial realista de Loja de roupas e moda feminina, ambiente profissional, pessoas reais quando fizer sentido, iluminação natural, foco em qualidade e confiança."
+          },
+          {
+            "slot": "services",
+            "aspect_ratio": "4:3",
+            "goal": "mostrar a oferta principal com clareza",
+            "alt": "Sobre o negócio, Mapa de localização, Feed do Instagram",
+            "caption": "Serviços ou ofertas em destaque",
+            "negative_prompt_hints": [
+              "sem texto embutido",
+              "sem mockup de tela",
+              "sem render 3D",
+              "sem estética genérica de IA",
+              "sem excesso de filtros"
+            ],
+            "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Cena realista mostrando Sobre o negócio, Mapa de localização, Feed do Instagram para Loja de roupas e moda feminina, composição escaneável, detalhe verdadeiro do serviço, sem elementos fantasiosos."
+          },
+          {
+            "slot": "audience",
+            "aspect_ratio": "4:3",
+            "goal": "humanizar o atendimento e o público",
+            "alt": "Clientes de Loja de roupas e moda feminina",
+            "caption": "Experiência do cliente",
+            "negative_prompt_hints": [
+              "sem texto embutido",
+              "sem mockup de tela",
+              "sem render 3D",
+              "sem estética genérica de IA",
+              "sem excesso de filtros"
+            ],
+            "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Clientes reais de Loja de roupas e moda feminina (Mulheres e famílias de Penápolis e região que acompanham moda pelo Instagram), atendimento autêntico, clima humano, imagem limpa e confiável."
+          }
+        ]
+      },
+      "visual_plan": {
+        "version": "design-plan-v1",
+        "tone": "warm",
+        "palette_hint": "terracota, creme e marrom suave",
+        "layout_family": "conversion-landing",
+        "visual_style": "warm-artisanal",
+        "agent_profile": "landing-direta",
+        "content_density": "comfortable",
+        "trust_strategy": [
+          "cta-clarity",
+          "clean-hierarchy"
+        ],
+        "ui_direction": {
+          "hero_style": "editorial-clean",
+          "spacing": "airy",
+          "card_density": "comfortable",
+          "section_order": [
+            "hero",
+            "benefits",
+            "services",
+            "about",
+            "contact",
+            "footer"
+          ]
+        },
+        "cta_strategy": {
+          "type": "buy",
+          "label": "Pedir informações para comprar",
+          "placement": [
+            "hero",
+            "proof",
+            "footer"
+          ]
+        },
+        "image_strategy": {
+          "provider": "9router-preferred",
+          "mode": "generated-first",
+          "slots": [
+            "hero",
+            "services",
+            "audience"
+          ],
+          "generation": {
+            "model": "cx/gpt-5.4-image",
+            "size": "auto",
+            "quality": "auto",
+            "background": "auto",
+            "image_detail": "high",
+            "output_format": "png"
+          }
+        },
+        "design_notes": {
+          "segment_signal": "Loja de roupas e moda feminina",
+          "primary_cta_signal": "Pedir informações para comprar",
+          "layout_reason": "conversion-landing foi escolhido com base no CTA, no volume de conteúdo e no contexto de Loja de roupas e moda feminina.",
+          "style_reason": "warm-artisanal foi escolhido para evitar aparência genérica e manter leitura simples para o segmento.",
+          "must_have_sections": [
+            "hero",
+            "benefits",
+            "services",
+            "about",
+            "contact",
+            "footer"
+          ],
+          "trust_priority": "supporting",
+          "content_density": "comfortable",
+          "avoid": [
+            "cara de startup SaaS",
+            "gradientes genéricos de IA",
+            "cards repetitivos sem hierarquia",
+            "imagem artificial ou render 3D"
+          ],
+          "reference_ids": [
+            "landingfolio-home",
+            "one-page-love-gallery"
+          ]
+        },
+        "image_prompts": [
+          {
+            "slot": "hero",
+            "aspect_ratio": "16:9",
+            "goal": "transmitir confiança imediata e contexto real",
+            "alt": "Loja de roupas e moda feminina em operação real",
+            "caption": "Visão principal do negócio",
+            "negative_prompt_hints": [
+              "sem texto embutido",
+              "sem mockup de tela",
+              "sem render 3D",
+              "sem estética genérica de IA",
+              "sem excesso de filtros"
+            ],
+            "prompt": "foto calorosa, próxima, textura humana, luz natural suave. foco em proposta clara e ação principal evidente. Foto editorial realista de Loja de roupas e moda feminina, ambiente profissional, pessoas reais quando fizer sentido, iluminação natural, foco em qualidade e confiança."
+          },
+          {
+            "slot": "services",
+            "aspect_ratio": "4:3",
+            "goal": "mostrar a oferta principal com clareza",
+            "alt": "Sobre o negócio, Mapa de localização, Feed do Instagram",
+            "caption": "Serviços ou ofertas em destaque",
+            "negative_prompt_hints": [
+              "sem texto embutido",
+              "sem mockup de tela",
+              "sem render 3D",
+              "sem estética genérica de IA",
+              "sem excesso de filtros"
+            ],
+            "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Cena realista mostrando Sobre o negócio, Mapa de localização, Feed do Instagram para Loja de roupas e moda feminina, composição escaneável, detalhe verdadeiro do serviço, sem elementos fantasiosos."
+          },
+          {
+            "slot": "audience",
+            "aspect_ratio": "4:3",
+            "goal": "humanizar o atendimento e o público",
+            "alt": "Clientes de Loja de roupas e moda feminina",
+            "caption": "Experiência do cliente",
+            "negative_prompt_hints": [
+              "sem texto embutido",
+              "sem mockup de tela",
+              "sem render 3D",
+              "sem estética genérica de IA",
+              "sem excesso de filtros"
+            ],
+            "prompt": "foto calorosa, próxima, textura humana, luz natural suave. Clientes reais de Loja de roupas e moda feminina (Mulheres e famílias de Penápolis e região que acompanham moda pelo Instagram), atendimento autêntico, clima humano, imagem limpa e confiável."
+          }
+        ]
+      }
+    },
+    "agent_profile": "landing-direta",
+    "builder_model": "cx/gpt-5.5",
+    "builder_provider": "default",
+    "flow_mode": "fluxo"
+  }
+}
+```

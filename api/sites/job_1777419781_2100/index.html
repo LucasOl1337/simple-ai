@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Napassarela | Loja de roupas e moda feminina</title>
+  <meta name="description" content="Napassarela: moda feminina e roupas para toda família em Penápolis e região. Acompanhe novidades pelo Instagram e peça informações para comprar.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #9b4f3f;
+      --neutral: #fff7ed;
+      --accent: #3f2a22;
+      --paper: #fffdf8;
+      --soft: #ead7c5;
+      --line: rgba(63, 42, 34, .16);
+      --shadow: 0 22px 60px rgba(63, 42, 34, .14);
+      --radius: 28px;
+      --max: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Fraunces", Georgia, serif;
+      background: var(--paper);
+      color: var(--accent);
+      line-height: 1.55;
+      text-rendering: optimizeLegibility;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .wrap {
+      width: min(100% - 2rem, var(--max));
+      margin-inline: auto;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      padding: 1rem 0;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .75rem .85rem;
+      border: 1px solid rgba(255, 247, 237, .34);
+      border-radius: 999px;
+      background: rgba(63, 42, 34, .34);
+      backdrop-filter: blur(12px);
+      color: #fff7ed;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: .02em;
+      font-size: 1.05rem;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 1.2rem;
+      font-size: .95rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      opacity: .92;
+    }
+
+    .nav-links a:hover,
+    .nav-links a:focus {
+      opacity: 1;
+      text-decoration: underline;
+      text-underline-offset: .25em;
+    }
+
+    .mini-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: .72rem 1rem;
+      border-radius: 999px;
+      background: var(--neutral);
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .88rem;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 760px;
+      display: grid;
+      align-items: end;
+      overflow: hidden;
+      background: var(--accent);
+      color: var(--neutral);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(63, 42, 34, .38) 0%, rgba(63, 42, 34, .2) 34%, rgba(63, 42, 34, .86) 100%),
+        linear-gradient(90deg, rgba(155, 79, 63, .46), rgba(255, 247, 237, .08));
+      z-index: 1;
+    }
+
+    .hero-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 8.5rem 0 3rem;
+    }
+
+    .hero-panel {
+      max-width: 760px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      margin: 0 0 1rem;
+      color: #ffe6d1;
+      font-size: .9rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 36px;
+      height: 1px;
+      background: currentColor;
+      opacity: .8;
+    }
+
+    h1, h2, h3, p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      font-size: clamp(2.7rem, 12vw, 5.4rem);
+      line-height: .93;
+      letter-spacing: -.055em;
+      max-width: 10ch;
+    }
+
+    .hero-lead {
+      max-width: 620px;
+      margin-bottom: 1.5rem;
+      font-size: clamp(1.08rem, 3.8vw, 1.45rem);
+      color: rgba(255, 247, 237, .94);
+    }
+
+    .cta-row {
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+      align-items: stretch;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      padding: .95rem 1.25rem;
+      border: 0;
+      border-radius: 999px;
+      background: var(--primary);
+      color: #fffdf8;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+      box-shadow: 0 12px 28px rgba(63, 42, 34, .2);
+    }
+
+    .button:hover,
+    .button:focus {
+      transform: translateY(-2px);
+      background: #884334;
+      box-shadow: 0 16px 34px rgba(63, 42, 34, .24);
+    }
+
+    .button.light {
+      background: var(--neutral);
+      color: var(--accent);
+    }
+
+    .button.light:hover,
+    .button.light:focus {
+      background: #fffdf8;
+    }
+
+    .text-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      color: var(--neutral);
+      text-decoration: underline;
+      text-underline-offset: .3em;
+      font-weight: 600;
+    }
+
+    .caption {
+      position: relative;
+      z-index: 2;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 247, 237, .22);
+      color: rgba(255, 247, 237, .82);
+      font-size: .95rem;
+    }
+
+    section {
+      padding: 4.5rem 0;
+    }
+
+    .section-head {
+      display: grid;
+      gap: .8rem;
+      margin-bottom: 2rem;
+    }
+
+    .section-kicker {
+      color: var(--primary);
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 8vw, 3.7rem);
+      line-height: 1;
+      letter-spacing: -.045em;
+      margin-bottom: 0;
+    }
+
+    .section-copy {
+      font-size: 1.04rem;
+      color: rgba(63, 42, 34, .78);
+      max-width: 620px;
+      margin-bottom: 0;
+    }
+
+    .categories {
+      background: var(--neutral);
+    }
+
+    .catalog-layout {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .category-image {
+      overflow: hidden;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      background: var(--soft);
+    }
+
+    .category-image img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }
+
+    .image-note {
+      margin: 0;
+      padding: 1rem;
+      color: rgba(63, 42, 34, .74);
+      font-size: .95rem;
+      background: #fffdf8;
+    }
+
+    .category-grid {
+      display: grid;
+      gap: .8rem;
+    }
+
+    .category-card {
+      padding: 1.25rem;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255, 253, 248, .78);
+    }
+
+    .category-card strong {
+      display: block;
+      margin-bottom: .25rem;
+      font-size: 1.18rem;
+      line-height: 1.15;
+      color: var(--accent);
+    }
+
+    .category-card span {
+      color: rgba(63, 42, 34, .72);
+      font-size: .98rem;
+    }
+
+    .about {
+      background:
+        radial-gradient(circle at top left, rgba(155, 79, 63, .10), transparent 36%),
+        var(--paper);
+    }
+
+    .about-layout {
+      display: grid;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .about-card {
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: var(--neutral);
+    }
+
+    .about-card h2 {
+      margin-bottom: 1rem;
+    }
+
+    .about-card p {
+      color: rgba(255, 247, 237, .88);
+      font-size: 1.05rem;
+      margin-bottom: 1rem;
+    }
+
+    .about-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .about-photo {
+      overflow: hidden;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      background: var(--soft);
+    }
+
+    .about-photo img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }
+
+    .mid-cta {
+      padding: 0 0 4.5rem;
+      background: var(--paper);
+    }
+
+    .cta-band {
+      display: grid;
+      gap: 1.2rem;
+      padding: 1.5rem;
+      border-radius: 30px;
+      background: var(--primary);
+      color: var(--neutral);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .cta-band::after {
+      content: "";
+      position: absolute;
+      right: -64px;
+      bottom: -84px;
+      width: 190px;
+      height: 190px;
+      border: 1px solid rgba(255, 247, 237, .28);
+      border-radius: 999px;
+    }
+
+    .cta-band h2 {
+      font-size: clamp(1.9rem, 7vw, 3rem);
+      max-width: 760px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-band p {
+      color: rgba(255, 247, 237, .86);
+      margin-bottom: 0;
+      max-width: 620px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-band .button {
+      position: relative;
+      z-index: 1;
+      box-shadow: none;
+    }
+
+    .instagram {
+      background: var(--neutral);
+    }
+
+    .insta-card {
+      display: grid;
+      gap: 1.2rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      padding: 1rem;
+      box-shadow: 0 18px 44px rgba(63, 42, 34, .08);
+    }
+
+    .insta-visual {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .65rem;
+    }
+
+    .insta-tile {
+      min-height: 132px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #ead7c5, #fff7ed);
+      border: 1px solid rgba(63, 42, 34, .12);
+      padding: 1rem;
+      display: flex;
+      align-items: end;
+      color: rgba(63, 42, 34, .78);
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .insta-tile.large {
+      grid-column: 1 / -1;
+      min-height: 164px;
+      background:
+        linear-gradient(180deg, rgba(63, 42, 34, .18), rgba(63, 42, 34, .02)),
+        url("./assets/03-audience.png") center / cover;
+      color: #fffdf8;
+      text-shadow: 0 2px 20px rgba(63, 42, 34, .52);
+    }
+
+    .insta-content {
+      padding: .5rem;
+    }
+
+    .handle {
+      display: inline-flex;
+      margin-bottom: 1rem;
+      padding: .45rem .75rem;
+      border-radius: 999px;
+      background: rgba(155, 79, 63, .12);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: .95rem;
+      text-decoration: none;
+    }
+
+    .insta-content h2 {
+      margin-bottom: 1rem;
+    }
+
+    .insta-content p {
+      color: rgba(63, 42, 34, .76);
+      font-size: 1.04rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .contact {
+      background: var(--paper);
+    }
+
+    .contact-box {
+      display: grid;
+      gap: 1rem;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255, 247, 237, .96), rgba(234, 215, 197, .58));
+    }
+
+    .contact-item {
+      padding: 1rem;
+      border-radius: 20px;
+      background: rgba(255, 253, 248, .7);
+      border: 1px solid rgba(63, 42, 34, .10);
+    }
+
+    .contact-item small {
+      display: block;
+      color: var(--primary);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .35rem;
+    }
+
+    .contact-item p {
+      margin: 0;
+      color: rgba(63, 42, 34, .8);
+    }
+
+    footer {
+      padding: 2rem 0;
+      background: var(--accent);
+      color: var(--neutral);
+    }
+
+    .footer-inner {
+      display: grid;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .footer-brand {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 0 0 .15rem;
+    }
+
+    .footer-text {
+      margin: 0;
+      color: rgba(255, 247, 237, .74);
+      font-size: .95rem;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+    }
+
+    .footer-links a {
+      color: var(--neutral);
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: .3em;
+    }
+
+    @media (min-width: 640px) {
+      .cta-row {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .button {
+        width: auto;
+      }
+
+      .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .footer-links {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+
+    @media (min-width: 860px) {
+      .nav-links {
+        display: flex;
+      }
+
+      .hero {
+        min-height: 820px;
+      }
+
+      .hero-content {
+        padding-bottom: 4.5rem;
+      }
+
+      section {
+        padding: 6rem 0;
+      }
+
+      .section-head {
+        grid-template-columns: .9fr 1fr;
+        align-items: end;
+        margin-bottom: 3rem;
+      }
+
+      .catalog-layout {
+        grid-template-columns: .88fr 1.12fr;
+        gap: 2rem;
+        align-items: stretch;
+      }
+
+      .category-image {
+        position: sticky;
+        top: 1.5rem;
+        align-self: start;
+      }
+
+      .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+
+      .category-card {
+        min-height: 142px;
+        padding: 1.45rem;
+      }
+
+      .category-card:nth-child(5) {
+        grid-column: 1 / -1;
+      }
+
+      .about-layout {
+        grid-template-columns: 1fr .9fr;
+        gap: 2rem;
+      }
+
+      .about-card {
+        padding: 2.2rem;
+      }
+
+      .mid-cta {
+        padding-bottom: 6rem;
+      }
+
+      .cta-band {
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        padding: 2.25rem;
+      }
+
+      .cta-band p {
+        grid-column: 1 / 2;
+      }
+
+      .cta-band .button {
+        grid-column: 2 / 3;
+        grid-row: 1 / 3;
+      }
+
+      .insta-card {
+        grid-template-columns: .95fr 1.05fr;
+        padding: 1.25rem;
+        align-items: center;
+      }
+
+      .insta-content {
+        padding: 1.5rem;
+      }
+
+      .contact-box {
+        grid-template-columns: 1fr 1fr;
+        padding: 2rem;
+      }
+
+      .contact-box .section-copy {
+        grid-column: 1 / -1;
+      }
+
+      .footer-inner {
+        grid-template-columns: 1fr auto;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .button {
+        transition: none;
+      }
+
+      .button:hover,
+      .button:focus {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar" aria-label="Topo do site">
+    <div class="wrap">
+      <nav class="nav" aria-label="Navegação principal">
+        <a class="brand" href="#inicio" aria-label="Napassarela, início">Napassarela</a>
+        <div class="nav-links">
+          <a href="#categorias">Categorias</a>
+          <a href="#sobre">Sobre</a>
+          <a href="#instagram">Instagram</a>
+          <a href="#contato">Contato</a>
+        </div>
+        <a class="mini-cta" href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">Instagram</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <section class="hero" aria-labelledby="hero-title">
+      <img class="hero-img" src="./assets/01-hero.png" alt="Ambiente acolhedor de loja de roupas com peças de moda feminina em destaque">
+      <div class="wrap hero-content">
+        <div class="hero-panel">
+          <p class="eyebrow">Moda em Penápolis e região</p>
+          <h1 id="hero-title">Napassarela</h1>
+          <p class="hero-lead">Roupas e moda feminina para escolher com calma, estilo e proximidade. Também com opções para homens, crianças, jovens e toda família.</p>
+          <div class="cta-row" aria-label="Ações principais">
+            <a class="button light" href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">Pedir informações para comprar</a>
+            <a class="text-link" href="#categorias">Ver categorias</a>
+          </div>
+          <p class="caption">Moda para escolher com calma, estilo e proximidade.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="categories" id="categorias" aria-labelledby="categorias-title">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Categorias</span>
+            <h2 id="categorias-title">Peças para diferentes momentos da família.</h2>
+          </div>
+          <p class="section-copy">A Napassarela reúne opções para quem busca praticidade na hora de escolher roupas, consultar disponibilidade e combinar estilo para o dia a dia.</p>
+        </div>
+
+        <div class="catalog-layout">
+          <figure class="category-image">
+            <img src="./assets/02-categories.png" alt="Roupas femininas, masculinas, infantis e juvenis organizadas em loja de moda">
+            <figcaption class="image-note">Opções de moda para diferentes estilos e momentos da família.</figcaption>
+          </figure>
+
+          <div class="category-grid" aria-label="Lista de categorias da Napassarela">
+            <div class="category-card">
+              <strong>Moda feminina</strong>
+              <span>Peças para compor looks com elegância, conforto e personalidade.</span>
+            </div>
+            <div class="category-card">
+              <strong>Moda masculina</strong>
+              <span>Opções para homens que procuram roupas práticas e bem escolhidas.</span>
+            </div>
+            <div class="category-card">
+              <strong>Moda infantil</strong>
+              <span>Roupas para crianças, com foco em uso no dia a dia e ocasiões especiais.</span>
+            </div>
+            <div class="category-card">
+              <strong>Moda juvenil</strong>
+              <span>Peças para jovens acompanharem tendências com leveza e estilo.</span>
+            </div>
+            <div class="category-card">
+              <strong>Roupas para toda família</strong>
+              <span>Um atendimento próximo para ajudar a encontrar opções para diferentes idades, estilos e necessidades.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="about" id="sobre" aria-labelledby="sobre-title">
+      <div class="wrap about-layout">
+        <div class="about-card">
+          <span class="section-kicker">Sobre a loja</span>
+          <h2 id="sobre-title">Uma escolha mais próxima, do jeito que loja local sabe fazer.</h2>
+          <p>A Napassarela é uma loja de roupas e moda feminina voltada a mulheres e famílias de Penápolis e região.</p>
+          <p>A proposta é simples: ajudar você a encontrar peças com estilo, praticidade e atendimento acolhedor, sem complicar a compra.</p>
+          <p>Para novidades, inspirações e contato, o Instagram oficial é o principal canal da loja.</p>
+        </div>
+
+        <figure class="about-photo">
+          <img src="./assets/03-audience.png" alt="Cliente recebendo atendimento acolhedor em loja de roupas">
+          <figcaption class="image-note">Atendimento próximo para ajudar na escolha das peças.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="mid-cta" aria-labelledby="cta-title">
+      <div class="wrap">
+        <div class="cta-band">
+          <div>
+            <h2 id="cta-title">Gostou de alguma peça ou quer saber o que chegou?</h2>
+            <p>Fale com a Napassarela pelo Instagram oficial e peça informações sobre disponibilidade, tamanhos e opções.</p>
+          </div>
+          <a class="button light" href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">Pedir informações para comprar</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="instagram" id="instagram" aria-labelledby="instagram-title">
+      <div class="wrap">
+        <div class="insta-card">
+          <div class="insta-visual" aria-hidden="true">
+            <div class="insta-tile large">Novidades, combinações e inspiração para escolher melhor.</div>
+            <div class="insta-tile">Moda feminina</div>
+            <div class="insta-tile">Looks para a família</div>
+          </div>
+
+          <div class="insta-content">
+            <a class="handle" href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">@napassarela_penapolis</a>
+            <h2 id="instagram-title">Acompanhe a Napassarela no Instagram.</h2>
+            <p>O perfil oficial reúne a referência visual da loja, novidades e o caminho mais direto para conversar antes de comprar.</p>
+            <a class="button" href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">Pedir informações para comprar</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contato" aria-labelledby="contato-title">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Contato</span>
+            <h2 id="contato-title">Pronta para escolher sua próxima peça?</h2>
+          </div>
+          <p class="section-copy">Entre em contato pelo Instagram oficial da Napassarela. A loja atende Penápolis e região, e as informações de compra podem ser combinadas diretamente por lá.</p>
+        </div>
+
+        <div class="contact-box">
+          <div class="contact-item">
+            <small>Canal confirmado</small>
+            <p><a href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">Instagram oficial da Napassarela</a></p>
+          </div>
+          <div class="contact-item">
+            <small>Atendimento local</small>
+            <p>Penápolis e região.</p>
+          </div>
+          <a class="button" href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">Pedir informações para comprar</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer aria-label="Rodapé">
+    <div class="wrap footer-inner">
+      <div>
+        <p class="footer-brand">Napassarela</p>
+        <p class="footer-text">Loja de roupas e moda feminina · 2026</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">Instagram oficial</a>
+        <a href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">Pedir informações para comprar</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

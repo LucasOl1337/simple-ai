@@ -8,7 +8,7 @@ function formatTime(ts) {
 }
 
 function summarizeDetails(details = {}) {
-  const keys = ["builder_model", "provider", "business_name", "segment", "generated", "planned", "site_url", "error"];
+  const keys = ["builder_model", "builder_provider", "provider", "base_url", "business_name", "segment", "generated", "planned", "site_url", "error"];
   return keys
     .filter((key) => details[key] !== undefined && details[key] !== null && details[key] !== "")
     .map((key) => `${key}: ${typeof details[key] === "object" ? JSON.stringify(details[key]) : details[key]}`);
