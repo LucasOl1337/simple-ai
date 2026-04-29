@@ -45,3 +45,27 @@ frontend.err
 frontend.out
 tmp-vite.err
 tmp-vite.out
+
+# vendor: open-design (recursive allow-list pattern)
+# `**` ignores at any depth; `!` re-includes parent dirs and the
+# specific allow-listed paths (parents must be explicit because gitignore
+# does not list contents of an excluded directory).
+vendor/open-design/**
+!vendor/open-design/LICENSE
+!vendor/open-design/README-VENDORING.md
+!vendor/open-design/design-systems/
+!vendor/open-design/design-systems/**
+!vendor/open-design/skills/
+!vendor/open-design/skills/pricing-page/
+!vendor/open-design/skills/pricing-page/**
+!vendor/open-design/skills/blog-post/
+!vendor/open-design/skills/blog-post/**
+!vendor/open-design/skills/web-prototype/
+!vendor/open-design/skills/web-prototype/**
+!vendor/open-design/skills/saas-landing/
+!vendor/open-design/skills/saas-landing/**
+!vendor/open-design/skills/magazine-poster/
+!vendor/open-design/skills/magazine-poster/**
+!vendor/open-design/src/
+!vendor/open-design/src/prompts/
+!vendor/open-design/src/prompts/discovery.ts
