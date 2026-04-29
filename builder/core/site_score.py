@@ -39,6 +39,7 @@ GENERIC_RE = re.compile(
 CSS_MEDIA_RE = re.compile(r"@media\s*\(|clamp\(|minmax\(|auto-fit|auto-fill", re.IGNORECASE)
 CSS_COLOR_RE = re.compile(r"#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(|linear-gradient\(", re.IGNORECASE)
 FONT_RE = re.compile(r"font-family\s*:|fonts\.googleapis\.com|@font-face", re.IGNORECASE)
+REMOTE_GENERIC_IMAGE_RE = re.compile(r"source\.unsplash\.com|images\.unsplash\.com", re.IGNORECASE)
 ANCHOR_RE = re.compile(r"<a\b[^>]*\bhref\s*=\s*(['\"])(.*?)\1", re.IGNORECASE | re.DOTALL)
 IMG_RE = re.compile(r"<img\b([^>]*)>", re.IGNORECASE | re.DOTALL)
 ATTR_RE = re.compile(r"([:\w-]+)\s*=\s*(['\"])(.*?)\2", re.DOTALL)
@@ -244,16 +245,19 @@ def _score_images(
         return 150
     missing_alt = sum(1 for image in images if not (image.get("alt") or "").strip())
     broken = sum(1 for image in images if _is_broken_local_src(image.get("src", ""), site_dir))
+    generic_remote = sum(1 for image in images if REMOTE_GENERIC_IMAGE_RE.search(image.get("src", "")))
     generated_assets = _asset_urls(materialized_assets)
     used_generated = sum(1 for url in generated_assets if url and url in html)
     score = 350 + min(len(images) * 120, 300) + (250 if used_generated or not generated_assets else 0)
-    score -= min(missing_alt * 120, 350) + min(broken * 250, 600)
+    score -= min(missing_alt * 120, 350) + min(broken * 250, 600) + min(generic_remote * 250, 800)
     if missing_alt:
         issues["images"].append(f"{missing_alt} imagem(ns) sem alt")
     if broken:
         issues["images"].append(f"{broken} imagem(ns) local(is) quebrada(s)")
     if generated_assets and not used_generated:
         issues["images"].append("assets gerados nao usados")
+    if generic_remote:
+        issues["images"].append(f"{generic_remote} imagem(ns) remota(s) generica(s)")
     return max(0, min(score, MAX_DIMENSION_SCORE))
 
 
@@ -319,9 +323,12 @@ def _score_polish(html: str, text: str, issues: dict[str, list[str]]) -> int:
     score += 150 if len(text) > 1200 and len(html) > 7000 else 0
     if placeholders:
         issues["polish"].append(f"{placeholders} placeholder(s) detectado(s)")
-    if "unsplash.com" in html.lower():
-        score -= 100
+    if REMOTE_GENERIC_IMAGE_RE.search(html):
+        score -= 450
         issues["polish"].append("imagem remota generica detectada")
+    if "source.unsplash.com" in html.lower():
+        score -= 350
+        issues["polish"].append("fallback visual remoto pode renderizar vazio/quebrado")
     return max(0, min(score, MAX_DIMENSION_SCORE))
 
 

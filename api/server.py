@@ -229,17 +229,24 @@ def _call_site_quality_llm(*, url: str, html: str, technical_score: Dict[str, An
     )
     timeout = float(os.getenv("SITE_QUALITY_TIMEOUT_SECONDS", "60").strip() or "60")
     html_sample = html[:180_000]
+    render_risk_signals = _site_render_risk_signals(html)
     payload = {
         "url": url,
         "business_name": business_name,
         "segment": segment,
         "technical_score": technical_score,
+        "render_risk_signals": render_risk_signals,
         "html_sample": html_sample,
     }
     system_prompt = """
 You are Agente 03, a strict but fair senior website quality evaluator.
 
-Evaluate the real website represented by the HTML sample and technical score. Do not blindly trust heuristic issues: if a section exists semantically under a different name, credit it. Penalize real UX, clarity, trust, conversion, content, accessibility, visual polish, and completeness problems.
+Evaluate the real website represented by the HTML sample, render risk signals, and technical score. Do not blindly trust heuristic issues: if a section exists semantically under a different name, credit it. Penalize real UX, clarity, trust, conversion, content, accessibility, visual polish, and completeness problems.
+
+Important calibration:
+- If render_risk_signals indicate generic remote/fallback images, missing visual assets, oversized hero media, clipped hero copy, or likely broken first viewport, cap the score at 3000 unless there is strong evidence the page still renders beautifully.
+- If the first viewport likely looks broken, empty, cropped, or placeholder-like, score around 1000-3000 even if the HTML structure is technically valid.
+- A local business site with generic stock/fallback visuals and shallow commercial content should normally be 1500-4500, not 7000+.
 
 Score from 0 to 10000:
 - 9000-10000: world-class, polished, memorable, clear, conversion-ready, very few issues.
@@ -281,6 +288,19 @@ Return ONLY valid JSON:
     parsed["model"] = model
     parsed["base_url"] = base_url
     return parsed
+
+
+def _site_render_risk_signals(html: str) -> Dict[str, Any]:
+    lowered = (html or "").lower()
+    return {
+        "uses_source_unsplash": "source.unsplash.com" in lowered,
+        "uses_unsplash": "unsplash.com" in lowered,
+        "generic_remote_image_count": lowered.count("source.unsplash.com") + lowered.count("images.unsplash.com"),
+        "has_large_hero_media": bool("hero-image" in lowered or "hero-media" in lowered),
+        "has_overflow_hidden_near_hero": "hero" in lowered and "overflow: hidden" in lowered,
+        "has_object_fit_cover": "object-fit: cover" in lowered,
+        "potential_first_viewport_risk": "source.unsplash.com" in lowered and "hero" in lowered,
+    }
 
 
 def _builder_model_label(model_id: str) -> str:
