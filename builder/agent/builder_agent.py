@@ -52,6 +52,13 @@ from builder.core.design_template_selector import (
     select_design_template,
     selected_template_to_prompt_block,
 )
+from builder.core.design_systems_catalog import narrow_top3, DesignSystemSpec
+from builder.core.od_skills_router import match_skill, load_skill_instructions
+from builder.prompts.od_checklists import (
+    ANTI_AI_SLOP_CHECKLIST_EN,
+    SELF_CRITIQUE_PROTOCOL_EN,
+    LANGUAGE_OVERRIDE,
+)
 
 
 HTML_FENCE_PATTERN = re.compile(
@@ -367,6 +374,37 @@ class BuilderAgent:
         }
         return mapping.get(layout_family)
 
+    def _format_top3_design_systems(
+        self, systems: list["DesignSystemSpec"]
+    ) -> str:
+        if not systems:
+            return ""
+        lines = [
+            "# BIBLIOTECA DE DESIGN: TOP-3 DESIGN SYSTEMS (OPEN DESIGN)",
+            "",
+            "Você recebe três sistemas candidatos. Escolha UM e use a paleta",
+            "OKLch e a typography stack do escolhido. Insira um comentário HTML",
+            "imediatamente antes de `<html>` no formato:",
+            "    <!-- design_system_chosen: <id> -->",
+            "para que a escolha fique auditável nos logs.",
+            "",
+        ]
+        for rank, system in enumerate(systems, start=1):
+            palette = ", ".join(
+                f"{k}={v}" for k, v in sorted(system.palette_oklch.items())
+            ) or "(sem paleta declarada)"
+            typo = ", ".join(
+                f"{k}={v}" for k, v in sorted(system.typography.items())
+            ) or "(sem typography declarada)"
+            lines.append(f"## #{rank} — {system.name} (id={system.id})")
+            lines.append(f"- school: {system.school}")
+            lines.append(f"- density: {system.density}")
+            lines.append(f"- palette: {palette}")
+            lines.append(f"- typography: {typo}")
+            lines.append(f"- source: {system.source_url}")
+            lines.append("")
+        return "\n".join(lines).rstrip()
+
     def _collect_design_library_context(self, job: BuildJob) -> str:
         design_plan = job.spec.get("design_plan") or job.spec.get("summary", {}).get("design_plan") or {}
         if not isinstance(design_plan, dict) or not design_plan:
@@ -425,6 +463,42 @@ class BuilderAgent:
                     focus = ", ".join(entry.get("focus") or []) if isinstance(entry.get("focus"), list) else ""
                     lines.append(f"- {title}: {focus}. {notes} Fonte: {url}")
                 sections.append("# BIBLIOTECA DE DESIGN: REFERENCIAS RECOMENDADAS\n" + "\n".join(lines))
+
+        # === Open Design augmentation (vendor-only, server-side) ===
+        try:
+            vendor_root = self._project_root / "vendor" / "open-design"
+
+            top3_systems = narrow_top3(job.spec)
+            top3_block = self._format_top3_design_systems(top3_systems)
+            if top3_block:
+                sections.append(top3_block)
+
+            skill_id = match_skill(job.spec)
+            try:
+                skill_md = load_skill_instructions(
+                    skill_id, vendor_root / "skills"
+                )
+                sections.append(
+                    f"# BIBLIOTECA DE DESIGN: SKILL ESCOLHIDA — {skill_id}\n"
+                    f"{skill_md}"
+                )
+            except (ValueError, FileNotFoundError):
+                # Skill MD missing or unknown → skip silently; smoke logs catch it
+                pass
+
+            sections.append(
+                "# BIBLIOTECA DE DESIGN: ANTI-AI-SLOP (OPEN DESIGN, EN)\n"
+                f"{ANTI_AI_SLOP_CHECKLIST_EN}"
+            )
+            sections.append(
+                "# BIBLIOTECA DE DESIGN: 5-DIM SELF-CRITIQUE (OPEN DESIGN, EN)\n"
+                f"{SELF_CRITIQUE_PROTOCOL_EN}"
+            )
+            sections.append(LANGUAGE_OVERRIDE)
+        except Exception as exc:  # noqa: BLE001 — smoke-only path, never crash builds
+            import sys
+            print(f"[OD] augmentation failed: {exc}", file=sys.stderr)
+        # === End Open Design augmentation ===
 
         return "\n\n".join(section for section in sections if section).strip()
 
