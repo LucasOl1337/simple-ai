@@ -71,3 +71,4 @@ vendor/open-design/**
 !vendor/open-design/src/
 !vendor/open-design/src/prompts/
 !vendor/open-design/src/prompts/discovery.ts
+vendor/open-design/od-preview-index.html
