@@ -13,7 +13,7 @@ Design grounded in:
 """
 from __future__ import annotations
 
-PROMPT_VERSION = "builder-2026-04-25-v1"
+PROMPT_VERSION = "builder-2026-04-28-v2-od"
 
 
 AGENTE_02_BUILDER_SYSTEM_PROMPT = """\
