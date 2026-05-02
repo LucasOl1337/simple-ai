@@ -62,20 +62,24 @@ npm run dev:backend   # equivalente a python api/server.py
 Configure em `api/.env.local`:
 
 ```env
-# LLM para o Agente 02 (obrigatório para gerar sites via LLM)
-AGENT_LLM_PROVIDER=anthropic
-AGENT_LLM_API_KEY=sk-ant-...
-AGENT_LLM_MODEL=claude-opus-4-7      # opcional
-BUILDER_AGENT_PROFILE=site-builder-core
+# Builder text model: gera o index.html final
+AGENT_LLM_PROVIDER=openai-compatible
+AGENT_LLM_API_KEY=
+AGENT_LLM_BASE_URL=http://localhost:20128/v1
+AGENT_LLM_MODEL=cx/gpt-5.5
+BUILDER_AGENT_PROFILE=site-builder-hyperframes-inspired
 
-# Geração de imagens (opcional)
-AGENT_IMAGE_API_KEY=sk-...
-AGENT_IMAGE_MODEL=gpt-image-1
+# Builder image model: gera assets antes do HTML
 AGENT_IMAGE_ENABLED=1
+AGENT_IMAGE_API_KEY=
+AGENT_IMAGE_BASE_URL=http://localhost:20128/v1
+AGENT_IMAGE_MODEL=cx/gpt-5.4-image
 
 # Agente 03 OCI (opcional)
 # Requer ~/.oci/config configurado
 ```
+
+Referencia completa dos modelos do builder: [`builder/README.md`](../builder/README.md#configuracao-dos-modelos).
 
 ---
 

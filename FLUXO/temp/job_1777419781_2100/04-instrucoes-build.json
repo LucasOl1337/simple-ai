@@ -1,0 +1,87 @@
+{
+  "site_goal": "Criar uma landing page única, elegante, acolhedora e comercial para a Napassarela, loja de roupas e moda feminina voltada a mulheres e famílias de Penápolis e região, com foco em conversão para o CTA principal \"Pedir informações para comprar\" e valorização do Instagram oficial como principal referência visual e canal de relacionamento.",
+  "page_narrative": "A página deve conduzir a visitante de uma primeira impressão editorial e calorosa da marca para uma compreensão rápida das categorias atendidas, reforçar proximidade local e atendimento acolhedor, apresentar o Instagram oficial como fonte de novidades e finalizar com contato/CTA sem inventar dados não confirmados.",
+  "section_order": [
+    "Hero editorial com imagem ampla, nome Napassarela, frase comercial curta, menção a moda para mulheres e famílias de Penápolis e região, e CTA principal visível.",
+    "Categorias/ofertas com destaque para moda feminina, moda masculina, moda infantil, moda juvenil e roupas para toda família.",
+    "Sobre a Napassarela com texto curto, acolhedor e local, reforçando estilo, praticidade e atendimento próximo.",
+    "CTA intermediário com reforço comercial e botão \"Pedir informações para comprar\".",
+    "Instagram/feed com estética inspirada no universo de moda do Instagram, link evidente para o perfil oficial e convite para acompanhar novidades.",
+    "Contato com CTA principal, sem telefone, WhatsApp, endereço, horários ou mapa exato não confirmados; mencionar apenas atendimento a Penápolis e região.",
+    "Footer simples com nome da marca, segmento, link para Instagram oficial e repetição do CTA principal."
+  ],
+  "required_content": [
+    "Nome da marca: Napassarela.",
+    "Segmento: loja de roupas e moda feminina.",
+    "Público: mulheres e famílias de Penápolis e região que acompanham moda pelo Instagram.",
+    "CTA principal exatamente como: Pedir informações para comprar.",
+    "Instagram oficial: https://www.instagram.com/napassarela_penapolis/.",
+    "Categorias obrigatórias: moda feminina, moda masculina, moda infantil, moda juvenil e roupas para toda família.",
+    "Hero com chamada clara para compra/informações e botão principal acima da dobra.",
+    "Texto sobre o negócio explicando que a Napassarela é uma loja de roupas e moda para mulheres e famílias, com linguagem acolhedora e foco em estilo, praticidade e atendimento local.",
+    "Seção Instagram/feed informando que o perfil oficial é referência para novidades e inspirações, com botão/link para abrir o Instagram.",
+    "Seção de contato com convite para pedir informações para comprar, usando preferencialmente link do Instagram como canal confirmado.",
+    "Footer com Napassarela, loja de roupas e moda feminina, Instagram oficial e CTA principal."
+  ],
+  "asset_usage": [
+    {
+      "slot": "hero",
+      "url": "./assets/01-hero.png",
+      "section": "Hero",
+      "instruction": "Usar como imagem principal no topo em proporção ampla 16:9 ou equivalente responsivo. Aplicar overlay leve em creme, terracota ou marrom suave para garantir legibilidade do título e do CTA. Alt obrigatório: \"Ambiente acolhedor de loja de roupas com peças de moda feminina em destaque\". Pode usar a legenda: \"Moda para escolher com calma, estilo e proximidade.\""
+    },
+    {
+      "slot": "categories",
+      "url": "./assets/02-categories.png",
+      "section": "Categorias/ofertas",
+      "instruction": "Usar como imagem de apoio na seção de categorias, em layout lateral ou card visual. A imagem deve acompanhar os blocos de moda feminina, moda masculina, moda infantil, moda juvenil e roupas para toda família. Alt obrigatório: \"Roupas femininas, masculinas, infantis e juvenis organizadas em loja de moda\". Pode usar a legenda: \"Opções de moda para diferentes estilos e momentos da família.\""
+    },
+    {
+      "slot": "audience",
+      "url": "./assets/03-audience.png",
+      "section": "Sobre ou CTA intermediário",
+      "instruction": "Usar para humanizar a seção sobre ou o bloco de CTA intermediário, reforçando proximidade, atendimento acolhedor e experiência local. Alt obrigatório: \"Cliente recebendo atendimento acolhedor em loja de roupas\". Pode usar a legenda: \"Atendimento próximo para ajudar na escolha das peças.\""
+    }
+  ],
+  "visual_style": {
+    "palette": [
+      "Terracota suave",
+      "Creme quente",
+      "Marrom suave",
+      "Off-white",
+      "Bege claro",
+      "Cobre ou caramelo em detalhes"
+    ],
+    "typography": "Usar uma fonte serifada elegante para títulos, com personalidade de moda/boutique, combinada a uma fonte sans-serif limpa para textos, botões e navegação. Garantir boa leitura em mobile.",
+    "layout": "Landing page mobile-first, scroll único, com hero editorial no topo, seções arejadas, cards confortáveis, hierarquia visual clara, botões destacados e espaçamento generoso. Evitar excesso de blocos e manter experiência direta de conversão.",
+    "tone": "Elegante, acolhedor, comercial, familiar, próximo e inspirado no Instagram da loja, com sensação de boutique local real."
+  },
+  "non_invention_rules": [
+    "Não inventar telefone, número de WhatsApp ou qualquer contato direto não fornecido.",
+    "Não inventar endereço físico, mapa exato, bairro, cidade além da menção já confirmada a Penápolis e região, nem horários de funcionamento.",
+    "Não implementar mapa exato se não houver endereço confirmado; se houver área de localização, ela deve mencionar apenas atuação/localidade geral em Penápolis e região.",
+    "Não inventar preços, promoções, descontos, condições de pagamento ou parcelamento.",
+    "Não inventar depoimentos de clientes.",
+    "Não inventar conquistas, anos de mercado, quantidade de clientes, prêmios ou diferenciais não informados.",
+    "Não afirmar que existe e-commerce, carrinho, login, pagamento online, entrega ou retirada se isso não foi informado.",
+    "Não criar posts falsos de Instagram, prints de feed, interface de aplicativo, contadores de seguidores ou métricas sociais.",
+    "Não usar imagens com texto embutido, logotipos inventados, mockups de tela, render 3D ou aparência artificial de IA.",
+    "Não adicionar informações coletadas de fontes externas sem confirmação explícita; o Instagram oficial deve ser usado apenas como referência visual e link confirmado."
+  ],
+  "quality_criteria": [
+    "CTA \"Pedir informações para comprar\" deve aparecer no hero, em um ponto intermediário e no footer/contato.",
+    "A página deve ser clara e escaneável em celular, com botões grandes, contraste adequado e textos curtos.",
+    "O visual deve parecer de boutique local elegante e acessível, não de startup genérica.",
+    "Todas as categorias obrigatórias devem aparecer de forma visível.",
+    "O link para https://www.instagram.com/napassarela_penapolis/ deve estar evidente na seção Instagram/feed e no footer.",
+    "As imagens fornecidas devem ser usadas nos slots indicados, com alt text apropriado e sem distorção.",
+    "Não deve haver telefone, WhatsApp, endereço, mapa, horário, preço ou depoimento inventado.",
+    "A linguagem deve ser comercial, acolhedora e direta, evitando promessas exageradas.",
+    "A hierarquia deve priorizar conversão: título forte, subtítulo curto, CTA destacado e repetição estratégica.",
+    "A página final deve funcionar como landing page única, sem depender de páginas internas ou funcionalidades não solicitadas."
+  ],
+  "builder_prompt": "Construa uma landing page única, mobile-first, para a Napassarela, loja de roupas e moda feminina voltada a mulheres e famílias de Penápolis e região. O objetivo principal é gerar pedidos de informação para compra usando o CTA exatamente como \"Pedir informações para comprar\". Organize a página nesta ordem: 1) Hero editorial com a imagem ./assets/01-hero.png, nome Napassarela, chamada comercial curta, menção a moda para mulheres e famílias de Penápolis e região e CTA principal; 2) Categorias/ofertas com moda feminina, moda masculina, moda infantil, moda juvenil e roupas para toda família, apoiada pela imagem ./assets/02-categories.png; 3) Sobre a Napassarela com texto curto e acolhedor sobre estilo, praticidade e atendimento local, usando se adequado a imagem ./assets/03-audience.png; 4) CTA intermediário repetindo \"Pedir informações para comprar\"; 5) Instagram/feed com convite para acompanhar novidades e inspirações no perfil oficial https://www.instagram.com/napassarela_penapolis/, sem criar posts falsos ou interface de aplicativo; 6) Contato com CTA principal e canal confirmado via Instagram, sem telefone/WhatsApp/endereço/horários inventados; 7) Footer simples com nome da marca, segmento, link do Instagram e CTA. Use estética quente e elegante com terracota suave, creme quente, marrom suave, off-white, bege claro e detalhes em cobre/caramelo. Combine títulos serifados elegantes com texto sans-serif limpo. Mantenha espaçamento arejado, cards confortáveis, botões visíveis e hierarquia simples. Não invente qualquer dado não fornecido: nada de telefone, WhatsApp, endereço, mapa exato, horários, preços, promoções, depoimentos, anos de mercado, quantidade de clientes, e-commerce, entrega ou pagamento online. Use os assets fornecidos com os alt texts indicados e preserve aparência realista/editorial.",
+  "_fluxo_model": "cx/gpt-5.5",
+  "_fluxo_duration_ms": 22660,
+  "_fluxo_attempts": 1
+}

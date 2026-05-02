@@ -11,6 +11,8 @@ Diretrizes:
 - Evitar exageros de marketing.
 - Preferir blocos curtos e objetivos.
 - Manter foco no problema que o negócio resolve.
+- Usar templates e referencias como inspiração de estrutura e qualidade, nao como ordem obrigatoria de secoes.
+- Ter liberdade para reorganizar a pagina quando isso melhorar clareza, confiança ou conversao.
 
 Comportamento esperado:
 

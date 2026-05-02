@@ -68,19 +68,26 @@ Quando faltar dado concreto:
 
 Texto da página é em **português brasileiro**. Calmo, direto, sem marketing forçado. Frases curtas. Use o nome do negócio como protagonista.
 
-# SEÇÕES MÍNIMAS
+# LIBERDADE DE COMPOSIÇÃO
 
-Inclua, na ordem:
+Você tem liberdade para decidir a estrutura, ordem e composição do site. Use templates, receitas de layout, referências e `design_plan` como **referência estratégica**, não como grade obrigatória.
 
-1. **Hero.** Nome do negócio + 1 frase que descreve o que faz + 1 CTA primário óbvio (ligado ao `primary_cta` da spec).
-2. **O que oferecemos.** Lista clara de `offerings` ou `user_facing_actions`. Cards ou seção corrida — use o que ficar mais bonito.
-3. **Sobre.** Parágrafo curto contextualizando o negócio (use `current_workflow` e `business_type` da spec). Humanize.
-4. **Contato / CTA final.** WhatsApp ou formulário simples (mailto:) ou link de agendamento. Repita a ação principal.
-5. **Footer.** Nome do negócio + ano corrente.
+- Preserve a intenção do briefing, mas escolha a melhor arquitetura da página para este negócio específico.
+- Você pode reordenar, fundir, dividir ou renomear seções quando isso melhorar clareza, ritmo ou conversão.
+- Não copie literalmente templates ou referências. Extraia apenas princípios: ritmo, hierarquia, tipo de hero, densidade, tratamento visual e anti-padrões.
+- Se houver `section_order`, trate como sugestão inicial. Ajuste quando a narrativa do negócio pedir outra ordem.
+- Se houver `RECEITAS DE LAYOUT`, use-as como opções de inspiração. Você pode combinar ideias ou criar uma composição própria se ficar mais adequada.
+
+O site final ainda precisa resolver, de algum jeito claro:
+
+1. Quem é o negócio e o que faz.
+2. Qual é a ação principal que o visitante deve tomar.
+3. O que é oferecido, usando `offerings`, `user_facing_actions` ou dados concretos da spec.
+4. Por que confiar ou como funciona, quando houver dados suficientes.
+5. Como entrar em contato ou avançar para a ação principal.
+6. Footer simples com nome do negócio e ano corrente.
 
 Adicione mais seções (FAQ, depoimentos, galeria) APENAS se a spec mencionar dados concretos para preencher.
-
-Variação obrigatória: antes de escrever o HTML, escolha mentalmente uma receita de layout coerente com o segmento. Evite usar o mesmo posicionamento e a mesma grade em todas as páginas. Se a spec/prompt trouxer uma seção `RECEITAS DE LAYOUT`, siga uma das opções recomendadas.
 
 # NÃO FAÇA
 

@@ -1,0 +1,42 @@
+{
+  "run_id": "job_1777421094_7058",
+  "assets": [
+    {
+      "slot": "hero",
+      "status": "generated",
+      "url": "./assets/01-hero.png",
+      "alt": "Vitrine de loja de moda para toda a família",
+      "caption": "Moda para toda a família em Penápolis",
+      "prompt_used": "Foto editorial realista de uma loja de moda local com ar acolhedor e elegante, vitrine e araras com roupas casuais atuais para mulheres, homens, crianças e jovens, iluminação natural suave, composição limpa de vitrine digital, sensação comercial e familiar, sem texto na imagem, sem logotipos inventados, sem render 3D, sem aparência artificial, alta qualidade, estilo fotografia de varejo de moda.; referência visual do link: moda varejista para toda a família, atmosfera comercial e acolhedora, visual elegante e acessível, looks casuais e atuais em ambiente de loja, composição de vitrine digital limpa, comercial, acessível, familiar, cotidiano, moda de varejo",
+      "usage_instruction": "Usar no hero em proporção ampla 16:9, com overlay leve para título e CTA. Evitar cortes que escondam roupas ou pessoas."
+    },
+    {
+      "slot": "categories",
+      "status": "generated",
+      "url": "./assets/02-categories.png",
+      "alt": "Roupas femininas, masculinas, infantis e juvenis organizadas em loja",
+      "caption": "Opções para diferentes estilos e idades",
+      "prompt_used": "Foto realista de araras e mesas de roupas organizadas por categorias de moda feminina, masculina, infantil e juvenil em loja de varejo, ambiente limpo e acolhedor, tons neutros com detalhes quentes, foco em variedade de peças, iluminação natural, estilo editorial comercial, sem texto, sem placas com marcas, sem preços, sem promoções.; referência visual do link: moda varejista para toda a família, atmosfera comercial e acolhedora, visual elegante e acessível, looks casuais e atuais em ambiente de loja, composição de vitrine digital limpa, comercial, acessível, familiar, cotidiano, moda de varejo",
+      "usage_instruction": "Usar na seção de categorias ou como imagem de apoio ao lado dos cards feminino, masculino, infantil e juvenil."
+    },
+    {
+      "slot": "audience",
+      "status": "generated",
+      "url": "./assets/03-audience.png",
+      "alt": "Cliente recebendo atendimento em loja de roupas",
+      "caption": "Atendimento próximo para escolher novidades",
+      "prompt_used": "Foto realista de atendimento em loja de roupas, cliente olhando peças em arara com clima amigável e familiar, pessoas naturais em ambiente de moda varejista, luz suave, composição humana e confiável, estética elegante e acessível, sem texto embutido, sem poses exageradas, sem aparência de banco de imagem artificial.; referência visual do link: moda varejista para toda a família, atmosfera comercial e acolhedora, visual elegante e acessível, looks casuais e atuais em ambiente de loja, composição de vitrine digital limpa, comercial, acessível, familiar, cotidiano, moda de varejo",
+      "usage_instruction": "Usar na seção sobre ou contato para humanizar a experiência de compra e reforçar atendimento local."
+    }
+  ],
+  "failures": [],
+  "quality_notes": [],
+  "generation": {
+    "count": 3,
+    "slots": {
+      "hero": "generated",
+      "categories": "generated",
+      "audience": "generated"
+    }
+  }
+}

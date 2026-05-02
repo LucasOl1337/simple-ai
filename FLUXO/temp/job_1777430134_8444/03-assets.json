@@ -1,0 +1,42 @@
+{
+  "run_id": "job_1777430134_8444",
+  "assets": [
+    {
+      "slot": "hero",
+      "status": "generated",
+      "url": "./assets/01-hero.png",
+      "alt": "Ambiente de loja de roupas para toda a família com peças organizadas em araras",
+      "caption": "Moda para toda família desde 2002",
+      "prompt_used": "Foto editorial realista de uma loja de roupas de varejo para toda a família em cidade do interior, araras com roupas femininas, masculinas e infantis bem organizadas, ambiente acolhedor e comercial, iluminação natural suave, estética de vitrine digital elegante, cores neutras com toques quentes, pessoas reais em atendimento discreto quando fizer sentido, sem texto embutido, sem logotipos inventados, sem render 3D, sem aparência artificial, alta qualidade, composição horizontal 16:9 com espaço livre para título e botão à esquerda.; referência visual do link: moda varejista para toda a família, atmosfera comercial e acolhedora, visual elegante e acessível, looks casuais e atuais em ambiente de loja, composição de vitrine digital limpa, comercial, acessível, familiar, cotidiano, moda de varejo",
+      "usage_instruction": "Usar como imagem principal do hero, com overlay leve ou área lateral limpa para inserir o título Napassarela e o CTA Pedir informações para comprar."
+    },
+    {
+      "slot": "categories",
+      "status": "generated",
+      "url": "./assets/02-categories.png",
+      "alt": "Roupas femininas, masculinas, infantis e juvenis organizadas em loja",
+      "caption": "Feminino, masculino, infantil e juvenil",
+      "prompt_used": "Foto realista em formato editorial de quatro áreas de moda em loja: roupas femininas, masculinas, infantis e juvenis em araras e prateleiras organizadas, looks casuais e atuais, ambiente de varejo acessível e elegante, luz natural suave, composição limpa, sem texto embutido, sem marcas visíveis, sem preços, sem promoções, sem render 3D, alta qualidade, proporção 4:3.; referência visual do link: moda varejista para toda a família, atmosfera comercial e acolhedora, visual elegante e acessível, looks casuais e atuais em ambiente de loja, composição de vitrine digital limpa, comercial, acessível, familiar, cotidiano, moda de varejo",
+      "usage_instruction": "Usar na seção de categorias ou como imagem de apoio para os cards de Moda feminina, Moda masculina, Moda infantil e Moda juvenil."
+    },
+    {
+      "slot": "instagram_vitrine",
+      "status": "generated",
+      "url": "./assets/03-instagram_vitrine.png",
+      "alt": "Looks e peças de roupas organizados como vitrine de novidades",
+      "caption": "Acompanhe novidades pelo Instagram",
+      "prompt_used": "Cena realista de vitrine digital de moda inspirada em Instagram, com mesa ou arara de looks casuais bem combinados, detalhes de tecidos, cabides e peças dobradas, estética limpa e comercial, clima acolhedor de loja local, tons neutros e quentes, sem interface de celular, sem texto embutido, sem likes ou elementos de rede social, sem marcas inventadas, fotografia natural de alta qualidade, proporção 4:3.; referência visual do link: moda varejista para toda a família, atmosfera comercial e acolhedora, visual elegante e acessível, looks casuais e atuais em ambiente de loja, composição de vitrine digital limpa, comercial, acessível, familiar, cotidiano, moda de varejo",
+      "usage_instruction": "Usar na seção de feed/vitrine do Instagram para convidar o visitante a seguir @napassarela_penapolis."
+    }
+  ],
+  "failures": [],
+  "quality_notes": [],
+  "generation": {
+    "count": 3,
+    "slots": {
+      "hero": "generated",
+      "categories": "generated",
+      "instagram_vitrine": "generated"
+    }
+  }
+}

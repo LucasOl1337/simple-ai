@@ -6,12 +6,15 @@ import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+from runtime_logs import add_runtime_log, list_runtime_logs
 
 # Add project root to sys.path so builder.* modules can be imported
 _API_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -53,6 +56,7 @@ else:
     LINK_CONTENT_IMPORT_ERROR = None
 
 from builder.agent.builder_agent import BuilderAgent
+from builder.core.site_score import score_site_html
 
 
 BASE_DIR = _API_DIR
@@ -70,12 +74,21 @@ def to_http_error(exc: Exception) -> HTTPException:
     return HTTPException(status_code=500, detail=f"Internal error: {exc}")
 
 
+def safe_print(message: str) -> None:
+    try:
+        print(message)
+    except UnicodeEncodeError:
+        print(message.encode("ascii", "backslashreplace").decode("ascii"))
+
+
 SITES_DIR = Path(BASE_DIR) / "sites"
 LINK_ASSETS_DIR = Path(BASE_DIR) / "link-assets"
 try:
     builder = BuilderAgent(sites_dir=SITES_DIR)
+    add_runtime_log("api", "info", "BuilderAgent inicializado", stage="startup")
 except RuntimeError as error:
     print(f"Warning: failed to initialize Agente 02 builder: {error}")
+    add_runtime_log("api", "error", "Falha ao inicializar BuilderAgent", stage="startup", details={"error": str(error)})
     builder = None
 
 try:
@@ -168,9 +181,201 @@ class BuildRequest(BaseModel):
     link_content: Optional[Dict[str, Any]] = None
     summary: Optional[Dict[str, Any]] = None
     agent_profile: Optional[str] = None
+    builder_model: Optional[str] = None
+    builder_provider: Optional[str] = None
+    flow_mode: Optional[str] = "fluxo"
 
     class Config:
         extra = "allow"
+
+
+class EvaluateUrlRequest(BaseModel):
+    url: str
+    business_name: Optional[str] = None
+    segment: Optional[str] = None
+    use_llm: bool = True
+
+
+def _extract_json_object(raw: str) -> Dict[str, Any]:
+    text = (raw or "").strip()
+    try:
+        parsed = json.loads(text)
+        if isinstance(parsed, dict):
+            return parsed
+    except json.JSONDecodeError:
+        pass
+    start = text.find("{")
+    end = text.rfind("}")
+    if start >= 0 and end > start:
+        parsed = json.loads(text[start : end + 1])
+        if isinstance(parsed, dict):
+            return parsed
+    raise RuntimeError("Avaliador GPT retornou JSON invalido.")
+
+
+def _call_site_quality_llm(*, url: str, html: str, technical_score: Dict[str, Any], business_name: str, segment: str) -> Dict[str, Any]:
+    base_url = (
+        os.getenv("SITE_QUALITY_BASE_URL", "").strip()
+        or os.getenv("AGENT_LLM_BASE_URL", "").strip()
+        or "http://localhost:20128/v1"
+    ).rstrip("/")
+    model = os.getenv("SITE_QUALITY_MODEL", "cx/gpt-5.5").strip() or "cx/gpt-5.5"
+    api_key = (
+        os.getenv("SITE_QUALITY_API_KEY", "").strip()
+        or os.getenv("AGENT_LLM_API_KEY", "").strip()
+        or os.getenv("NINEROUTER_API_KEY", "").strip()
+        or os.getenv("OPENAI_API_KEY", "").strip()
+        or "local-no-key"
+    )
+    timeout = float(os.getenv("SITE_QUALITY_TIMEOUT_SECONDS", "60").strip() or "60")
+    html_sample = html[:180_000]
+    render_risk_signals = _site_render_risk_signals(html)
+    payload = {
+        "url": url,
+        "business_name": business_name,
+        "segment": segment,
+        "technical_score": technical_score,
+        "render_risk_signals": render_risk_signals,
+        "html_sample": html_sample,
+    }
+    system_prompt = """
+You are Agente 03, a strict but fair senior website quality evaluator.
+
+Evaluate the real website represented by the HTML sample, render risk signals, and technical score. Do not blindly trust heuristic issues: if a section exists semantically under a different name, credit it. Penalize real UX, clarity, trust, conversion, content, accessibility, visual polish, and completeness problems.
+
+Important calibration:
+- If render_risk_signals indicate generic remote/fallback images, missing visual assets, oversized hero media, clipped hero copy, or likely broken first viewport, cap the score at 3000 unless there is strong evidence the page still renders beautifully.
+- If the first viewport likely looks broken, empty, cropped, or placeholder-like, score around 1000-3000 even if the HTML structure is technically valid.
+- A local business site with generic stock/fallback visuals and shallow commercial content should normally be 1500-4500, not 7000+.
+
+Score from 0 to 10000:
+- 9000-10000: world-class, polished, memorable, clear, conversion-ready, very few issues.
+- 7000-8999: strong professional site with some fixable gaps.
+- 5000-6999: decent but common, usable, not impressive.
+- 3000-4999: weak/unfinished or generic.
+- 0-2999: broken, confusing, placeholder-heavy, or poor.
+
+Return ONLY valid JSON:
+{"score":0,"max_score":10000,"verdict":"...","summary":"...","strengths":["..."],"weaknesses":["..."],"recommendations":["..."],"confidence":0.0}
+""".strip()
+    request_payload = {
+        "model": model,
+        "temperature": 0.15,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+        ],
+    }
+    http_request = Request(
+        f"{base_url}/chat/completions",
+        data=json.dumps(request_payload, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
+        method="POST",
+    )
+    with urlopen(http_request, timeout=timeout) as response:  # noqa: S310 - configured local/OpenAI-compatible endpoint
+        response_payload = json.loads(response.read().decode("utf-8"))
+    if isinstance(response_payload, dict) and response_payload.get("error"):
+        raise RuntimeError(json.dumps(response_payload["error"], ensure_ascii=False))
+    content = response_payload.get("choices", [{}])[0].get("message", {}).get("content", "")
+    parsed = _extract_json_object(str(content))
+    raw_score = parsed.get("score", 0)
+    try:
+        parsed["score"] = max(0, min(10000, int(raw_score)))
+    except (TypeError, ValueError):
+        parsed["score"] = 0
+    parsed["max_score"] = 10000
+    parsed["agent"] = "Agente 03 - GPT 5.5 avaliador"
+    parsed["model"] = model
+    parsed["base_url"] = base_url
+    return parsed
+
+
+def _site_render_risk_signals(html: str) -> Dict[str, Any]:
+    lowered = (html or "").lower()
+    return {
+        "uses_source_unsplash": "source.unsplash.com" in lowered,
+        "uses_unsplash": "unsplash.com" in lowered,
+        "generic_remote_image_count": lowered.count("source.unsplash.com") + lowered.count("images.unsplash.com"),
+        "has_large_hero_media": bool("hero-image" in lowered or "hero-media" in lowered),
+        "has_overflow_hidden_near_hero": "hero" in lowered and "overflow: hidden" in lowered,
+        "has_object_fit_cover": "object-fit: cover" in lowered,
+        "potential_first_viewport_risk": "source.unsplash.com" in lowered and "hero" in lowered,
+    }
+
+
+def _builder_model_label(model_id: str) -> str:
+    labels = {
+        "cx/gpt-5.5": "GPT 5.5",
+        "cx/gpt-5.4": "GPT 5.4",
+        "cx/gpt-5.4-mini": "GPT 5.4 Mini",
+        "glm-5.1": "GLM 5.1",
+        "glm-5": "GLM 5",
+        "glm-4.7": "GLM 4.7",
+        "glm-4.6v": "GLM 4.6V",
+    }
+    return labels.get(model_id, model_id)
+
+
+def _builder_model_provider(model_id: str) -> str:
+    if model_id.startswith("glm-"):
+        return "zai"
+    return "default"
+
+def _builder_model_note(model_id: str, provider: str) -> str:
+    if model_id == os.getenv("AGENT_LLM_MODEL", "").strip():
+        return "default atual"
+    if model_id.startswith("glm-"):
+        return "Z.ai via zai"
+    if model_id.startswith("cx/"):
+        return "9router"
+    return provider
+
+
+def _load_local_9router_models() -> list[str]:
+    base_url = (os.getenv("AGENT_LLM_BASE_URL", "").strip() or "http://localhost:20128/v1").rstrip("/")
+    request = Request(f"{base_url}/models", headers={"Accept": "application/json"})
+    try:
+        with urlopen(request, timeout=5) as response:  # noqa: S310 - local/dev endpoint configured by env
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception as error:  # noqa: BLE001
+        add_runtime_log("api", "warn", "Nao foi possivel carregar modelos do 9router", stage="models", details={"error": str(error)})
+        return []
+    data = payload.get("data") if isinstance(payload, dict) else None
+    if not isinstance(data, list):
+        return []
+    return [str(item.get("id") or "").strip() for item in data if isinstance(item, dict) and item.get("id")]
+
+
+def _builder_model_catalog() -> list[Dict[str, Any]]:
+    preferred = [
+        "cx/gpt-5.5",
+        "cx/gpt-5.4",
+        "cx/gpt-5.2",
+        "cx/gpt-5.1",
+        "glm-5.1",
+        "glm-5",
+        "glm-4.7",
+        "glm-4.6v",
+    ]
+    available = set(_load_local_9router_models())
+    if not available:
+        available = {"cx/gpt-5.5", "cx/gpt-5.4", "glm-5.1", "glm-5"}
+
+    catalog: list[Dict[str, Any]] = []
+    for model_id in preferred:
+        is_local = model_id in available
+        if not is_local:
+            continue
+        provider = _builder_model_provider(model_id)
+        catalog.append({
+            "id": model_id,
+            "provider": provider,
+            "label": _builder_model_label(model_id),
+            "note": _builder_model_note(model_id, provider),
+            "available": is_local,
+            "source": "9router-local",
+        })
+    return catalog
 
 
 class IntakeFilterRequest(BaseModel):
@@ -204,6 +409,7 @@ class LinkContentInspectRequest(BaseModel):
 @router.post("/v2/build")
 def build(request: BuildRequest):
     if builder is None:
+        add_runtime_log("api", "error", "Build rejeitado: BuilderAgent indisponivel", stage="queue")
         raise HTTPException(
             status_code=500,
             detail=(
@@ -215,8 +421,23 @@ def build(request: BuildRequest):
 
     job_id = f"job_{int(time.time())}_{random.randint(1000, 9999)}"
     spec_dump = request.dict()
-    print(f"[BUILD] queued job_id={job_id}")
-    print(f"[BUILD] spec={json.dumps(spec_dump, ensure_ascii=False, default=str)}")
+    spec_dump["flow_mode"] = "fluxo"
+    safe_print(f"[BUILD] queued job_id={job_id}")
+    safe_print(f"[BUILD] spec={json.dumps(spec_dump, ensure_ascii=False, default=str)}")
+    add_runtime_log(
+        "api",
+        "info",
+        "Build enfileirado",
+        job_id=job_id,
+        stage="queue",
+        details={
+            "business_name": spec_dump.get("business_name"),
+            "segment": spec_dump.get("segment"),
+            "builder_model": spec_dump.get("builder_model"),
+            "builder_provider": spec_dump.get("builder_provider"),
+            "agent_profile": spec_dump.get("agent_profile"),
+        },
+    )
 
     builder.enqueue(job_id, spec_dump)
 
@@ -227,6 +448,7 @@ def build(request: BuildRequest):
             "status": "queued",
             "job_id": job_id,
             "message": "Agente 02 esta construindo seu site.",
+            "flow_mode": "fluxo",
         },
     }
 
@@ -241,6 +463,64 @@ def build_status(job_id: str):
         raise HTTPException(status_code=404, detail=f"Job {job_id} nao encontrado.")
 
     return {"code": 0, "msg": "success", "data": job.snapshot()}
+
+
+@router.get("/v1/logs")
+def logs(limit: int = 120, level: Optional[str] = None):
+    return {"code": 0, "msg": "success", "data": {"events": list_runtime_logs(limit=limit, level=level)}}
+
+
+@router.post("/v1/site-quality/evaluate-url")
+def evaluate_site_url(request: EvaluateUrlRequest):
+    raw_url = (request.url or "").strip()
+    if not raw_url.startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="URL precisa comecar com http:// ou https://")
+    try:
+        http_request = Request(
+            raw_url,
+            headers={
+                "Accept": "text/html,application/xhtml+xml",
+                "User-Agent": "SimpleAIQualityBot/1.0",
+            },
+        )
+        with urlopen(http_request, timeout=20) as response:  # noqa: S310 - explicit URL supplied for local quality eval
+            content_type = response.headers.get("content-type", "")
+            raw_body = response.read(2_500_000)
+        html = raw_body.decode("utf-8", errors="replace")
+        result = score_site_html(
+            html,
+            spec={"business_name": request.business_name or "", "segment": request.segment or ""},
+        ).usage_payload()
+        llm_result = None
+        if request.use_llm:
+            llm_result = _call_site_quality_llm(
+                url=raw_url,
+                html=html,
+                technical_score=result,
+                business_name=request.business_name or "",
+                segment=request.segment or "",
+            )
+    except HTTPException:
+        raise
+    except Exception as error:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"Avaliador nao conseguiu ler o site: {error}")
+    return {
+        "code": 0,
+        "msg": "success",
+        "data": {
+            "url": raw_url,
+            "content_type": content_type,
+            "bytes_read": len(raw_body),
+            "site_score": result,
+            "llm_quality": llm_result,
+            "quality_bot": llm_result or result.get("quality_bot"),
+        },
+    }
+
+
+@router.get("/v1/builder/models")
+def builder_models():
+    return {"code": 0, "msg": "success", "data": {"models": _builder_model_catalog()}}
 
 
 @router.post("/v3/oci-agent/chat")

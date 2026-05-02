@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Napassarela | Moda para toda a família desde 2002</title>
+  <meta name="description" content="Napassarela em Penápolis-SP. Moda feminina, masculina, infantil e juvenil para toda a família desde 2002.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #111111;
+      --white: #FFFFFF;
+      --cream: #F7F0E8;
+      --terracotta: #B86F57;
+      --brown: #6B4A3A;
+      --max: 1180px;
+      --radius: 26px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Lora", Georgia, serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+      outline: 3px solid var(--terracotta);
+      outline-offset: 4px;
+    }
+
+    .container {
+      width: min(100% - 32px, var(--max));
+      margin: 0 auto;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(17, 17, 17, 0.08);
+    }
+
+    .header-inner {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+
+    .nav {
+      display: none;
+      align-items: center;
+      gap: 22px;
+      color: var(--brown);
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .nav a {
+      transition: color .2s ease;
+    }
+
+    .nav a:hover {
+      color: var(--terracotta);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: var(--terracotta);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      background: var(--brown);
+    }
+
+    .btn.secondary {
+      background: rgba(255,255,255,0.92);
+      color: var(--black);
+      border-color: rgba(255,255,255,0.65);
+    }
+
+    .btn.secondary:hover {
+      background: var(--white);
+      color: var(--terracotta);
+    }
+
+    .header-cta {
+      display: none;
+      min-height: 42px;
+      padding: 0 16px;
+      font-size: 0.84rem;
+    }
+
+    .hero {
+      padding: 18px 0 56px;
+      background: linear-gradient(180deg, var(--white) 0%, var(--cream) 100%);
+    }
+
+    .hero-frame {
+      position: relative;
+      min-height: 620px;
+      border-radius: 30px;
+      overflow: hidden;
+      background: var(--black);
+      display: flex;
+      align-items: flex-end;
+      isolation: isolate;
+    }
+
+    .hero-frame::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(17,17,17,0.12) 0%, rgba(17,17,17,0.58) 52%, rgba(17,17,17,0.82) 100%);
+      z-index: -1;
+    }
+
+    .hero-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    .hero-content {
+      padding: 32px 22px;
+      color: var(--white);
+      max-width: 760px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 16px;
+      color: rgba(255,255,255,0.88);
+      font-size: 0.86rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 1px;
+      background: var(--terracotta);
+    }
+
+    h1, h2, h3, p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 18px;
+      font-size: clamp(2.35rem, 11vw, 4.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.065em;
+      max-width: 760px;
+    }
+
+    .hero p {
+      margin-bottom: 26px;
+      max-width: 660px;
+      color: rgba(255,255,255,0.9);
+      font-size: clamp(1rem, 2.4vw, 1.24rem);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+      max-width: 390px;
+    }
+
+    section {
+      padding: 64px 0;
+    }
+
+    .section-kicker {
+      color: var(--terracotta);
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-size: .78rem;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      line-height: 1.05;
+      letter-spacing: -0.045em;
+      margin-bottom: 18px;
+    }
+
+    .section-lead {
+      color: var(--brown);
+      font-size: 1.05rem;
+      max-width: 700px;
+      margin-bottom: 32px;
+    }
+
+    .categories-wrap {
+      display: grid;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .category-photo {
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--cream);
+    }
+
+    .category-photo img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }
+
+    .caption {
+      padding: 12px 16px 16px;
+      color: var(--brown);
+      font-size: .9rem;
+      background: var(--cream);
+    }
+
+    .category-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .category-card {
+      padding: 22px;
+      background: var(--cream);
+      border: 1px solid rgba(107, 74, 58, 0.14);
+      border-radius: 22px;
+    }
+
+    .category-card strong {
+      display: block;
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+      letter-spacing: -0.03em;
+    }
+
+    .category-card span {
+      color: var(--brown);
+      font-size: .96rem;
+    }
+
+    .family-note {
+      margin-top: 14px;
+      padding: 22px;
+      border-radius: 22px;
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .about {
+      background: var(--cream);
+    }
+
+    .about-panel {
+      display: grid;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .about-text {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 28px;
+      border: 1px solid rgba(17,17,17,0.08);
+    }
+
+    .about-text p {
+      color: var(--brown);
+      font-size: 1.06rem;
+      margin-bottom: 0;
+    }
+
+    .since {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .since div {
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--cream);
+      color: var(--brown);
+      font-weight: 600;
+    }
+
+    .service-block {
+      padding-top: 0;
+      background: var(--cream);
+    }
+
+    .service-card {
+      display: grid;
+      gap: 0;
+      overflow: hidden;
+      border-radius: 30px;
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .service-card img {
+      width: 100%;
+      height: 330px;
+      object-fit: cover;
+    }
+
+    .service-copy {
+      padding: 30px 24px;
+    }
+
+    .service-copy h2 {
+      font-size: clamp(1.9rem, 6vw, 3rem);
+      line-height: 1.05;
+      letter-spacing: -0.045em;
+      margin-bottom: 14px;
+    }
+
+    .service-copy p {
+      color: rgba(255,255,255,0.82);
+      margin-bottom: 22px;
+    }
+
+    .instagram {
+      background: var(--white);
+    }
+
+    .insta-card {
+      display: grid;
+      gap: 26px;
+      align-items: center;
+      padding: 26px;
+      border-radius: 30px;
+      background: var(--cream);
+      border: 1px solid rgba(107, 74, 58, 0.12);
+    }
+
+    .handle {
+      display: inline-block;
+      font-size: clamp(1.55rem, 5vw, 2.6rem);
+      line-height: 1.1;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      margin-bottom: 16px;
+      color: var(--black);
+    }
+
+    .feed-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .feed-tile {
+      min-height: 96px;
+      border-radius: 18px;
+      background: var(--white);
+      border: 1px solid rgba(107,74,58,.14);
+      display: flex;
+      align-items: end;
+      padding: 12px;
+      color: var(--brown);
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    .feed-tile:nth-child(2),
+    .feed-tile:nth-child(5) {
+      background: var(--terracotta);
+      color: var(--white);
+    }
+
+    .feed-tile:nth-child(3),
+    .feed-tile:nth-child(4) {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .contact {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .contact-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .contact .section-lead {
+      color: rgba(255,255,255,0.76);
+    }
+
+    .contact-item {
+      display: block;
+      padding: 20px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      transition: transform .2s ease, background .2s ease;
+    }
+
+    .contact-item:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.13);
+    }
+
+    .contact-item small {
+      display: block;
+      color: rgba(255,255,255,0.66);
+      margin-bottom: 6px;
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      font-weight: 700;
+    }
+
+    .contact-item strong {
+      font-size: 1.1rem;
+    }
+
+    .location {
+      background: var(--cream);
+    }
+
+    .location-card {
+      display: grid;
+      gap: 22px;
+      padding: 28px;
+      border-radius: 30px;
+      background: var(--white);
+      border: 1px solid rgba(17,17,17,0.08);
+    }
+
+    .map-box {
+      min-height: 260px;
+      border-radius: 24px;
+      background:
+        linear-gradient(135deg, rgba(184,111,87,.16), rgba(107,74,58,.08)),
+        repeating-linear-gradient(45deg, rgba(17,17,17,.05) 0 1px, transparent 1px 18px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      color: var(--brown);
+      border: 1px solid rgba(107,74,58,.12);
+    }
+
+    .footer {
+      padding: 42px 0;
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .footer-grid {
+      display: grid;
+      gap: 22px;
+    }
+
+    .footer p,
+    .footer a {
+      color: rgba(255,255,255,.76);
+    }
+
+    .footer h2 {
+      font-size: 1.8rem;
+      letter-spacing: -0.04em;
+      margin-bottom: 8px;
+    }
+
+    .footer-links {
+      display: grid;
+      gap: 8px;
+      font-size: .95rem;
+    }
+
+    .copyright {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.58);
+      font-size: .88rem;
+    }
+
+    @media (min-width: 720px) {
+      body {
+        font-size: 17px;
+      }
+
+      .header-cta {
+        display: inline-flex;
+      }
+
+      .hero-actions {
+        flex-direction: row;
+        align-items: center;
+        max-width: none;
+      }
+
+      .hero-content {
+        padding: 54px;
+      }
+
+      .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .since {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .contact-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .footer-grid {
+        grid-template-columns: 1.2fr 1fr 1fr;
+        align-items: start;
+      }
+    }
+
+    @media (min-width: 960px) {
+      .nav {
+        display: flex;
+      }
+
+      section {
+        padding: 88px 0;
+      }
+
+      .hero {
+        padding: 24px 0 76px;
+      }
+
+      .hero-frame {
+        min-height: 690px;
+        align-items: center;
+      }
+
+      .categories-wrap {
+        grid-template-columns: .92fr 1.08fr;
+        gap: 46px;
+      }
+
+      .about-panel {
+        grid-template-columns: 1fr .86fr;
+      }
+
+      .service-card {
+        grid-template-columns: 1.05fr .95fr;
+        align-items: stretch;
+      }
+
+      .service-card img {
+        height: 100%;
+        min-height: 430px;
+      }
+
+      .service-copy {
+        padding: 54px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .insta-card {
+        grid-template-columns: .9fr 1.1fr;
+        padding: 40px;
+      }
+
+      .location-card {
+        grid-template-columns: .9fr 1.1fr;
+        align-items: center;
+        padding: 40px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .container {
+        width: min(100% - 24px, var(--max));
+      }
+
+      .hero-frame {
+        min-height: 590px;
+        border-radius: 24px;
+      }
+
+      .hero-content {
+        padding: 28px 18px;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .brand {
+        font-size: 1.28rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Napassarela início">Napassarela</a>
+      <nav class="nav" aria-label="Navegação principal">
+        <a href="#categorias">Categorias</a>
+        <a href="#sobre">Sobre</a>
+        <a href="#instagram">Instagram</a>
+        <a href="#contato">Contato</a>
+        <a href="#localizacao">Localização</a>
+      </nav>
+      <a class="btn header-cta" href="https://wa.me/5518998153196" target="_blank" rel="noopener">Pedir informações para comprar</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-label="Apresentação">
+      <div class="container">
+        <div class="hero-frame">
+          <img class="hero-img" src="./assets/01-hero.png" alt="Vitrine de loja de moda para toda a família">
+          <div class="hero-content">
+            <p class="eyebrow">Moda para toda a família em Penápolis</p>
+            <h1>Moda para toda a família desde 2002</h1>
+            <p>Feminino, masculino, infantil e juvenil em uma loja feita para quem busca estilo, praticidade e novidades em Penápolis.</p>
+            <div class="hero-actions">
+              <a class="btn" href="https://wa.me/5518998153196" target="_blank" rel="noopener">Pedir informações para comprar</a>
+              <a class="btn secondary" href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">Ver Instagram</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="categorias" aria-labelledby="categorias-titulo">
+      <div class="container categories-wrap">
+        <figure class="category-photo">
+          <img src="./assets/02-categories.png" alt="Roupas femininas, masculinas, infantis e juvenis organizadas em loja">
+          <figcaption class="caption">Opções para diferentes estilos e idades</figcaption>
+        </figure>
+        <div>
+          <p class="section-kicker">Categorias</p>
+          <h2 class="section-title" id="categorias-titulo">Escolha por estilo, idade e momento.</h2>
+          <p class="section-lead">A Napassarela reúne peças para feminino, masculino, infantil e juvenil, com uma vitrine pensada para facilitar a escolha.</p>
+          <div class="category-grid">
+            <div class="category-card">
+              <strong>Moda feminina</strong>
+              <span>Peças para acompanhar diferentes momentos da rotina.</span>
+            </div>
+            <div class="category-card">
+              <strong>Moda masculina</strong>
+              <span>Opções práticas para o dia a dia e ocasiões variadas.</span>
+            </div>
+            <div class="category-card">
+              <strong>Moda infantil</strong>
+              <span>Roupas para crianças com conforto e estilo.</span>
+            </div>
+            <div class="category-card">
+              <strong>Moda juvenil</strong>
+              <span>Novidades para jovens que gostam de se vestir bem.</span>
+            </div>
+          </div>
+          <div class="family-note">
+            Roupas para toda a família em uma loja local, fácil de visitar e acompanhar pelo Instagram.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="about" id="sobre" aria-labelledby="sobre-titulo">
+      <div class="container about-panel">
+        <div>
+          <p class="section-kicker">Sobre</p>
+          <h2 class="section-title" id="sobre-titulo">Uma loja de moda de Penápolis, com história e vitrine clara.</h2>
+        </div>
+        <div class="about-text">
+          <p>A Napassarela é uma loja de moda em Penápolis-SP, com atuação desde 2002 e opções para diferentes momentos da rotina de toda a família. O site deve funcionar como uma vitrine digital simples, elegante e fácil de navegar.</p>
+          <div class="since" aria-label="Informações principais">
+            <div>Desde 2002</div>
+            <div>Penápolis-SP</div>
+            <div>Feminino, masculino, infantil e juvenil</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="service-block" aria-labelledby="atendimento-titulo">
+      <div class="container">
+        <div class="service-card">
+          <img src="./assets/03-audience.png" alt="Cliente recebendo atendimento em loja de roupas">
+          <div class="service-copy">
+            <p class="section-kicker">Atendimento</p>
+            <h2 id="atendimento-titulo">Atendimento próximo para escolher novidades</h2>
+            <p>Entre em contato para pedir informações sobre peças, tamanhos e novidades. A Napassarela mantém um canal direto para quem quer comprar com praticidade.</p>
+            <a class="btn" href="https://wa.me/5518998153196" target="_blank" rel="noopener">Pedir informações para comprar</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="instagram" id="instagram" aria-labelledby="instagram-titulo">
+      <div class="container">
+        <div class="insta-card">
+          <div>
+            <p class="section-kicker">Instagram</p>
+            <h2 class="section-title" id="instagram-titulo">Novidades e inspirações da loja.</h2>
+            <a class="handle" href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">@napassarela_penapolis</a>
+            <p class="section-lead">Acompanhe o perfil oficial para ver referências de moda, vitrines e atualizações da Napassarela.</p>
+            <a class="btn" href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">Abrir Instagram</a>
+          </div>
+          <div class="feed-grid" aria-label="Área visual inspirada em feed">
+            <div class="feed-tile">Feminino</div>
+            <div class="feed-tile">Novidades</div>
+            <div class="feed-tile">Masculino</div>
+            <div class="feed-tile">Infantil</div>
+            <div class="feed-tile">Juvenil</div>
+            <div class="feed-tile">Família</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contato" aria-labelledby="contato-titulo">
+      <div class="container">
+        <p class="section-kicker">Contato</p>
+        <h2 class="section-title" id="contato-titulo">Pedir informações para comprar</h2>
+        <p class="section-lead">Fale com a Napassarela pelo telefone, WhatsApp/celular ou Instagram.</p>
+        <div class="contact-grid">
+          <a class="contact-item" href="tel:+551836537475">
+            <small>Telefone</small>
+            <strong>(18) 3653-7475</strong>
+          </a>
+          <a class="contact-item" href="https://wa.me/5518998153196" target="_blank" rel="noopener">
+            <small>WhatsApp/celular</small>
+            <strong>(18) 99815-3196</strong>
+          </a>
+          <a class="contact-item" href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">
+            <small>Instagram</small>
+            <strong>@napassarela_penapolis</strong>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="location" id="localizacao" aria-labelledby="localizacao-titulo">
+      <div class="container">
+        <div class="location-card">
+          <div>
+            <p class="section-kicker">Localização</p>
+            <h2 class="section-title" id="localizacao-titulo">Visite a loja em Penápolis.</h2>
+            <p class="section-lead">A. Bento da Cruz, 770, Penápolis, SP</p>
+            <a class="btn" href="https://www.google.com/maps/search/?api=1&query=A.%20Bento%20da%20Cruz%2C%20770%2C%20Pen%C3%A1polis%2C%20SP" target="_blank" rel="noopener">Abrir no mapa</a>
+          </div>
+          <a class="map-box" href="https://www.google.com/maps/search/?api=1&query=A.%20Bento%20da%20Cruz%2C%20770%2C%20Pen%C3%A1polis%2C%20SP" target="_blank" rel="noopener" aria-label="Abrir localização da Napassarela no mapa">
+            <strong>A. Bento da Cruz, 770, Penápolis, SP</strong>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h2>Napassarela</h2>
+          <p>Moda para toda família desde 2002</p>
+          <a class="btn" href="https://wa.me/5518998153196" target="_blank" rel="noopener">Pedir informações para comprar</a>
+        </div>
+        <div class="footer-links">
+          <strong>Contatos principais</strong>
+          <a href="tel:+551836537475">(18) 3653-7475</a>
+          <a href="https://wa.me/5518998153196" target="_blank" rel="noopener">(18) 99815-3196</a>
+          <a href="https://www.instagram.com/napassarela_penapolis/" target="_blank" rel="noopener">@napassarela_penapolis</a>
+        </div>
+        <div class="footer-links">
+          <strong>Endereço</strong>
+          <a href="https://www.google.com/maps/search/?api=1&query=A.%20Bento%20da%20Cruz%2C%20770%2C%20Pen%C3%A1polis%2C%20SP" target="_blank" rel="noopener">A. Bento da Cruz, 770, Penápolis, SP</a>
+        </div>
+      </div>
+      <div class="copyright">© <span id="year"></span> Napassarela. Todos os direitos reservados.</div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

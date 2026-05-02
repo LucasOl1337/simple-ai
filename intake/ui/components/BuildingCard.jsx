@@ -6,10 +6,35 @@ import { OPENING_MESSAGE } from "../constants";
 
 const LaunchSequencePlayer = lazy(() => import("../remotion/LaunchSequence"));
 
+function deriveQualityBot(siteScore) {
+  if (!siteScore) return null;
+  if (siteScore.quality_bot) return siteScore.quality_bot;
+  const dimensions = siteScore.dimensions || {};
+  const issues = siteScore.issues || {};
+  const issueCount = Object.values(issues).reduce((total, items) => total + (Array.isArray(items) ? items.length : 0), 0);
+  const weakDimensions = Object.entries(dimensions).filter(([, value]) => Number(value) < 900).map(([name]) => name);
+  const rawScore = Number(siteScore.score || 0);
+  const almostPerfect = rawScore >= 9900 && issueCount === 0 && weakDimensions.length === 0;
+  let score = Math.max(0, rawScore - 5000 - issueCount * 300 - weakDimensions.length * 450);
+  if (almostPerfect) score = Math.min(10000, score + 5000);
+  score = Math.max(0, Math.min(10000, score));
+  const verdict = score >= 9000
+    ? "Impecável"
+    : score >= 7000
+      ? "Muito forte"
+      : score >= 5000
+        ? "Bom, mas ainda comum"
+        : score >= 3000
+          ? "Normal"
+          : "Fraco";
+  return { agent: "Agente 03 - avaliador de qualidade", score, max_score: 10000, verdict, weak_dimensions: weakDimensions };
+}
+
 export default function BuildingCard({ buildState, onReset, positions, onPositionChange, session }) {
   const [launched, setLaunched] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const publicSiteUrl = getPublicSiteUrl(buildState);
+  const qualityBot = deriveQualityBot(buildState.usage?.site_score);
   const shareMessages = useMemo(() => {
     const transcript = session?.transcript?.length
       ? session.transcript
@@ -54,6 +79,18 @@ export default function BuildingCard({ buildState, onReset, positions, onPositio
           <span className="build-card-eyebrow">terminal success</span>
           <h3>Pronto!</h3>
           <p>Seu site está no ar.</p>
+          {qualityBot ? (
+            <div className="quality-bot-card" aria-label={`Nota do avaliador: ${qualityBot.score} de ${qualityBot.max_score}`}>
+              <span>Agente 03 · avaliador</span>
+              <strong>{qualityBot.score.toLocaleString("pt-BR")}/{qualityBot.max_score.toLocaleString("pt-BR")}</strong>
+              <em>{qualityBot.verdict}</em>
+              {qualityBot.weak_dimensions?.length ? (
+                <small>pontos fracos: {qualityBot.weak_dimensions.join(", ")}</small>
+              ) : (
+                <small>sem pontos fracos técnicos detectados</small>
+              )}
+            </div>
+          ) : null}
           <div className="build-actions">
             <a className="build-cta" href={publicSiteUrl} target="_blank" rel="noreferrer">
               Abrir preview local

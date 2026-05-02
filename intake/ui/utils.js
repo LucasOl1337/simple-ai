@@ -6,6 +6,9 @@ import {
   CHAT_SESSIONS_STORAGE_KEY,
   ACTIVE_CHAT_SESSION_STORAGE_KEY,
   THEME_STORAGE_KEY,
+  BUILDER_MODEL_OPTIONS,
+  BUILDER_MODEL_STORAGE_KEY,
+  DEFAULT_BUILDER_MODEL,
   AUTO_TEST_SCENARIOS,
   OPENING_MESSAGE,
 } from "./constants";
@@ -176,6 +179,17 @@ export function readStoredTheme() {
     return window.localStorage.getItem(THEME_STORAGE_KEY) || "dark";
   } catch {
     return "dark";
+  }
+}
+
+export function readStoredBuilderModel() {
+  if (typeof window === "undefined") return DEFAULT_BUILDER_MODEL;
+  try {
+    const stored = window.localStorage.getItem(BUILDER_MODEL_STORAGE_KEY);
+    if (BUILDER_MODEL_OPTIONS.some((option) => option.id === stored)) return stored;
+    return DEFAULT_BUILDER_MODEL;
+  } catch {
+    return DEFAULT_BUILDER_MODEL;
   }
 }
 

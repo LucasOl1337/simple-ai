@@ -68,7 +68,7 @@ def _set(segment_id: str, recipes: list[LayoutRecipe]) -> LayoutRecipeSet:
     return LayoutRecipeSet(
         segment_id=segment_id,
         recipes=recipes,
-        rule="Escolha UMA opção e execute de forma clara. Não misture todas e não use o template padrão se uma receita abaixo encaixar melhor.",
+        rule="Use as opcoes abaixo como referencias de composicao, nao como templates obrigatorios. Escolha, combine ou adapte ideias se isso produzir um site mais adequado ao briefing e aos assets disponiveis.",
     )
 
 

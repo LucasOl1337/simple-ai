@@ -1,0 +1,106 @@
+{
+  "business": {
+    "name": "Napassarela",
+    "segment": "Loja de roupas e moda para toda a família",
+    "audience": "Mulheres, famílias e consumidores de Penápolis e região que acompanham moda pelo Instagram e buscam roupas femininas, masculinas, infantis e juvenis",
+    "primary_cta": "Pedir informações para comprar"
+  },
+  "content": {
+    "organized": [
+      "Landing page única com foco comercial, inspirada no Instagram oficial @napassarela_penapolis.",
+      "Hero com nome Napassarela, chamada principal: Moda para toda família desde 2002, subtítulo citando feminino, masculino, infantil e juvenil, e CTA para pedir informações.",
+      "Seção de categorias com quatro blocos claros: Moda feminina, Moda masculina, Moda infantil e Moda juvenil.",
+      "Seção sobre o negócio reforçando atuação local em Penápolis, atendimento para toda a família e tradição desde 2002.",
+      "Seção de vitrine/Instagram com chamada para acompanhar novidades, looks e peças pelo perfil oficial.",
+      "Seção de contato com telefone, WhatsApp, Instagram e endereço extraídos do perfil.",
+      "Mapa de localização usando o endereço informado no Instagram: A. Bento da Cruz, 770, Penápolis, SP.",
+      "Rodapé simples com marca, Instagram, contatos e CTA repetido."
+    ],
+    "priorities": [
+      "Dar destaque imediato ao CTA de compra/atendimento no hero e no rodapé.",
+      "Comunicar rapidamente que a loja atende toda a família, não apenas moda feminina.",
+      "Organizar a oferta por público para facilitar navegação: feminino, masculino, infantil e juvenil.",
+      "Usar visual limpo, elegante e comercial para valorizar fotos de looks e peças.",
+      "Manter forte conexão com Instagram, pois é a referência principal solicitada pelo cliente.",
+      "Evitar excesso de texto; priorizar frases curtas, blocos escaneáveis e botões claros.",
+      "Incluir contato rápido por WhatsApp e telefone sem criar funcionalidades não solicitadas."
+    ],
+    "must_use": [
+      "Napassarela",
+      "Moda para toda família desde 2002",
+      "Feminino, masculino, infantil e juvenil",
+      "Instagram oficial: @napassarela_penapolis",
+      "Telefone: (18) 3653-7475",
+      "WhatsApp: (18) 99815-3196",
+      "Endereço: A. Bento da Cruz, 770, Penápolis, SP",
+      "CTA principal: Pedir informações para comprar"
+    ],
+    "must_not_invent": [
+      "Não inventar preços, promoções ou condições de pagamento.",
+      "Não inventar marcas vendidas pela loja.",
+      "Não inventar horário de funcionamento.",
+      "Não inventar entrega, frete, provador online ou e-commerce se isso não estiver explícito.",
+      "Não inventar depoimentos, avaliações, número de clientes ou conquistas.",
+      "Não expandir o endereço abreviado além do que foi capturado no perfil.",
+      "Não afirmar que há venda online; usar linguagem de pedido de informações e contato."
+    ]
+  },
+  "style": {
+    "visual_direction": "Visual de vitrine digital elegante, acessível e familiar, combinando base limpa em preto e branco com calor discreto em tons creme, terracota e marrom suave. A estética deve parecer loja real de moda local, não startup nem e-commerce genérico.",
+    "layout_direction": "Landing page de conversão em página única, com hero editorial limpo, grade de categorias por público, seção sobre a loja, bloco de Instagram/vitrine, contato com CTA visível e mapa. Usar bastante respiro, hierarquia clara e cards simples para não competir com as fotos.",
+    "palette": [
+      "Preto #111111",
+      "Branco #FFFFFF",
+      "Creme #F7F1E8",
+      "Terracota suave #B86B4B",
+      "Marrom suave #6F4E3D",
+      "Cinza quente #E8E1D8"
+    ],
+    "typography": "Títulos com fonte serifada ou display elegante de moda; textos e botões com sans-serif limpa e legível. Contraste alto, tamanhos generosos e leitura fácil no mobile.",
+    "tone": "Comercial, familiar, direto, acolhedor e elegante, com frases curtas voltadas para novidades, looks, atendimento e visita à loja."
+  },
+  "image_prompts": [
+    {
+      "slot": "hero",
+      "prompt": "Foto editorial realista de uma loja de roupas de varejo para toda a família em cidade do interior, araras com roupas femininas, masculinas e infantis bem organizadas, ambiente acolhedor e comercial, iluminação natural suave, estética de vitrine digital elegante, cores neutras com toques quentes, pessoas reais em atendimento discreto quando fizer sentido, sem texto embutido, sem logotipos inventados, sem render 3D, sem aparência artificial, alta qualidade, composição horizontal 16:9 com espaço livre para título e botão à esquerda.",
+      "alt": "Ambiente de loja de roupas para toda a família com peças organizadas em araras",
+      "caption": "Moda para toda família desde 2002",
+      "usage_instruction": "Usar como imagem principal do hero, com overlay leve ou área lateral limpa para inserir o título Napassarela e o CTA Pedir informações para comprar."
+    },
+    {
+      "slot": "categories",
+      "prompt": "Foto realista em formato editorial de quatro áreas de moda em loja: roupas femininas, masculinas, infantis e juvenis em araras e prateleiras organizadas, looks casuais e atuais, ambiente de varejo acessível e elegante, luz natural suave, composição limpa, sem texto embutido, sem marcas visíveis, sem preços, sem promoções, sem render 3D, alta qualidade, proporção 4:3.",
+      "alt": "Roupas femininas, masculinas, infantis e juvenis organizadas em loja",
+      "caption": "Feminino, masculino, infantil e juvenil",
+      "usage_instruction": "Usar na seção de categorias ou como imagem de apoio para os cards de Moda feminina, Moda masculina, Moda infantil e Moda juvenil."
+    },
+    {
+      "slot": "instagram_vitrine",
+      "prompt": "Cena realista de vitrine digital de moda inspirada em Instagram, com mesa ou arara de looks casuais bem combinados, detalhes de tecidos, cabides e peças dobradas, estética limpa e comercial, clima acolhedor de loja local, tons neutros e quentes, sem interface de celular, sem texto embutido, sem likes ou elementos de rede social, sem marcas inventadas, fotografia natural de alta qualidade, proporção 4:3.",
+      "alt": "Looks e peças de roupas organizados como vitrine de novidades",
+      "caption": "Acompanhe novidades pelo Instagram",
+      "usage_instruction": "Usar na seção de feed/vitrine do Instagram para convidar o visitante a seguir @napassarela_penapolis."
+    },
+    {
+      "slot": "audience",
+      "prompt": "Foto realista e acolhedora de clientes em uma loja de roupas local, mulher adulta e família olhando peças em araras, atendimento humano e discreto, ambiente organizado, cotidiano comercial, moda casual para diferentes idades, iluminação natural, estética elegante e acessível, sem texto embutido, sem poses exageradas, sem aparência de banco de imagens artificial, sem render 3D, proporção 4:3.",
+      "alt": "Clientes escolhendo roupas em uma loja de moda para toda a família",
+      "caption": "Atendimento para mulheres e famílias de Penápolis e região",
+      "usage_instruction": "Usar em seção sobre a loja ou bloco de humanização do atendimento."
+    },
+    {
+      "slot": "contact",
+      "prompt": "Foto realista de detalhe de loja de roupas com balcão de atendimento, sacolas neutras sem marca inventada, peças dobradas e araras ao fundo, atmosfera comercial acolhedora, luz natural suave, tons creme, preto e marrom, sem texto embutido, sem números de telefone na imagem, sem preços, sem promoções, alta qualidade, proporção 4:3.",
+      "alt": "Balcão de atendimento em loja de roupas com peças organizadas ao fundo",
+      "caption": "Entre em contato e peça informações",
+      "usage_instruction": "Usar próximo ao bloco de contato com telefone, WhatsApp, Instagram e endereço."
+    }
+  ],
+  "next_agent_prompts": {
+    "image_agent": "Gerar imagens realistas para a landing page da Napassarela, loja de roupas e moda para toda a família em Penápolis-SP. Priorizar estética de vitrine digital elegante, comercial, familiar e acolhedora. Usar tons neutros com creme, terracota suave, marrom e preto/branco. Não incluir texto embutido, preços, promoções, marcas inventadas, logotipos inventados, interface de Instagram, renders 3D ou estética artificial. Criar slots: hero 16:9 com loja de roupas e espaço para copy; categories 4:3 com feminino, masculino, infantil e juvenil; instagram_vitrine 4:3 com looks e peças organizadas; audience 4:3 com clientes/família em atendimento; contact 4:3 com balcão/ambiente de atendimento.",
+    "build_instruction_agent": "Construir uma landing page única para Napassarela com foco em conversão por contato. Estrutura recomendada: hero com headline 'Moda para toda família desde 2002', subtítulo citando feminino, masculino, infantil e juvenil, CTA 'Pedir informações para comprar'; seção de categorias com Moda feminina, Moda masculina, Moda infantil e Moda juvenil; seção Sobre reforçando tradição desde 2002 e atuação em Penápolis; seção Instagram/vitrine convidando a acompanhar @napassarela_penapolis; seção Contato com telefone (18) 3653-7475, WhatsApp (18) 99815-3196 e endereço A. Bento da Cruz, 770, Penápolis, SP; mapa usando o endereço informado; rodapé com Instagram e CTA. Não inventar preços, marcas, horários, formas de pagamento, entrega, e-commerce, depoimentos ou conquistas. Visual limpo, mobile-first, elegante e familiar, com paleta preto, branco, creme, terracota suave e marrom. CTAs devem levar ao pedido de informações por WhatsApp/contato quando tecnicamente possível."
+  },
+  "_fluxo_model": "cx/gpt-5.5",
+  "_fluxo_duration_ms": 27024,
+  "_fluxo_attempts": 1
+}

@@ -42,6 +42,7 @@ from builder.core.image_pipeline import (
     resolve_visual_prompts,
 )
 from builder.core.site_qa import repair_site_html
+from builder.core.site_score import score_site_html
 from builder.core.content_strategy import build_content_strategy
 from builder.core.layout_recipes import build_layout_recipes
 from builder.core.link_content_inputs import (
@@ -59,6 +60,17 @@ from builder.prompts.od_checklists import (
     SELF_CRITIQUE_PROTOCOL_EN,
     LANGUAGE_OVERRIDE,
 )
+
+try:
+    from api.fluxo import FluxoOrchestrator
+except ImportError:  # pragma: no cover
+    FluxoOrchestrator = None
+
+try:
+    from runtime_logs import add_runtime_log
+except ImportError:  # pragma: no cover
+    def add_runtime_log(*args: Any, **kwargs: Any) -> None:
+        return None
 
 
 HTML_FENCE_PATTERN = re.compile(
@@ -226,6 +238,8 @@ class BuildJob:
     error: Optional[str] = None
     streamed_chars: int = 0
     usage: Dict[str, int] = field(default_factory=dict)
+    current_step: Optional[str] = None
+    completed_steps: list[str] = field(default_factory=list)
 
     def snapshot(self) -> Dict[str, Any]:
         return {
@@ -235,6 +249,8 @@ class BuildJob:
             "error": self.error,
             "streamed_chars": self.streamed_chars,
             "usage": self.usage,
+            "current_step": self.current_step,
+            "completed_steps": self.completed_steps,
         }
 
 
@@ -292,6 +308,7 @@ class BuilderAgent:
         self.client = None
         self._openai_client = None
         self._image_pipeline = ImagePipeline()
+        self._fluxo_orchestrator = FluxoOrchestrator(self._project_root, self.sites_dir) if FluxoOrchestrator else None
 
         def activate_local_fallback(reason: str) -> None:
             print(f"[BUILDER] {reason}. Falling back to local mode.")
@@ -539,6 +556,8 @@ class BuilderAgent:
             )
 
         asset_context = build_asset_prompt_context(job.spec.get("_materialized_assets"))
+        fluxo_instructions = str(job.spec.get("_fluxo_build_instructions") or "").strip()
+        fluxo_context = f"# FLUXO: INSTRUCOES FINAIS DE IMPLEMENTACAO\n{fluxo_instructions}\n" if fluxo_instructions else ""
 
         return (
             f"{AGENTE_02_BUILDER_SYSTEM_PROMPT}\n\n"
@@ -552,6 +571,7 @@ class BuilderAgent:
             f"{link_content_context}\n"
             f"{design_library_context}\n"
             f"{asset_context}\n"
+            f"{fluxo_context}\n"
         ).strip()
 
     def get_job(self, job_id: str) -> Optional[BuildJob]:
@@ -574,17 +594,55 @@ class BuilderAgent:
     def _run_build(self, job: BuildJob) -> None:
         with self._lock:
             job.status = "building"
+            job.current_step = "queued"
 
         try:
             site_dir = self.sites_dir / job.job_id
             site_dir.mkdir(parents=True, exist_ok=True)
             local_usage: Dict[str, int] = {}
+            add_runtime_log(
+                "builder",
+                "info",
+                "Build iniciado",
+                job_id=job.job_id,
+                stage="building",
+                details={
+                    "builder_model": job.spec.get("builder_model") or self.model,
+                    "provider": self.provider or "local-fallback",
+                    "asset_first": bool(_ENABLE_PREGENERATED_ASSETS),
+                },
+            )
+
+            fluxo_context: Optional[Dict[str, Any]] = None
+            if self._fluxo_orchestrator is None:
+                raise RuntimeError("FluxoOrchestrator indisponivel. O FLUXO e obrigatorio para builds.")
+
+            def update_fluxo_status(current_step: str, completed_step: Optional[str] = None) -> None:
+                with self._lock:
+                    job.current_step = current_step
+                    if completed_step and completed_step not in job.completed_steps:
+                        job.completed_steps.append(completed_step)
+
+            fluxo_context = self._fluxo_orchestrator.run_until_builder(
+                run_id=job.job_id,
+                spec=job.spec,
+                site_dir=site_dir,
+                status_callback=update_fluxo_status,
+            )
+            job.spec["_fluxo_run_dir"] = fluxo_context.get("run_dir")
+            job.spec["_fluxo_structured"] = fluxo_context.get("structured")
+            job.spec["_fluxo_assets_manifest"] = fluxo_context.get("assets")
+            job.spec["_fluxo_build_instructions"] = fluxo_context.get("instructions_markdown")
+            job.spec["_materialized_assets"] = (fluxo_context.get("assets") or {}).get("assets") or []
+            with self._lock:
+                job.current_step = "step_05_builder_final"
 
             if self.use_local_fallback:
+                add_runtime_log("builder", "warn", "Usando fallback local para HTML", job_id=job.job_id, stage="html")
                 generated_html, local_usage = self._build_local_html_v2(job, site_dir)
             else:
-                # Asset-first: materialize images before the LLM generates HTML
-                if _ENABLE_PREGENERATED_ASSETS:
+                # FLUXO materializes assets before the LLM generates HTML.
+                if _ENABLE_PREGENERATED_ASSETS and not job.spec.get("_materialized_assets"):
                     try:
                         business_name, segment, brand_tone, target_audience, service_labels = extract_asset_inputs_from_spec(job.spec)
                         summary = job.spec.get("summary") or {}
@@ -606,16 +664,45 @@ class BuilderAgent:
                         job.spec["_materialized_assets"] = image_assets
                         with self._lock:
                             job.usage = {**job.usage, **image_generation, "asset_first_generation": 1}
+                        add_runtime_log(
+                            "builder",
+                            "info",
+                            "Assets materializados",
+                            job_id=job.job_id,
+                            stage="assets",
+                            details={
+                                "generated": image_generation.get("count", 0),
+                                "planned": len(visual_prompts),
+                                "slots": image_generation.get("slots", {}),
+                            },
+                        )
                         print(
                             f"[BUILDER] job={job.job_id} assets-first llm: "
                             f"generated={image_generation.get('count', 0)}/{len(visual_prompts)}"
                         )
                     except Exception as exc:
                         print(f"[BUILDER] job={job.job_id} asset pre-generation skipped: {exc}")
+                        add_runtime_log(
+                            "builder",
+                            "warn",
+                            "Pre-geracao de assets pulada",
+                            job_id=job.job_id,
+                            stage="assets",
+                            details={"error": str(exc)},
+                        )
                 else:
                     print(f"[BUILDER] job={job.job_id} asset-first disabled by BUILDER_ASSET_FIRST_ENABLED=0")
+                    add_runtime_log("builder", "warn", "Asset-first desabilitado", job_id=job.job_id, stage="assets")
 
                 try:
+                    add_runtime_log(
+                        "builder",
+                        "info",
+                        "Chamando modelo para gerar HTML final",
+                        job_id=job.job_id,
+                        stage="html",
+                        details={"builder_model": job.spec.get("builder_model") or self.model},
+                    )
                     if self.provider == "anthropic":
                         generated_html = _strip_html_fence(self._call_claude(job))
                     else:
@@ -625,6 +712,14 @@ class BuilderAgent:
                     if not _should_runtime_fallback(exc):
                         raise
                     print(f"[BUILDER] provider runtime failed, using local fallback: {exc}")
+                    add_runtime_log(
+                        "builder",
+                        "warn",
+                        "Provider textual falhou; usando fallback local",
+                        job_id=job.job_id,
+                        stage="html",
+                        details={"error": str(exc)},
+                    )
                     generated_html, local_usage = self._build_local_html_v2(job, site_dir)
                     with self._lock:
                         job.usage = {
@@ -646,24 +741,78 @@ class BuilderAgent:
             with self._lock:
                 job.usage = {**job.usage, "html_qa": qa_result.usage_payload()}
             if not qa_result.passed:
+                add_runtime_log(
+                    "builder",
+                    "error",
+                    "HTML QA falhou",
+                    job_id=job.job_id,
+                    stage="qa",
+                    details=qa_result.usage_payload(),
+                )
                 raise RuntimeError(f"HTML QA failed: {qa_result.usage_payload()}")
+            add_runtime_log(
+                "builder",
+                "info",
+                "HTML QA aprovado",
+                job_id=job.job_id,
+                stage="qa",
+                details=qa_result.usage_payload(),
+            )
+
+            score_result = score_site_html(
+                generated_html,
+                site_dir=site_dir,
+                spec=job.spec,
+                materialized_assets=job.spec.get("_materialized_assets"),
+            )
+            with self._lock:
+                job.usage = {**job.usage, "site_score": score_result.usage_payload()}
+            add_runtime_log(
+                "builder",
+                "info",
+                "Site score calculado",
+                job_id=job.job_id,
+                stage="score",
+                details=score_result.usage_payload(),
+            )
 
             site_path = site_dir / "index.html"
             site_path.write_text(generated_html, encoding="utf-8")
+            if self._fluxo_orchestrator is not None:
+                self._fluxo_orchestrator.write_final_summary(run_id=job.job_id, site_path=site_path, usage=job.usage)
 
             with self._lock:
                 job.site_path = site_path
                 job.site_url = f"/api/sites/{job.job_id}/"
                 job.status = "done"
+                job.current_step = "done"
+                if "step_05_builder_final" not in job.completed_steps:
+                    job.completed_steps.append("step_05_builder_final")
                 if self.use_local_fallback:
-                    job.usage = {"local_fallback": 1, **local_usage}
+                    job.usage = {**job.usage, "local_fallback": 1, **local_usage}
                 elif local_usage and not job.usage.get("provider_runtime_fallback"):
                     job.usage = {**job.usage, **local_usage}
 
             print(f"[BUILDER] job={job.job_id} done chars={len(generated_html)} url={job.site_url}")
+            add_runtime_log(
+                "builder",
+                "info",
+                "Build concluido",
+                job_id=job.job_id,
+                stage="done",
+                details={"site_url": job.site_url, "chars": len(generated_html)},
+            )
 
         except Exception as exc:
             print(f"[BUILDER] job={job.job_id} error: {exc}")
+            add_runtime_log(
+                "builder",
+                "error",
+                "Build falhou",
+                job_id=job.job_id,
+                stage="error",
+                details={"error": str(exc)},
+            )
             with self._lock:
                 job.status = "error"
                 job.error = str(exc)
@@ -674,10 +823,11 @@ class BuilderAgent:
 
         messages = build_messages(job.spec)
         system_prompt = self._build_system_prompt_for_job(job)
+        model = self._resolve_text_model_for_job(job)
 
         chunks: list[str] = []
         with self.client.messages.stream(
-            model=self.model,
+            model=model,
             max_tokens=32000,
             system=[
                 {
@@ -700,6 +850,7 @@ class BuilderAgent:
             job.usage = {
                 "input_tokens": final_message.usage.input_tokens,
                 "output_tokens": final_message.usage.output_tokens,
+                "builder_model": model,
                 "cache_read_input_tokens": getattr(
                     final_message.usage, "cache_read_input_tokens", 0
                 ) or 0,
@@ -711,18 +862,28 @@ class BuilderAgent:
         return "".join(chunks)
 
     def _call_openai_compatible(self, job: BuildJob) -> str:
-        if self._openai_client is None:
+        client, provider_route, base_url = self._resolve_openai_client_for_job(job)
+        if client is None:
             raise RuntimeError("OpenAI-compatible client not initialized.")
 
         user_messages = build_messages(job.spec)
         system_prompt = self._build_system_prompt_for_job(job)
+        model = self._resolve_text_model_for_job(job)
+        add_runtime_log(
+            "builder",
+            "info",
+            "Rota textual resolvida",
+            job_id=job.job_id,
+            stage="html",
+            details={"builder_model": model, "builder_provider": provider_route, "base_url": base_url},
+        )
         openai_messages = [
             {"role": "system", "content": system_prompt},
             *user_messages,
         ]
 
-        response = self._openai_client.chat.completions.create(
-            model=self.model,
+        response = client.chat.completions.create(
+            model=model,
             messages=openai_messages,
             max_tokens=32000,
         )
@@ -732,9 +893,51 @@ class BuilderAgent:
             job.usage = {
                 "input_tokens": usage.prompt_tokens if usage else 0,
                 "output_tokens": usage.completion_tokens if usage else 0,
+                "builder_model": model,
+                "builder_provider": provider_route,
             }
 
         return response.choices[0].message.content or ""
+
+    def _resolve_text_model_for_job(self, job: BuildJob) -> str:
+        requested = str(job.spec.get("builder_model") or "").strip()
+        if not requested:
+            return self.model
+        return requested
+
+    def _resolve_openai_client_for_job(self, job: BuildJob) -> tuple[Any, str, str]:
+        requested_provider = str(job.spec.get("builder_provider") or "default").strip().lower()
+        if requested_provider in {"", "default", self.provider or ""}:
+            return (
+                self._openai_client,
+                self.provider or "openai-compatible",
+                (os.getenv("AGENT_LLM_BASE_URL", "").strip() or _PROVIDER_BASE_URLS.get(self.provider or "", "")),
+            )
+
+        if requested_provider not in {"zai", "openrouter", "nvidia", "openai-compatible"}:
+            raise RuntimeError(f"builder_provider invalido: {requested_provider}")
+
+        try:
+            import openai as _openai
+        except ImportError as exc:
+            raise RuntimeError(f"openai package is required for builder_provider={requested_provider}") from exc
+
+        provider_key = _PROVIDER_KEY_MAP.get(requested_provider, "")
+        provider_prefix = requested_provider.upper().replace("-", "_")
+        api_key = (
+            os.getenv(f"{provider_prefix}_API_KEY", "").strip()
+            or (os.getenv(provider_key, "").strip() if provider_key else "")
+            or os.getenv("AGENT_LLM_API_KEY", "").strip()
+        )
+        base_url = (
+            os.getenv(f"{provider_prefix}_BASE_URL", "").strip()
+            or _PROVIDER_BASE_URLS.get(requested_provider, "")
+        )
+        if not api_key:
+            raise RuntimeError(f"API key nao configurada para builder_provider={requested_provider}")
+        if not base_url:
+            raise RuntimeError(f"Base URL nao configurada para builder_provider={requested_provider}")
+        return _openai.OpenAI(api_key=api_key, base_url=base_url), requested_provider, base_url
 
     def _build_local_html(self, job: BuildJob) -> str:
         """
