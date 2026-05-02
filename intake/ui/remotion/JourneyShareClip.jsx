@@ -8,9 +8,9 @@ import {
 } from "remotion";
 
 const fallbackMessages = [
-  { role: "assistant", content: "Me conta o que voce quer criar." },
+  { role: "assistant", content: "Me conta o que você quer criar." },
   { role: "user", content: "Quero um site que venda minha ideia em minutos." },
-  { role: "assistant", content: "Briefing entendido. Montando a primeira versao." },
+  { role: "assistant", content: "Briefing entendido. Montando a primeira versão." },
 ];
 
 export function JourneyShareClip({ messages = fallbackMessages, siteUrl = "" }) {
@@ -35,9 +35,9 @@ export function JourneyShareClip({ messages = fallbackMessages, siteUrl = "" }) 
     <AbsoluteFill
       style={{
         background:
-          "radial-gradient(circle at 18% 18%, rgba(0,255,157,0.14), transparent 24%), #080808",
-        color: "#f0f0f0",
-        fontFamily: "Geist, sans-serif",
+          "radial-gradient(circle at 18% 18%, rgba(184,106,74,0.16), transparent 26%), linear-gradient(135deg, #f4ede0, #ebe0c9)",
+        color: "#3a3127",
+        fontFamily: "Erode, serif",
         padding: 48,
       }}
     >
@@ -60,13 +60,13 @@ export function JourneyShareClip({ messages = fallbackMessages, siteUrl = "" }) 
                   alignSelf: message.role === "user" ? "end" : "start",
                   background:
                     message.role === "user"
-                      ? "rgba(0,255,157,0.1)"
-                      : "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                      ? "rgba(184,106,74,0.12)"
+                      : "rgba(254,251,242,0.86)",
+                  border: "1px solid rgba(58,49,39,0.12)",
                   borderLeft:
                     message.role === "user"
-                      ? "3px solid #00ff9d"
-                      : "3px solid rgba(255,255,255,0.2)",
+                      ? "3px solid #b86a4a"
+                      : "3px solid rgba(58,49,39,0.2)",
                   borderRadius: 8,
                   maxWidth: "86%",
                   opacity,
@@ -74,10 +74,10 @@ export function JourneyShareClip({ messages = fallbackMessages, siteUrl = "" }) 
                   transform: `translateY(${y}px)`,
                 }}
               >
-                <div style={{ color: "#00ff9d", fontFamily: "JetBrains Mono, monospace", fontSize: 10 }}>
-                  {message.role === "user" ? "VOCE" : "SIMPLE"}
+                <div style={{ color: "#b86a4a", fontFamily: "Erode, serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em" }}>
+                  {message.role === "user" ? "VOCÊ" : "SIMPLE"}
                 </div>
-                <div style={{ fontSize: 18, lineHeight: 1.35 }}>{message.content}</div>
+                <div style={{ fontSize: 18, fontWeight: 400, lineHeight: 1.4 }}>{message.content}</div>
               </div>
             );
           })}
@@ -85,10 +85,10 @@ export function JourneyShareClip({ messages = fallbackMessages, siteUrl = "" }) 
         <div
           style={{
             alignSelf: "center",
-            background: "rgba(255,255,255,0.045)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "rgba(254,251,242,0.94)",
+            border: "1px solid rgba(58,49,39,0.12)",
             borderRadius: 10,
-            boxShadow: "0 28px 90px rgba(0,0,0,0.55)",
+            boxShadow: "0 28px 90px rgba(58,49,39,0.18)",
             opacity: previewOpacity,
             overflow: "hidden",
           }}
@@ -96,24 +96,25 @@ export function JourneyShareClip({ messages = fallbackMessages, siteUrl = "" }) 
           <div
             style={{
               alignItems: "center",
-              background: "rgba(255,255,255,0.06)",
+              background: "rgba(58,49,39,0.06)",
               display: "flex",
               gap: 8,
               height: 34,
               padding: "0 12px",
             }}
           >
-            <span style={{ background: "#ff4444", borderRadius: 999, height: 8, width: 8 }} />
-            <span style={{ background: "#f0c14b", borderRadius: 999, height: 8, width: 8 }} />
-            <span style={{ background: "#00ff9d", borderRadius: 999, height: 8, width: 8 }} />
+            <span style={{ background: "#b3432a", borderRadius: 999, height: 8, width: 8 }} />
+            <span style={{ background: "#b07c1a", borderRadius: 999, height: 8, width: 8 }} />
+            <span style={{ background: "#b86a4a", borderRadius: 999, height: 8, width: 8 }} />
             <div
               style={{
-                background: "rgba(0,0,0,0.4)",
+                background: "rgba(254,251,242,0.7)",
                 borderRadius: 999,
-                color: "#666",
+                color: "#7a6e5e",
                 flex: 1,
-                fontFamily: "JetBrains Mono, monospace",
-                fontSize: 10,
+                fontFamily: "Erode, serif",
+                fontSize: 11,
+                fontWeight: 500,
                 marginLeft: 8,
                 padding: "5px 10px",
               }}
@@ -122,20 +123,20 @@ export function JourneyShareClip({ messages = fallbackMessages, siteUrl = "" }) 
             </div>
           </div>
           <div style={{ display: "grid", gap: 18, padding: 28 }}>
-            <div style={{ background: "#00ff9d", borderRadius: 3, height: 10, width: "34%" }} />
-            <div style={{ color: "#f0f0f0", fontFamily: "JetBrains Mono, monospace", fontSize: 42, fontWeight: 700 }}>
+            <div style={{ background: "#b86a4a", borderRadius: 3, height: 10, width: "34%" }} />
+            <div style={{ color: "#3a3127", fontFamily: "Erode, serif", fontSize: 42, fontWeight: 700, letterSpacing: "-0.01em" }}>
               SITE LIVE
             </div>
-            <div style={{ background: "rgba(255,255,255,0.09)", borderRadius: 4, height: 12, width: "82%" }} />
-            <div style={{ background: "rgba(255,255,255,0.07)", borderRadius: 4, height: 12, width: "68%" }} />
+            <div style={{ background: "rgba(58,49,39,0.12)", borderRadius: 4, height: 12, width: "82%" }} />
+            <div style={{ background: "rgba(58,49,39,0.08)", borderRadius: 4, height: 12, width: "68%" }} />
             <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(3, 1fr)", marginTop: 10 }}>
               {[0, 1, 2].map((item) => (
                 <div
                   key={item}
                   style={{
                     aspectRatio: "1.12",
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(58,49,39,0.06)",
+                    border: "1px solid rgba(58,49,39,0.1)",
                     borderRadius: 8,
                   }}
                 />
@@ -146,15 +147,16 @@ export function JourneyShareClip({ messages = fallbackMessages, siteUrl = "" }) 
       </div>
       <div
         style={{
-          background: "rgba(0,255,157,0.13)",
-          border: "1px solid #00ff9d",
+          background: "rgba(184,106,74,0.16)",
+          border: "1px solid #b86a4a",
           borderRadius: 8,
           bottom: 42,
-          color: "#00ff9d",
-          fontFamily: "JetBrains Mono, monospace",
+          color: "#b86a4a",
+          fontFamily: "Erode, serif",
           fontSize: 18,
           fontWeight: 700,
           left: "50%",
+          letterSpacing: "0.04em",
           padding: "12px 22px",
           position: "absolute",
           transform: `translate(-50%, ${badgeY}px) scale(${badgeScale})`,

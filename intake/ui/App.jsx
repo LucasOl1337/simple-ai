@@ -21,6 +21,7 @@ import {
   BUILD_STORAGE_KEY,
   CHAT_SESSIONS_STORAGE_KEY,
   OPENING_MESSAGE,
+  SELECTED_AGENT_STORAGE_KEY,
   STORAGE_KEY,
   THEME_STORAGE_KEY,
 } from "./constants";
@@ -30,6 +31,17 @@ import ThemeToggle from "./components/ThemeToggle";
 import SessionRail from "./components/SessionRail";
 import TranscriptMessage from "./components/TranscriptMessage";
 import WhiteboardCanvas from "./components/WhiteboardCanvas";
+import AgentsPage from "./components/AgentsPage";
+import AgentChip from "./components/AgentChip";
+
+function readStoredAgentId() {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(SELECTED_AGENT_STORAGE_KEY) || null;
+  } catch {
+    return null;
+  }
+}
 
 function applyScenarioBuildMinimum(session, scenario) {
   if (!session || scenario?.id !== "napassarela") return session;
@@ -125,6 +137,26 @@ export default function App() {
   const [attachment, setAttachment] = useState(null);
   const [optimisticMessages, setOptimisticMessages] = useState([]);
   const [theme, setTheme] = useState(storedTheme);
+  const [view, setView] = useState("whiteboard");
+  const [selectedAgentId, setSelectedAgentId] = useState(() => readStoredAgentId());
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (selectedAgentId) {
+      window.localStorage.setItem(SELECTED_AGENT_STORAGE_KEY, selectedAgentId);
+    } else {
+      window.localStorage.removeItem(SELECTED_AGENT_STORAGE_KEY);
+    }
+  }, [selectedAgentId]);
+
+  const handleSelectAgent = useCallback((agentId) => {
+    setSelectedAgentId(agentId);
+    setView("whiteboard");
+  }, []);
+
+  const handleClearAgent = useCallback(() => {
+    setSelectedAgentId(null);
+  }, []);
   const [autoTestState, setAutoTestState] = useState({
     running: false,
     scenario: null,
@@ -370,7 +402,7 @@ export default function App() {
     if (typeof filterResult.filtered_message === "string" && filterResult.filtered_message.trim()) {
       return filterResult.filtered_message.trim();
     }
-    throw new Error("Agente-filtro retornou resposta sem filtered_message. O chat nao vai continuar sem filtro.");
+    throw new Error("Agente-filtro retornou resposta sem filtered_message. O chat não vai continuar sem filtro.");
   }, []);
 
   const inspectLinksForSession = useCallback(async (rawInput, candidateSession = null) => {
@@ -412,7 +444,7 @@ export default function App() {
         filteredInput = await applyIntakeFilter(trimmed, effectiveSession);
       } catch (error) {
         setOptimisticMessages((current) => current.filter((message) => !String(message.optimisticId || "").startsWith(optimisticId)));
-        const message = error?.message || "Agente-filtro indisponivel. O chat nao roda sem ele.";
+        const message = error?.message || "Agente-filtro indisponível. O chat não roda sem ele.";
         window.alert(message);
         return;
       }
@@ -432,7 +464,7 @@ export default function App() {
         });
       } catch (error) {
         setOptimisticMessages((current) => current.filter((message) => !String(message.optimisticId || "").startsWith(optimisticId)));
-        const message = error?.message || "Agente de conversa indisponivel. O chat nao vai continuar.";
+        const message = error?.message || "Agente de conversa indisponível. O chat não vai continuar.";
         window.alert(message);
         return;
       }
@@ -440,7 +472,7 @@ export default function App() {
       const assistantMessage = turnReply?.assistant_message?.trim();
       if (!assistantMessage) {
         setOptimisticMessages((current) => current.filter((message) => !String(message.optimisticId || "").startsWith(optimisticId)));
-        window.alert("Agente de conversa retornou resposta vazia. O chat nao vai continuar.");
+        window.alert("Agente de conversa retornou resposta vazia. O chat não vai continuar.");
         return;
       }
       if (turnReply.action === "build_with_defaults") {
@@ -584,7 +616,7 @@ export default function App() {
           running: false,
           scenario,
           step,
-          message: error?.message || "Agente-filtro indisponivel. Teste interrompido.",
+          message: error?.message || "Agente-filtro indisponível. Teste interrompido.",
         });
         return;
       }
@@ -695,6 +727,17 @@ export default function App() {
             >
               {autoTestState.running ? "parar teste" : "teste rápido"}
             </button>
+            <button
+              aria-pressed={view === "agentes"}
+              className={`topbar-agents-button ${view === "agentes" ? "is-active" : ""}`}
+              onClick={() => setView((current) => (current === "agentes" ? "whiteboard" : "agentes"))}
+              type="button"
+            >
+              Agentes
+            </button>
+            {selectedAgentId ? (
+              <AgentChip agentId={selectedAgentId} onClear={handleClearAgent} />
+            ) : null}
             {autoTestState.scenario ? (
               <small className="topbar-test-label">
                 {autoTestState.scenario.label}
@@ -708,15 +751,26 @@ export default function App() {
           </div>
         </header>
 
-        <main className="whiteboard-stage">
-          <WhiteboardCanvas
-            session={session}
-            sessionId={activeChatSessionId}
-            buildState={buildState}
-            onStartBuild={handleStartBuild}
-            isStartingBuild={buildState?.status === "starting"}
-            onResetBuild={handleResetBuild}
-          />
+        <main className="whiteboard-stage" key={view}>
+          {view === "agentes" ? (
+            <div className="view-fade">
+              <AgentsPage
+                selectedAgentId={selectedAgentId}
+                onSelectAgent={handleSelectAgent}
+              />
+            </div>
+          ) : (
+            <div className="view-fade">
+              <WhiteboardCanvas
+                session={session}
+                sessionId={activeChatSessionId}
+                buildState={buildState}
+                onStartBuild={handleStartBuild}
+                isStartingBuild={buildState?.status === "starting"}
+                onResetBuild={handleResetBuild}
+              />
+            </div>
+          )}
         </main>
 
         <aside className="chat-dock">
