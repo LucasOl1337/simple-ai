@@ -24,7 +24,6 @@ import {
   BUILD_STORAGE_KEY,
   CHAT_SESSIONS_STORAGE_KEY,
   OPENING_MESSAGE,
-  SELECTED_AGENT_STORAGE_KEY,
   STORAGE_KEY,
   THEME_STORAGE_KEY,
 } from "./constants";
@@ -34,17 +33,6 @@ import ThemeToggle from "./components/ThemeToggle";
 import SessionRail from "./components/SessionRail";
 import TranscriptMessage from "./components/TranscriptMessage";
 import WhiteboardCanvas from "./components/WhiteboardCanvas";
-import AgentsPage from "./components/AgentsPage";
-import AgentChip from "./components/AgentChip";
-
-function readStoredAgentId() {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem(SELECTED_AGENT_STORAGE_KEY) || null;
-  } catch {
-    return null;
-  }
-}
 
 function applyScenarioBuildMinimum(session, scenario) {
   if (!session || scenario?.id !== "napassarela") return session;
@@ -141,27 +129,6 @@ export default function App() {
   const [attachment, setAttachment] = useState(null);
   const [optimisticMessages, setOptimisticMessages] = useState([]);
   const [theme, setTheme] = useState(storedTheme);
-  const [view, setView] = useState("whiteboard");
-  const [selectedAgentId, setSelectedAgentId] = useState(() => readStoredAgentId());
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (selectedAgentId) {
-      window.localStorage.setItem(SELECTED_AGENT_STORAGE_KEY, selectedAgentId);
-    } else {
-      window.localStorage.removeItem(SELECTED_AGENT_STORAGE_KEY);
-    }
-  }, [selectedAgentId]);
-
-  const handleSelectAgent = useCallback((agentId) => {
-    setSelectedAgentId(agentId);
-    setView("whiteboard");
-  }, []);
-
-  const handleClearAgent = useCallback(() => {
-    setSelectedAgentId(null);
-  }, []);
-
   const [builderModelOptions, setBuilderModelOptions] = useState(BUILDER_MODEL_OPTIONS);
   const [builderModel, setBuilderModel] = useState(storedBuilderModel);
   const [autoTestState, setAutoTestState] = useState({
@@ -777,17 +744,6 @@ export default function App() {
             >
               {autoTestState.running ? "parar teste" : "teste rápido"}
             </button>
-            <button
-              aria-pressed={view === "agentes"}
-              className={`topbar-agents-button ${view === "agentes" ? "is-active" : ""}`}
-              onClick={() => setView((current) => (current === "agentes" ? "whiteboard" : "agentes"))}
-              type="button"
-            >
-              Agentes
-            </button>
-            {selectedAgentId ? (
-              <AgentChip agentId={selectedAgentId} onClear={handleClearAgent} />
-            ) : null}
             {autoTestState.scenario ? (
               <small className="topbar-test-label">
                 {autoTestState.scenario.label}
@@ -801,26 +757,15 @@ export default function App() {
           </div>
         </header>
 
-        <main className="whiteboard-stage" key={view}>
-          {view === "agentes" ? (
-            <div className="view-fade">
-              <AgentsPage
-                selectedAgentId={selectedAgentId}
-                onSelectAgent={handleSelectAgent}
-              />
-            </div>
-          ) : (
-            <div className="view-fade">
-              <WhiteboardCanvas
-                session={session}
-                sessionId={activeChatSessionId}
-                buildState={buildState}
-                onStartBuild={handleStartBuild}
-                isStartingBuild={buildState?.status === "starting"}
-                onResetBuild={handleResetBuild}
-              />
-            </div>
-          )}
+        <main className="whiteboard-stage">
+          <WhiteboardCanvas
+            session={session}
+            sessionId={activeChatSessionId}
+            buildState={buildState}
+            onStartBuild={handleStartBuild}
+            isStartingBuild={buildState?.status === "starting"}
+            onResetBuild={handleResetBuild}
+          />
         </main>
 
         <aside className="chat-dock">

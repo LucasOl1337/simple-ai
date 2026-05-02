@@ -4,7 +4,6 @@ export const NOTE_LAYOUT_STORAGE_KEY = "simple-ai-note-layout-v2";
 export const CHAT_SESSIONS_STORAGE_KEY = "simple-ai-chat-sessions-v1";
 export const ACTIVE_CHAT_SESSION_STORAGE_KEY = "simple-ai-active-chat-session-v1";
 export const THEME_STORAGE_KEY = "simple-ai-theme-v1";
-export const SELECTED_AGENT_STORAGE_KEY = "simple-ai-agent-v1";
 export const BUILDER_MODEL_STORAGE_KEY = "simple-ai-builder-model-v1";
 
 export const BUILDER_MODEL_OPTIONS = [
