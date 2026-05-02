@@ -305,6 +305,14 @@ def _site_render_risk_signals(html: str) -> Dict[str, Any]:
 
 def _builder_model_label(model_id: str) -> str:
     labels = {
+        # Anthropic
+        "claude-opus-4-7": "Claude Opus 4.7",
+        "claude-sonnet-4-6": "Claude Sonnet 4.6",
+        "claude-haiku-4-5-20251001": "Claude Haiku 4.5",
+        # OpenAI
+        "gpt-4o": "GPT-4o",
+        "gpt-4o-mini": "GPT-4o Mini",
+        # 9router (Lucas's internal router; available only when localhost:20128 is up)
         "cx/gpt-5.5": "GPT 5.5",
         "cx/gpt-5.4": "GPT 5.4",
         "cx/gpt-5.4-mini": "GPT 5.4 Mini",
@@ -317,11 +325,20 @@ def _builder_model_label(model_id: str) -> str:
 
 
 def _builder_model_provider(model_id: str) -> str:
-    if model_id.startswith("glm-"):
+    m = model_id.lower()
+    if m.startswith("claude-") or m.startswith("anthropic/"):
+        return "anthropic"
+    if m.startswith("gpt-") or m.startswith("o1-") or m.startswith("o3-") or m.startswith("openai/"):
+        return "openai-compatible"
+    if m.startswith("glm-"):
         return "zai"
     return "default"
 
 def _builder_model_note(model_id: str, provider: str) -> str:
+    if model_id.startswith("claude-"):
+        return "Anthropic — qualidade máxima" if "opus" in model_id else "Anthropic"
+    if model_id.startswith("gpt-"):
+        return "OpenAI — baixo custo" if "mini" in model_id else "OpenAI"
     if model_id == os.getenv("AGENT_LLM_MODEL", "").strip():
         return "default atual"
     if model_id.startswith("glm-"):
@@ -347,34 +364,46 @@ def _load_local_9router_models() -> list[str]:
 
 
 def _builder_model_catalog() -> list[Dict[str, Any]]:
-    preferred = [
-        "cx/gpt-5.5",
-        "cx/gpt-5.4",
-        "cx/gpt-5.2",
-        "cx/gpt-5.1",
-        "glm-5.1",
-        "glm-5",
-        "glm-4.7",
-        "glm-4.6v",
-    ]
-    available = set(_load_local_9router_models())
-    if not available:
-        available = {"cx/gpt-5.5", "cx/gpt-5.4", "glm-5.1", "glm-5"}
+    """Build the model dropdown catalog from currently-configured providers.
 
+    Order: Anthropic first (when ANTHROPIC_API_KEY set), OpenAI next (when
+    OPENAI_API_KEY set), 9router last (only when localhost:20128 is reachable).
+    The frontend takes models[0] as the default when localStorage has no
+    valid stored selection — putting Anthropic first means the platform
+    defaults to a working model.
+    """
     catalog: list[Dict[str, Any]] = []
-    for model_id in preferred:
-        is_local = model_id in available
-        if not is_local:
-            continue
+
+    def _push(model_id: str, source: str) -> None:
         provider = _builder_model_provider(model_id)
         catalog.append({
             "id": model_id,
             "provider": provider,
             "label": _builder_model_label(model_id),
             "note": _builder_model_note(model_id, provider),
-            "available": is_local,
-            "source": "9router-local",
+            "available": True,
+            "source": source,
         })
+
+    # Anthropic — included whenever ANTHROPIC_API_KEY is set
+    if os.getenv("ANTHROPIC_API_KEY", "").strip():
+        for model_id in ("claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5-20251001"):
+            _push(model_id, "anthropic")
+
+    # OpenAI — included whenever OPENAI_API_KEY is set
+    if os.getenv("OPENAI_API_KEY", "").strip():
+        for model_id in ("gpt-4o", "gpt-4o-mini"):
+            _push(model_id, "openai")
+
+    # 9router (Lucas's localhost:20128) — only when the router actually answers
+    available_9router = set(_load_local_9router_models())
+    if available_9router:
+        preferred_9router = ("cx/gpt-5.5", "cx/gpt-5.4", "cx/gpt-5.2", "cx/gpt-5.1",
+                             "glm-5.1", "glm-5", "glm-4.7", "glm-4.6v")
+        for model_id in preferred_9router:
+            if model_id in available_9router:
+                _push(model_id, "9router-local")
+
     return catalog
 
 
