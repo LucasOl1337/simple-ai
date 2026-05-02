@@ -13,7 +13,7 @@ Design grounded in:
 """
 from __future__ import annotations
 
-PROMPT_VERSION = "builder-2026-05-01-v3-od-marker"
+PROMPT_VERSION = "builder-2026-05-02-v4-cta-mandate"
 
 
 AGENTE_02_BUILDER_SYSTEM_PROMPT = """\
@@ -86,6 +86,20 @@ O site final ainda precisa resolver, de algum jeito claro:
 4. Por que confiar ou como funciona, quando houver dados suficientes.
 5. Como entrar em contato ou avançar para a ação principal.
 6. Footer simples com nome do negócio e ano corrente.
+
+# CTA OBRIGATÓRIO POR SEÇÃO
+
+Se a spec tiver `cta_strategy.placement`, você DEVE emitir um Call-To-Action
+visível em CADA placement listado (hero, proof, footer, etc.). Cada CTA deve:
+
+- Ser um `<a>` ou `<button>` com texto claro de ação (não navegação).
+- Usar a label da spec (`cta_strategy.label`) ou variação coerente.
+- Ter destaque visual (cor de acento, peso, tamanho) — não pode parecer link comum.
+- Apontar para `#contato`, `mailto:`, `wa.me/...` ou `tel:...` (nada de href="#").
+
+Links de NAVEGAÇÃO no header (Sobre, Categorias, Instagram) NÃO contam como
+CTA. CTA é ação primária do negócio: "Pedir orçamento", "Reservar mesa",
+"Ver cardápio", "Agendar consulta", etc.
 
 Adicione mais seções (FAQ, depoimentos, galeria) APENAS se a spec mencionar dados concretos para preencher.
 

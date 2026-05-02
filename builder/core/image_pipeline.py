@@ -273,8 +273,11 @@ class ImagePipeline:
             tokens = re.findall(r"[a-z0-9]+", normalize_for_match(seed_text))
         extra = FALLBACK_SLOT_HINTS.get(slot, [])
         all_tokens = list(dict.fromkeys(tokens[:4] + extra))
-        keywords = ",".join(all_tokens[:6]) if all_tokens else "small-business,local,service"
-        return f"https://source.unsplash.com/1600x900/?{quote_plus(keywords)}"
+        keywords = "-".join(all_tokens[:6]) if all_tokens else "small-business-local-service"
+        # Picsum deterministically returns the same image per seed string —
+        # gives a stable, working placeholder without requiring image-gen.
+        # Replaces deprecated source.unsplash.com (returns 503 since mid-2024).
+        return f"https://picsum.photos/seed/{quote_plus(keywords)}/1600/900"
 
 
 def build_asset_prompt_context(materialized_assets: Any) -> str:
