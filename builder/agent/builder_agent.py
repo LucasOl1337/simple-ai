@@ -195,6 +195,25 @@ def _resolve_llm_config() -> tuple[Optional[str], Optional[str], Optional[str], 
     return provider, api_key, base_url, model
 
 
+def _provider_from_model_name(model: str) -> Optional[str]:
+    """Detect which provider serves a given model based on its name prefix.
+
+    Returns one of: 'anthropic', 'openai-compatible', 'local-router', or None.
+    'local-router' = Lucas's internal router (cx/, glm/) — not deployable here.
+    None = unknown prefix; caller should fall back to self.provider.
+    """
+    m = (model or "").lower().strip()
+    if not m:
+        return None
+    if m.startswith("claude-") or m.startswith("anthropic/"):
+        return "anthropic"
+    if m.startswith("gpt-") or m.startswith("o1-") or m.startswith("o3-") or m.startswith("openai/"):
+        return "openai-compatible"
+    if m.startswith("cx/") or m.startswith("glm/"):
+        return "local-router"
+    return None
+
+
 def _normalize_for_match(text: str) -> str:
     nfkd = unicodedata.normalize("NFKD", text.lower())
     return "".join(c for c in nfkd if unicodedata.category(c) != "Mn")
@@ -342,6 +361,22 @@ class BuilderAgent:
 
         else:
             print("[BUILDER] No LLM provider configured — using local fallback mode.")
+
+        # Multi-provider secondary client: init OpenAI client when OPENAI_API_KEY
+        # is available and we don't already have one. Enables routing gpt-*
+        # models to OpenAI even when primary provider is Anthropic.
+        if self._openai_client is None:
+            secondary_openai_key = os.getenv("OPENAI_API_KEY", "").strip()
+            if secondary_openai_key:
+                try:
+                    import openai as _openai
+                    self._openai_client = _openai.OpenAI(
+                        api_key=secondary_openai_key,
+                        base_url=os.getenv("OPENAI_BASE_URL", "").strip() or "https://api.openai.com/v1",
+                    )
+                    print("[BUILDER] secondary client: openai-compatible (multi-provider routing enabled)")
+                except ImportError:
+                    pass
 
         self._image_pipeline.log_startup()
 
@@ -705,7 +740,12 @@ class BuilderAgent:
                         stage="html",
                         details={"builder_model": job.spec.get("builder_model") or self.model},
                     )
-                    if self.provider == "anthropic":
+                    # Multi-provider dispatch: route based on model name prefix
+                    # (claude-* → Anthropic, gpt-* → OpenAI). Falls back to
+                    # primary provider when prefix is unknown.
+                    requested_model = self._resolve_text_model_for_job(job)
+                    target_provider = _provider_from_model_name(requested_model) or self.provider
+                    if target_provider == "anthropic":
                         generated_html = _strip_html_fence(self._call_claude(job))
                     else:
                         generated_html = _strip_html_fence(self._call_openai_compatible(job))
@@ -884,10 +924,12 @@ class BuilderAgent:
             *user_messages,
         ]
 
+        # OpenAI gpt-4o family caps at 16384 completion tokens; Claude allows
+        # up to 32K. Use the conservative limit on the OpenAI-compatible path.
         response = client.chat.completions.create(
             model=model,
             messages=openai_messages,
-            max_tokens=32000,
+            max_tokens=16384,
         )
 
         with self._lock:
@@ -905,15 +947,44 @@ class BuilderAgent:
         requested = str(job.spec.get("builder_model") or "").strip()
         if not requested:
             return self.model
+        # Reject local-router models (Lucas's internal cx/, glm/) since this
+        # deploy doesn't have the router. Fail-fast with a clear message
+        # instead of letting Anthropic/OpenAI return a confusing 404.
+        detected = _provider_from_model_name(requested)
+        if detected == "local-router":
+            raise RuntimeError(
+                f"O model '{requested}' depende do router interno do Lucas "
+                f"(localhost:20128/v1) que nao esta disponivel neste deploy. "
+                f"Escolha um model com prefixo claude-* (Anthropic) ou gpt-* (OpenAI)."
+            )
         return requested
 
     def _resolve_openai_client_for_job(self, job: BuildJob) -> tuple[Any, str, str]:
         requested_provider = str(job.spec.get("builder_provider") or "default").strip().lower()
+        # Auto-detect provider from model name when "default": gpt-* → openai-compatible
+        if requested_provider in {"", "default"}:
+            detected = _provider_from_model_name(str(job.spec.get("builder_model") or "").strip())
+            if detected and detected != "anthropic":
+                requested_provider = detected
         if requested_provider in {"", "default", self.provider or ""}:
             return (
                 self._openai_client,
                 self.provider or "openai-compatible",
                 (os.getenv("AGENT_LLM_BASE_URL", "").strip() or _PROVIDER_BASE_URLS.get(self.provider or "", "")),
+            )
+        # openai-compatible requested explicitly (or detected from gpt-* model):
+        # use the secondary OpenAI client init'd in the constructor when
+        # OPENAI_API_KEY is set, even if primary provider is Anthropic.
+        if requested_provider == "openai-compatible":
+            if self._openai_client is None:
+                raise RuntimeError(
+                    "Model gpt-* solicitado mas nenhum cliente OpenAI configurado. "
+                    "Defina OPENAI_API_KEY em api/.env.local."
+                )
+            return (
+                self._openai_client,
+                "openai-compatible",
+                os.getenv("OPENAI_BASE_URL", "").strip() or "https://api.openai.com/v1",
             )
 
         if requested_provider not in {"zai", "openrouter", "nvidia", "openai-compatible"}:
