@@ -66,3 +66,31 @@ their English originals — apply their rules to the structure, palette, and
 visual choices, but write all visible content (headlines, body copy, CTAs,
 microcopy, alt text) in pt-BR appropriate for Brazilian SMB audiences.
 """
+
+
+OUTPUT_AUDIT_MARKER_EN = """\
+# OUTPUT AUDIT MARKER (Open Design) — MANDATORY
+
+The very first child of <body> MUST be an HTML comment naming the design
+system you anchored on, using the exact lowercase `id` from the TOP-3
+DESIGN SYSTEMS block shown above (e.g. `clay`, `airbnb`, `ferrari`,
+`apple`, `mastercard`, `starbucks`, `playstation`, `spotify`).
+
+Required format (literal — do not vary, do not translate):
+
+<!-- design_system_chosen: ID_HERE -->
+
+Where ID_HERE is the id of the system you chose. If you blended multiple
+systems, identify the single dominant one.
+
+Example structure:
+
+<body>
+  <!-- design_system_chosen: clay -->
+  <header>
+    ...
+
+This marker is required for downstream auditing. Do NOT omit it, do NOT
+change its format, do NOT wrap it in another element, do NOT add other
+identifying comments.
+"""

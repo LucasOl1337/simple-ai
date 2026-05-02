@@ -59,6 +59,7 @@ from builder.prompts.od_checklists import (
     ANTI_AI_SLOP_CHECKLIST_EN,
     SELF_CRITIQUE_PROTOCOL_EN,
     LANGUAGE_OVERRIDE,
+    OUTPUT_AUDIT_MARKER_EN,
 )
 
 try:
@@ -512,6 +513,7 @@ class BuilderAgent:
                 f"{SELF_CRITIQUE_PROTOCOL_EN}"
             )
             sections.append(LANGUAGE_OVERRIDE)
+            sections.append(OUTPUT_AUDIT_MARKER_EN)
         except Exception as exc:  # noqa: BLE001 — smoke-only path, never crash builds
             import sys
             print(f"[OD] augmentation failed: {exc}", file=sys.stderr)
