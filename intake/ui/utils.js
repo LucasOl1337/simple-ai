@@ -122,9 +122,10 @@ export function getPublicSiteUrl(buildState) {
   const siteUrl = buildState?.preview_url || buildState?.site_url;
   if (!siteUrl) return "";
   if (/^https?:\/\//i.test(siteUrl)) return siteUrl;
-  if (siteUrl.startsWith("/api/sites/")) {
-    return `http://localhost:8000${siteUrl.replace(/^\/api/, "")}`;
-  }
+  // Keep the URL relative so Vite's dev-server proxy (or production
+  // reverse-proxy) forwards /api/sites/* to whatever port the backend
+  // is on. Hardcoding localhost:8000 broke when the backend moved off
+  // that port (APEX collision -> Simple.AI now on 8002).
   return siteUrl;
 }
 
