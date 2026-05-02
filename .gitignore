@@ -40,6 +40,15 @@ Thumbs.db
 tmp/
 hyperframes-promos/
 
+# FluxoOrchestrator runtime artefacts (auto-cleaned, last 10 kept)
+FLUXO/temp/job_*/
+api/sites/job_*/
+api/link-assets/
+
+# Backend stray error logs (Lucas committed these empty by accident)
+tmp-backend.err
+tmp-frontend.err
+
 # codex / vite process output (no extension or .err/.out)
 .codex-*
 .vite-live.*
