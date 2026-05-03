@@ -51,3 +51,16 @@ class LangGraphFluxoOrchestrator:
         # Graph compilation deferred until run_until_builder() to keep
         # constructor cheap (mirrors FluxoOrchestrator).
         self._graph: Optional[Any] = None
+
+    def _node_contexto(self, state: FluxoState) -> dict[str, Any]:
+        """LangGraph node wrapping FluxoOrchestrator._step_01_contexto."""
+        ctx = self._fluxo._step_01_contexto(
+            state["run_id"],
+            state["spec"],
+            Path(state["run_dir"]),
+            self._status_callback,
+        )
+        return {
+            "context": ctx,
+            "completed_steps": state["completed_steps"] + ["step_01_contexto"],
+        }
