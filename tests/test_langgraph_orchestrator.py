@@ -161,6 +161,60 @@ def test_node_instrucoes_delegates_and_updates_state(tmp_path: Path) -> None:
     assert "step_04_instrucoes_build" in update["completed_steps"]
 
 
+def test_run_until_builder_matches_v1_return_shape(tmp_path: Path) -> None:
+    """Public method must return the same dict shape as
+    FluxoOrchestrator.run_until_builder so BuilderAgent can swap them."""
+    project_root = tmp_path / "proj"
+    (project_root / "FLUXO" / "step_01_contexto").mkdir(parents=True)
+    (project_root / "FLUXO" / "step_01_contexto" / "agent.md").write_text("agent prompt")
+    sites_dir = tmp_path / "sites"
+    sites_dir.mkdir()
+
+    orchestrator = LangGraphFluxoOrchestrator(project_root, sites_dir)
+
+    # Pre-create the markdown file that _node_instrucoes reads after calling
+    # _step_04_instrucoes_build (the patched step won't write it).
+    run_dir = orchestrator._fluxo.temp_dir / "rid"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "04-instrucoes-build.md").write_text("# instructions\n")
+
+    fake_structured = {"image_prompts": [{"slot": "hero", "prompt": "x"}]}
+    fake_assets = {"run_id": "rid", "assets": [], "failures": [], "quality_notes": [], "generation": {}}
+    fake_instructions = {"builder_prompt": "Build", "section_order": ["hero"]}
+
+    with patch.object(orchestrator._fluxo, "_step_02_estruturador", return_value=fake_structured), \
+         patch.object(orchestrator._fluxo, "_step_03_imagens", return_value=fake_assets), \
+         patch.object(orchestrator._fluxo, "_step_04_instrucoes_build", return_value=fake_instructions):
+        result = orchestrator.run_until_builder(
+            run_id="rid",
+            spec={"business_name": "Test", "summary": {"brand_name": "Test"}},
+            site_dir=sites_dir / "rid",
+        )
+
+    expected_keys = {"run_id", "run_dir", "completed_steps", "context", "structured",
+                     "assets", "instructions", "instructions_markdown"}
+    assert set(result.keys()) == expected_keys
+    assert result["run_id"] == "rid"
+    assert result["completed_steps"] == [
+        "step_01_contexto", "step_02_estruturador", "step_03_imagens", "step_04_instrucoes_build"
+    ]
+
+
+def test_write_final_summary_delegates_to_v1(tmp_path: Path) -> None:
+    """write_final_summary just composes through to FluxoOrchestrator."""
+    project_root = tmp_path / "proj"
+    (project_root / "FLUXO").mkdir(parents=True)
+    sites_dir = tmp_path / "sites"
+    sites_dir.mkdir()
+    orchestrator = LangGraphFluxoOrchestrator(project_root, sites_dir)
+    site_path = sites_dir / "rid" / "index.html"
+
+    with patch.object(orchestrator._fluxo, "write_final_summary") as inner:
+        orchestrator.write_final_summary(run_id="rid", site_path=site_path, usage={"input_tokens": 1})
+
+    inner.assert_called_once_with(run_id="rid", site_path=site_path, usage={"input_tokens": 1})
+
+
 def test_graph_compiles_and_runs_linearly(tmp_path: Path) -> None:
     """Compiled graph executes the 4 nodes in order, producing the same
     completed_steps sequence as FluxoOrchestrator."""

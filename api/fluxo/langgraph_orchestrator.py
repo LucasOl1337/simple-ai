@@ -13,7 +13,8 @@ from typing import Any, Optional, TypedDict
 
 from langgraph.graph import StateGraph, START, END
 
-from api.fluxo.orchestrator import FluxoOrchestrator
+from api.fluxo.cleanup import cleanup_old_runs
+from api.fluxo.orchestrator import FluxoOrchestrator, StatusCallback
 
 
 class FluxoState(TypedDict):
@@ -129,3 +130,51 @@ class LangGraphFluxoOrchestrator:
         graph.add_edge("step_03_imagens", "step_04_instrucoes_build")
         graph.add_edge("step_04_instrucoes_build", END)
         return graph.compile()
+
+    def run_until_builder(
+        self,
+        *,
+        run_id: str,
+        spec: dict[str, Any],
+        site_dir: Path,
+        status_callback: Optional[StatusCallback] = None,
+    ) -> dict[str, Any]:
+        """Compile the graph (lazy) and invoke it. Mirrors
+        FluxoOrchestrator.run_until_builder's signature and return shape."""
+        cleanup_old_runs(self._fluxo.temp_dir, keep_runs=self._fluxo.keep_runs)
+        run_dir = self._fluxo.temp_dir / run_id
+        run_dir.mkdir(parents=True, exist_ok=True)
+        self._fluxo._write_json(run_dir / "00-original-payload.json", spec)
+
+        self._status_callback = status_callback
+        if self._graph is None:
+            self._graph = self._build_graph()
+
+        initial: FluxoState = {
+            "run_id": run_id,
+            "spec": spec,
+            "site_dir": str(site_dir),
+            "run_dir": str(run_dir),
+            "context": None,
+            "structured": None,
+            "assets": None,
+            "instructions": None,
+            "instructions_markdown": None,
+            "completed_steps": [],
+        }
+        final_state = self._graph.invoke(initial)
+
+        return {
+            "run_id": run_id,
+            "run_dir": str(run_dir),
+            "completed_steps": final_state["completed_steps"],
+            "context": final_state["context"],
+            "structured": final_state["structured"],
+            "assets": final_state["assets"],
+            "instructions": final_state["instructions"],
+            "instructions_markdown": final_state["instructions_markdown"],
+        }
+
+    def write_final_summary(self, *, run_id: str, site_path: Path, usage: dict[str, Any]) -> None:
+        """Step 05: identical to V1, no graph involvement."""
+        self._fluxo.write_final_summary(run_id=run_id, site_path=site_path, usage=usage)
