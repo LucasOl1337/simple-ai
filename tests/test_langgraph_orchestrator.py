@@ -159,3 +159,40 @@ def test_node_instrucoes_delegates_and_updates_state(tmp_path: Path) -> None:
     assert update["instructions"] == fake_instructions
     assert update["instructions_markdown"] == "# Mock instructions markdown\n"
     assert "step_04_instrucoes_build" in update["completed_steps"]
+
+
+def test_graph_compiles_and_runs_linearly(tmp_path: Path) -> None:
+    """Compiled graph executes the 4 nodes in order, producing the same
+    completed_steps sequence as FluxoOrchestrator."""
+    project_root = tmp_path / "proj"
+    (project_root / "FLUXO" / "step_01_contexto").mkdir(parents=True)
+    (project_root / "FLUXO" / "step_01_contexto" / "agent.md").write_text("agent prompt")
+    sites_dir = tmp_path / "sites"
+    sites_dir.mkdir()
+
+    orchestrator = LangGraphFluxoOrchestrator(project_root, sites_dir)
+    run_dir = project_root / "FLUXO" / "temp" / "run-graph"
+    run_dir.mkdir(parents=True)
+    (run_dir / "04-instrucoes-build.md").write_text("# instructions\n")
+
+    initial: FluxoState = _state_with(run_dir, sites_dir, run_id="run-graph")
+
+    fake_structured = {"image_prompts": [{"slot": "hero", "prompt": "x"}]}
+    fake_assets = {"run_id": "run-graph", "assets": [], "failures": [], "quality_notes": [], "generation": {}}
+    fake_instructions = {"builder_prompt": "Build", "section_order": ["hero"]}
+
+    with patch.object(orchestrator._fluxo, "_step_02_estruturador", return_value=fake_structured), \
+         patch.object(orchestrator._fluxo, "_step_03_imagens", return_value=fake_assets), \
+         patch.object(orchestrator._fluxo, "_step_04_instrucoes_build", return_value=fake_instructions):
+        compiled = orchestrator._build_graph()
+        final = compiled.invoke(initial)
+
+    assert final["completed_steps"] == [
+        "step_01_contexto",
+        "step_02_estruturador",
+        "step_03_imagens",
+        "step_04_instrucoes_build",
+    ]
+    assert final["structured"] == fake_structured
+    assert final["assets"] == fake_assets
+    assert final["instructions"] == fake_instructions

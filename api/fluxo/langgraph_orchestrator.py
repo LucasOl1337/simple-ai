@@ -11,6 +11,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional, TypedDict
 
+from langgraph.graph import StateGraph, START, END
+
 from api.fluxo.orchestrator import FluxoOrchestrator
 
 
@@ -108,3 +110,22 @@ class LangGraphFluxoOrchestrator:
             "instructions_markdown": instructions_md,
             "completed_steps": state["completed_steps"] + ["step_04_instrucoes_build"],
         }
+
+    def _build_graph(self) -> Any:
+        """Compose the linear V1 pipeline as a LangGraph StateGraph.
+
+        Edges form a chain: START → contexto → estruturador → imagens →
+        instrucoes → END. Future versions can replace any edge with a
+        conditional or fan-out without touching node implementations.
+        """
+        graph = StateGraph(FluxoState)
+        graph.add_node("step_01_contexto", self._node_contexto)
+        graph.add_node("step_02_estruturador", self._node_estruturador)
+        graph.add_node("step_03_imagens", self._node_imagens)
+        graph.add_node("step_04_instrucoes_build", self._node_instrucoes)
+        graph.add_edge(START, "step_01_contexto")
+        graph.add_edge("step_01_contexto", "step_02_estruturador")
+        graph.add_edge("step_02_estruturador", "step_03_imagens")
+        graph.add_edge("step_03_imagens", "step_04_instrucoes_build")
+        graph.add_edge("step_04_instrucoes_build", END)
+        return graph.compile()
