@@ -64,3 +64,47 @@ class LangGraphFluxoOrchestrator:
             "context": ctx,
             "completed_steps": state["completed_steps"] + ["step_01_contexto"],
         }
+
+    def _node_estruturador(self, state: FluxoState) -> dict[str, Any]:
+        """Node for step 02: structurer (LLM call via FluxoModelClient)."""
+        structured = self._fluxo._step_02_estruturador(
+            state["run_id"],
+            state["context"],
+            Path(state["run_dir"]),
+            self._status_callback,
+        )
+        return {
+            "structured": structured,
+            "completed_steps": state["completed_steps"] + ["step_02_estruturador"],
+        }
+
+    def _node_imagens(self, state: FluxoState) -> dict[str, Any]:
+        """Node for step 03: image generation / placeholder fallback."""
+        assets = self._fluxo._step_03_imagens(
+            state["run_id"],
+            state["structured"],
+            state["spec"],
+            Path(state["site_dir"]),
+            Path(state["run_dir"]),
+            self._status_callback,
+        )
+        return {
+            "assets": assets,
+            "completed_steps": state["completed_steps"] + ["step_03_imagens"],
+        }
+
+    def _node_instrucoes(self, state: FluxoState) -> dict[str, Any]:
+        """Node for step 04: build-instructions (LLM call via FluxoModelClient)."""
+        instructions = self._fluxo._step_04_instrucoes_build(
+            state["run_id"],
+            state["structured"],
+            state["assets"],
+            Path(state["run_dir"]),
+            self._status_callback,
+        )
+        instructions_md = (Path(state["run_dir"]) / "04-instrucoes-build.md").read_text(encoding="utf-8")
+        return {
+            "instructions": instructions,
+            "instructions_markdown": instructions_md,
+            "completed_steps": state["completed_steps"] + ["step_04_instrucoes_build"],
+        }
