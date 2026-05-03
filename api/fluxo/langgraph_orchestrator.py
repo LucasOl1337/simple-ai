@@ -50,7 +50,13 @@ class LangGraphFluxoOrchestrator:
         self.project_root = project_root
         self.sites_dir = sites_dir
         self._fluxo = FluxoOrchestrator(project_root, sites_dir)
-        self._status_callback: Optional[Any] = None
+        # NOT thread-safe: _status_callback is mutated per invocation in
+        # run_until_builder(). Today's deploys serialize builds (one
+        # BuilderAgent worker thread per job, but only one orchestrator
+        # instance), so this works. Resolve before adding v0.2 parallel
+        # graph variants — the proper fix is to thread the callback
+        # through LangGraph's RunnableConfig instead of instance state.
+        self._status_callback: Optional[StatusCallback] = None
         # Graph compilation deferred until run_until_builder() to keep
         # constructor cheap (mirrors FluxoOrchestrator).
         self._graph: Optional[Any] = None
