@@ -10,7 +10,7 @@ import {
 export function LaunchSequence() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const fullText = "> building site...";
+  const fullText = "construindo seu site...";
   const charsToShow = Math.floor(
     interpolate(frame, [15, 30], [0, fullText.length], {
       extrapolateLeft: "clamp",
@@ -22,7 +22,7 @@ export function LaunchSequence() {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const flashOpacity = interpolate(frame, [45, 48, 52], [0, 0.62, 0], {
+  const flashOpacity = interpolate(frame, [45, 48, 52], [0, 0.5, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -36,9 +36,9 @@ export function LaunchSequence() {
     <AbsoluteFill
       style={{
         alignItems: "center",
-        background: "#080808",
-        color: "#00ff9d",
-        fontFamily: "JetBrains Mono, monospace",
+        background: "linear-gradient(135deg, #f4ede0, #ebe0c9)",
+        color: "#b86a4a",
+        fontFamily: "Erode, serif",
         justifyContent: "center",
       }}
     >
@@ -47,13 +47,14 @@ export function LaunchSequence() {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(circle at 50% 45%, rgba(0,255,157,0.14), transparent 28%)",
+            "radial-gradient(circle at 50% 45%, rgba(184,106,74,0.18), transparent 30%)",
         }}
       />
       <p
         style={{
-          fontSize: 18,
-          letterSpacing: "0.05em",
+          fontSize: 20,
+          fontWeight: 600,
+          letterSpacing: "0.02em",
           margin: 0,
           minHeight: 28,
           position: "relative",
@@ -63,7 +64,7 @@ export function LaunchSequence() {
       </p>
       <div
         style={{
-          background: "rgba(255,255,255,0.1)",
+          background: "rgba(58,49,39,0.1)",
           borderRadius: 1,
           height: 2,
           marginTop: 24,
@@ -74,9 +75,9 @@ export function LaunchSequence() {
       >
         <div
           style={{
-            background: "#00ff9d",
+            background: "#b86a4a",
             borderRadius: 1,
-            boxShadow: "0 0 20px rgba(0,255,157,0.7)",
+            boxShadow: "0 0 20px rgba(184,106,74,0.55)",
             height: "100%",
             width: `${progressWidth}%`,
           }}
@@ -84,17 +85,17 @@ export function LaunchSequence() {
       </div>
       <AbsoluteFill
         style={{
-          background: `rgba(255,255,255,${flashOpacity})`,
+          background: `rgba(254,251,242,${flashOpacity})`,
           pointerEvents: "none",
         }}
       />
       <div
         style={{
-          background: "rgba(0,255,157,0.12)",
-          border: "1px solid #00ff9d",
+          background: "rgba(184,106,74,0.14)",
+          border: "1px solid #b86a4a",
           borderRadius: 8,
-          boxShadow: "0 0 42px rgba(0,255,157,0.34)",
-          color: "#00ff9d",
+          boxShadow: "0 0 42px rgba(184,106,74,0.32)",
+          color: "#b86a4a",
           fontSize: 22,
           fontWeight: 700,
           letterSpacing: "0.1em",

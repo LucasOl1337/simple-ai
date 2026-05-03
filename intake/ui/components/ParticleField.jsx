@@ -34,8 +34,8 @@ export default function ParticleField() {
 
     function draw() {
       context.clearRect(0, 0, width, height);
-      context.fillStyle = "rgba(0, 255, 157, 0.52)";
-      context.strokeStyle = "rgba(0, 255, 157, 0.12)";
+      context.fillStyle = "rgba(184, 106, 74, 0.42)";
+      context.strokeStyle = "rgba(184, 106, 74, 0.1)";
 
       for (const node of nodes) {
         node.x += node.vx;

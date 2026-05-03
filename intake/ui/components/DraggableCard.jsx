@@ -1,5 +1,7 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { isInteractiveTarget, clampPosition } from "../utils";
+
+const RESIZE_HANDLE_SIZE = 18;
 
 export default function DraggableCard({
   children,
@@ -14,38 +16,50 @@ export default function DraggableCard({
   const dragRef = useRef(null);
   const position = positions[layoutId] ?? defaultPosition;
 
-  function handlePointerDown(event) {
+  function handleMouseDown(event) {
     if (event.button !== 0 || isInteractiveTarget(event.target)) return;
     const card = cardRef.current;
     const board = card?.parentElement;
     if (!card || !board) return;
-    const boardRect = board.getBoundingClientRect();
+
     const cardRect = card.getBoundingClientRect();
+    const localX = event.clientX - cardRect.left;
+    const localY = event.clientY - cardRect.top;
+    if (
+      localX > cardRect.width - RESIZE_HANDLE_SIZE &&
+      localY > cardRect.height - RESIZE_HANDLE_SIZE
+    ) {
+      return;
+    }
+
+    const boardRect = board.getBoundingClientRect();
     dragRef.current = {
-      pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       originX: cardRect.left - boardRect.left,
       originY: cardRect.top - boardRect.top,
-      maxX: board.clientWidth - card.offsetWidth,
-      maxY: board.clientHeight - card.offsetHeight,
+      maxX: Math.max(0, board.clientWidth - card.offsetWidth),
+      maxY: Math.max(0, board.clientHeight - card.offsetHeight),
     };
-    card.setPointerCapture(event.pointerId);
+
+    function onMove(e) {
+      const d = dragRef.current;
+      if (!d) return;
+      const nextX = clampPosition(d.originX + e.clientX - d.startX, 0, d.maxX);
+      const nextY = clampPosition(d.originY + e.clientY - d.startY, 0, d.maxY);
+      onPositionChange(layoutId, { x: Math.round(nextX), y: Math.round(nextY) });
+    }
+
+    function onUp() {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      cardRef.current?.classList.remove("is-dragging");
+      dragRef.current = null;
+    }
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
     card.classList.add("is-dragging");
-  }
-
-  function handlePointerMove(event) {
-    const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    const nextX = clampPosition(drag.originX + event.clientX - drag.startX, 0, drag.maxX);
-    const nextY = clampPosition(drag.originY + event.clientY - drag.startY, 0, drag.maxY);
-    onPositionChange(layoutId, { x: Math.round(nextX), y: Math.round(nextY) });
-  }
-
-  function handlePointerUp(event) {
-    if (dragRef.current?.pointerId !== event.pointerId) return;
-    cardRef.current?.classList.remove("is-dragging");
-    dragRef.current = null;
   }
 
   function handleKeyDown(event) {
@@ -67,16 +81,19 @@ export default function DraggableCard({
     });
   }
 
+  useEffect(() => {
+    return () => {
+      dragRef.current = null;
+    };
+  }, []);
+
   return (
     <article
       {...props}
       aria-label={props["aria-label"] ?? "Cartão móvel da lousa"}
       className={`${className} draggable-card`}
       onKeyDown={handleKeyDown}
-      onPointerCancel={handlePointerUp}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
+      onMouseDown={handleMouseDown}
       ref={cardRef}
       style={{ left: position.x, top: position.y }}
       tabIndex={0}

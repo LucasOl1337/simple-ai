@@ -7,15 +7,11 @@ export const THEME_STORAGE_KEY = "simple-ai-theme-v1";
 export const BUILDER_MODEL_STORAGE_KEY = "simple-ai-builder-model-v1";
 
 export const BUILDER_MODEL_OPTIONS = [
-  { id: "cx/gpt-5.5", provider: "default", label: "GPT 5.5", note: "default atual" },
-  { id: "cx/gpt-5.4", provider: "default", label: "GPT 5.4", note: "equilibrado" },
-  { id: "cx/gpt-5.4-mini", provider: "default", label: "GPT 5.4 Mini", note: "mais rapido" },
-  { id: "cx/gpt-5.5-high", provider: "default", label: "GPT 5.5 (High)", note: "alta capacidade" },
-  { id: "cx/gpt-5.5-xhigh", provider: "default", label: "GPT 5.5 (XHigh)", note: "capacidade extrema" },
-  { id: "cx/gpt-5.4-high", provider: "default", label: "GPT 5.4 (High)", note: "alta capacidade" },
-  { id: "glm/glm-5.1", provider: "default", label: "GLM 5.1", note: "Z AI CODING" },
-  { id: "glm/glm-5", provider: "default", label: "GLM 5.0 Turbo", note: "Z AI CODING" },
-  { id: "glm/glm-4.7", provider: "default", label: "GLM 4.7", note: "Z AI CODING" },
+  { id: "claude-opus-4-7", provider: "default", label: "Claude Opus 4.7", note: "Anthropic — qualidade máxima" },
+  { id: "claude-sonnet-4-6", provider: "default", label: "Claude Sonnet 4.6", note: "Anthropic — equilibrado" },
+  { id: "claude-haiku-4-5-20251001", provider: "default", label: "Claude Haiku 4.5", note: "Anthropic — rápido + barato" },
+  { id: "gpt-4o", provider: "default", label: "GPT-4o", note: "OpenAI — alternativa robusta" },
+  { id: "gpt-4o-mini", provider: "default", label: "GPT-4o Mini", note: "OpenAI — baixo custo" },
 ];
 
 export const DEFAULT_BUILDER_MODEL = BUILDER_MODEL_OPTIONS[0].id;

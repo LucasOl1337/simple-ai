@@ -60,6 +60,7 @@ def repair_site_html(html: str, site_dir: Path, materialized_assets: Any, spec: 
     html = _repair_missing_asset_usage(html, assets, result)
     html = _repair_whatsapp_cta(html, spec, result)
     _flag_generic_sections(html, spec, result)
+    _flag_anti_slop(html, result)
 
     result.html = html
     result.images_total, result.images_local, result.images_broken = _count_images(html, site_dir)
@@ -262,3 +263,59 @@ def _insert_after_opening_main_or_before_body_end(html: str, section: str) -> st
     if body_close >= 0:
         return html[:body_close] + section + html[body_close:]
     return html + section
+
+
+# --- Anti-AI-slop warnings (Open Design integration, non-blocking) ----------
+
+_EMOJI_RE = re.compile(
+    "["
+    "\U0001F300-\U0001F5FF"  # symbols & pictographs
+    "\U0001F600-\U0001F64F"  # emoticons
+    "\U0001F680-\U0001F6FF"  # transport & map symbols
+    "\U0001F700-\U0001F77F"
+    "\U0001F780-\U0001F7FF"
+    "\U0001F800-\U0001F8FF"
+    "\U0001F900-\U0001F9FF"
+    "\U0001FA00-\U0001FA6F"
+    "\U0001FA70-\U0001FAFF"
+    "\U00002600-\U000026FF"  # misc symbols
+    "\U00002700-\U000027BF"  # dingbats
+    "]",
+    flags=re.UNICODE,
+)
+_HEADING_TAG_RE = re.compile(
+    r"<(h[1-6])\b[^>]*>(.*?)</\1>", re.IGNORECASE | re.DOTALL
+)
+_SECTION_TAG_RE = re.compile(
+    r"<section\b([^>]*)>(.*?)</section>", re.IGNORECASE | re.DOTALL
+)
+
+
+def _flag_anti_slop(html: str, result: SiteQAResult) -> None:
+    """Append non-blocking anti-AI-slop warnings to result.warnings.
+
+    Checks: emojis in headings, sections without a heading or aria-label.
+    Does not modify html. Does not affect result.passed.
+    """
+    # 1. Emojis in headings
+    for match in _HEADING_TAG_RE.finditer(html):
+        inner = match.group(2)
+        if _EMOJI_RE.search(inner):
+            tag = match.group(1).lower()
+            result.warnings.append(
+                f"Anti-slop: emoji em heading <{tag}>; remova ou mova para o corpo"
+            )
+            break  # one warning is enough
+
+    # 2. Sections without a heading or aria-label
+    for match in _SECTION_TAG_RE.finditer(html):
+        attrs = match.group(1) or ""
+        body = match.group(2) or ""
+        has_heading = bool(re.search(r"<h[1-6]\b", body, re.IGNORECASE))
+        has_aria_label = "aria-label" in attrs.lower()
+        if not has_heading and not has_aria_label:
+            result.warnings.append(
+                "Anti-slop: section sem heading nem aria-label; "
+                "adicione título ou rótulo"
+            )
+            break

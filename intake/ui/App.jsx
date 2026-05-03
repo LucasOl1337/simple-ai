@@ -402,7 +402,7 @@ export default function App() {
     if (typeof filterResult.filtered_message === "string" && filterResult.filtered_message.trim()) {
       return filterResult.filtered_message.trim();
     }
-    throw new Error("Agente-filtro retornou resposta sem filtered_message. O chat nao vai continuar sem filtro.");
+    throw new Error("Agente-filtro retornou resposta sem filtered_message. O chat não vai continuar sem filtro.");
   }, []);
 
   const inspectLinksForSession = useCallback(async (rawInput, candidateSession = null) => {
@@ -444,7 +444,7 @@ export default function App() {
         filteredInput = await applyIntakeFilter(trimmed, effectiveSession);
       } catch (error) {
         setOptimisticMessages((current) => current.filter((message) => !String(message.optimisticId || "").startsWith(optimisticId)));
-        const message = error?.message || "Agente-filtro indisponivel. O chat nao roda sem ele.";
+        const message = error?.message || "Agente-filtro indisponível. O chat não roda sem ele.";
         window.alert(message);
         return;
       }
@@ -464,7 +464,7 @@ export default function App() {
         });
       } catch (error) {
         setOptimisticMessages((current) => current.filter((message) => !String(message.optimisticId || "").startsWith(optimisticId)));
-        const message = error?.message || "Agente de conversa indisponivel. O chat nao vai continuar.";
+        const message = error?.message || "Agente de conversa indisponível. O chat não vai continuar.";
         window.alert(message);
         return;
       }
@@ -472,7 +472,7 @@ export default function App() {
       const assistantMessage = turnReply?.assistant_message?.trim();
       if (!assistantMessage) {
         setOptimisticMessages((current) => current.filter((message) => !String(message.optimisticId || "").startsWith(optimisticId)));
-        window.alert("Agente de conversa retornou resposta vazia. O chat nao vai continuar.");
+        window.alert("Agente de conversa retornou resposta vazia. O chat não vai continuar.");
         return;
       }
       if (turnReply.action === "build_with_defaults") {
@@ -618,7 +618,7 @@ export default function App() {
           running: false,
           scenario,
           step,
-          message: error?.message || "Agente-filtro indisponivel. Teste interrompido.",
+          message: error?.message || "Agente-filtro indisponível. Teste interrompido.",
         });
         return;
       }
