@@ -8,7 +8,10 @@ inputs, same artifacts, same return format.
 """
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Optional, TypedDict
+
+from api.fluxo.orchestrator import FluxoOrchestrator
 
 
 class FluxoState(TypedDict):
@@ -29,3 +32,22 @@ class FluxoState(TypedDict):
     instructions: Optional[dict[str, Any]]
     instructions_markdown: Optional[str]
     completed_steps: list[str]
+
+
+class LangGraphFluxoOrchestrator:
+    """LangGraph-based wrapper around FluxoOrchestrator.
+
+    Composes the existing imperative orchestrator: each LangGraph node
+    delegates to one of the inner FluxoOrchestrator's step methods. Public
+    interface mirrors FluxoOrchestrator so BuilderAgent can swap between
+    them via the LANGGRAPH_ENABLED env flag.
+    """
+
+    def __init__(self, project_root: Path, sites_dir: Path) -> None:
+        self.project_root = project_root
+        self.sites_dir = sites_dir
+        self._fluxo = FluxoOrchestrator(project_root, sites_dir)
+        self._status_callback: Optional[Any] = None
+        # Graph compilation deferred until run_until_builder() to keep
+        # constructor cheap (mirrors FluxoOrchestrator).
+        self._graph: Optional[Any] = None
