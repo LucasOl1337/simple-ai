@@ -68,6 +68,11 @@ except ImportError:  # pragma: no cover
     FluxoOrchestrator = None
 
 try:
+    from api.fluxo import LangGraphFluxoOrchestrator
+except ImportError:  # pragma: no cover
+    LangGraphFluxoOrchestrator = None
+
+try:
     from runtime_logs import add_runtime_log
 except ImportError:  # pragma: no cover
     def add_runtime_log(*args: Any, **kwargs: Any) -> None:
@@ -328,7 +333,18 @@ class BuilderAgent:
         self.client = None
         self._openai_client = None
         self._image_pipeline = ImagePipeline()
-        self._fluxo_orchestrator = FluxoOrchestrator(self._project_root, self.sites_dir) if FluxoOrchestrator else None
+        # LANGGRAPH_ENABLED=1 swaps in the LangGraph V2 wrapper. Default keeps
+        # the imperative V1 FluxoOrchestrator so production stays unchanged
+        # until V2 is fully soaked.
+        _use_langgraph = os.getenv("LANGGRAPH_ENABLED", "").strip() == "1"
+        if _use_langgraph and LangGraphFluxoOrchestrator is not None:
+            self._fluxo_orchestrator = LangGraphFluxoOrchestrator(self._project_root, self.sites_dir)
+            print("[BUILDER] FLUXO orchestrator: LangGraph V2 (LANGGRAPH_ENABLED=1)")
+        elif FluxoOrchestrator is not None:
+            self._fluxo_orchestrator = FluxoOrchestrator(self._project_root, self.sites_dir)
+            print("[BUILDER] FLUXO orchestrator: V1 imperative")
+        else:
+            self._fluxo_orchestrator = None
 
         def activate_local_fallback(reason: str) -> None:
             print(f"[BUILDER] {reason}. Falling back to local mode.")
